@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { API_BASE_URL } from '../config/constants';
 
 export function login({ username, password }) {
   return new Promise(async (resolve) => {
@@ -19,8 +20,8 @@ export function login({ username, password }) {
       formData.append('username', username.trim());
       formData.append('password', password.trim());
 
-      // Make API call to localhost:8080
-      const response = await axios.post('http://localhost:8080/api/employee/login', formData, {
+      // Make API call using global API base URL
+      const response = await axios.post(`${API_BASE_URL}/api/employee/login`, formData, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },

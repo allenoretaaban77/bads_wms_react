@@ -73,13 +73,17 @@ function LoginView() {
           >
             {isLoading ? (
               <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg className="animate-spin h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Signing In...
+              </span>
+            ) : (
+              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <svg 
                   width="16" 
                   height="16" 
-                  style={{ 
-                    animation: 'spin 1s linear infinite',
-                    marginRight: '8px'
-                  }} 
+                  style={{ marginRight: '8px' }} 
                   fill="none" 
                   stroke="currentColor" 
                   viewBox="0 0 24 24"
@@ -88,13 +92,11 @@ function LoginView() {
                     strokeLinecap="round" 
                     strokeLinejoin="round" 
                     strokeWidth={2} 
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
+                    d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" 
                   />
                 </svg>
-                Signing In...
+                Sign In
               </span>
-            ) : (
-              'Sign In'
             )}
           </button>
         </form>

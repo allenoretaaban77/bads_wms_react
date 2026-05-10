@@ -1,0 +1,39 @@
+// API Configuration - Using relative path for development proxy
+export const API_BASE_URL = '';  // Will be proxied to http://localhost:8080
+
+// Application Configuration
+export const APP_CONFIG = {
+  // API Settings
+  API_BASE_URL: API_BASE_URL,
+  
+  // Pagination Defaults
+  DEFAULT_PAGE_SIZE: 10,
+  MAX_PAGE_SIZE: 100,
+  
+  // Token Settings
+  TOKEN_KEY: 'access_token',
+  TOKEN_EXPIRY_KEY: 'token_expiry',
+  
+  // App Settings
+  APP_NAME: 'BAD Inventory Management System',
+  VERSION: '1.0.0',
+  
+  // UI Settings
+  DEBOUNCE_DELAY: 300, // for search inputs
+  TOAST_DURATION: 3000, // for notifications
+  
+  // Inventory Settings
+  INVENTORY_STATUSES: {
+    AVAILABLE: 'Available',
+    LOW_STOCK: 'Low Stock',
+    OUT_OF_STOCK: 'Out of Stock'
+  },
+  
+  RECORD_STATUSES: {
+    ACTIVE: 'active',
+    INACTIVE: 'inactive',
+    ARCHIVED: 'archived'
+  }
+};
+
+export default APP_CONFIG;

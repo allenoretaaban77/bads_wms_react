@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8080';
+import { API_BASE_URL } from '../config/constants';
 
 // Login service using native fetch API
 export const login = async (username, password) => {

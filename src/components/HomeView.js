@@ -17,22 +17,20 @@ function HomeView() {
               <p className="text-white text-sm">Badong's Hardware Inventory System</p>
               <h1 className="text-white text-xl font-semibold">Home</h1>
             </div>
-            <button
-              onClick={logout}
-              className="text-white hover:bg-white hover:bg-opacity-20 px-3 py-1 rounded-custom transition-colors duration-200"
-            >
-              Logout
-            </button>
+            <div className="flex items-center text-white text-sm">
+              <span>Welcome, <strong>{username}</strong></span>
+              <span className="mx-3">|</span>
+              <button
+                onClick={logout}
+                className="hover:bg-white hover:bg-opacity-20 px-3 py-1 rounded-custom transition-colors duration-200"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </header>
 
-        <div className="w-full py-6 px-5">
-          <div className="bg-green-50 border border-green-200 p-3 mb-6 rounded-custom">
-            <p className="text-gray-700">
-              Welcome, <strong>{username}</strong>. Use the left navigation to open each section.
-            </p>
-          </div>
-
+        <div className="w-full py-4 px-3">
           <HomeContent />
         </div>
       </main>

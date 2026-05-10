@@ -1,137 +1,107 @@
 import React, { useState, useEffect } from 'react';
-import '../App.css';
-
-// Sample inventory data (this would come from API)
-const sampleInventoryData = [
-  {
-    id: 1,
-    product_name: 'Laptop Computer',
-    sku: 'LAP-001',
-    cost_per_unit: 450.00,
-    price_per_unit: 899.99,
-    initial_qty: 50,
-    reorder_level: 10,
-    current_qty: 23,
-    status: 'Available',
-    total_inventory_cost: 10350.00,
-    total_inventory_value: 20699.77,
-    total_sold: 27,
-    date_created: '2026-01-15',
-    date_updated: '2026-05-01'
-  },
-  {
-    id: 2,
-    product_name: 'Wireless Mouse',
-    sku: 'MOU-002',
-    cost_per_unit: 15.50,
-    price_per_unit: 29.99,
-    initial_qty: 100,
-    reorder_level: 20,
-    current_qty: 8,
-    status: 'Low Stock',
-    total_inventory_cost: 124.00,
-    total_inventory_value: 239.92,
-    total_sold: 92,
-    date_created: '2026-01-20',
-    date_updated: '2026-05-01'
-  },
-  {
-    id: 3,
-    product_name: 'USB-C Cable',
-    sku: 'CAB-003',
-    cost_per_unit: 8.25,
-    price_per_unit: 15.99,
-    initial_qty: 200,
-    reorder_level: 50,
-    current_qty: 156,
-    status: 'Available',
-    total_inventory_cost: 1287.00,
-    total_inventory_value: 2494.44,
-    total_sold: 44,
-    date_created: '2026-02-01',
-    date_updated: '2026-04-28'
-  },
-  {
-    id: 4,
-    product_name: 'Monitor Stand',
-    sku: 'STN-004',
-    cost_per_unit: 35.00,
-    price_per_unit: 59.99,
-    initial_qty: 30,
-    reorder_level: 5,
-    current_qty: 0,
-    status: 'Out of Stock',
-    total_inventory_cost: 0.00,
-    total_inventory_value: 0.00,
-    total_sold: 30,
-    date_created: '2026-02-10',
-    date_updated: '2026-05-02'
-  },
-  {
-    id: 5,
-    product_name: 'Keyboard Mechanical',
-    sku: 'KEY-005',
-    cost_per_unit: 75.00,
-    price_per_unit: 149.99,
-    initial_qty: 40,
-    reorder_level: 8,
-    current_qty: 12,
-    status: 'Available',
-    total_inventory_cost: 900.00,
-    total_inventory_value: 1799.88,
-    total_sold: 28,
-    date_created: '2026-02-15',
-    date_updated: '2026-04-30'
-  }
-];
+import { getInventoryList, createInventoryItem, updateInventoryItem } from '../api/inventoryService';
+import { APP_CONFIG } from '../config/constants';
+import ViewInventoryModal from './inventory/ViewInventoryModal';
+import EditInventoryModal from './inventory/EditInventoryModal';
+import CreateInventoryModal from './inventory/CreateInventoryModal';
 
 function InventoryTable() {
-  const [inventoryData, setInventoryData] = useState(sampleInventoryData);
-  const [filteredData, setFilteredData] = useState(sampleInventoryData);
+  // Data and loading states
+  const [inventoryData, setInventoryData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(APP_CONFIG.DEFAULT_PAGE_SIZE);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  
+  // Sorting states
+  const [sortField, setSortField] = useState('id');
+  const [sortOrder, setSortOrder] = useState('desc');
+  
+  // Filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [quantityFilter, setQuantityFilter] = useState('all');
+  const [recordStatusFilter, setRecordStatusFilter] = useState('all');
+  
+  // Modal states
   const [selectedItem, setSelectedItem] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+  
+  // Alert state
+  const [alert, setAlert] = useState({ show: false, message: '', type: '' });
 
-  // Filter and search functionality
+  // Refresh function to trigger data reload
+  const handleRefresh = () => {
+    setRefreshKey(prev => prev + 1);
+  };
+
+  // Fetch inventory data from API
   useEffect(() => {
-    let filtered = inventoryData;
+    const loadInventoryData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const params = {
+          page: currentPage,
+          pageSize: pageSize,
+          search: searchTerm,
+          sort: sortField,
+          order: sortOrder,
+          status: statusFilter !== 'all' ? statusFilter : '',
+          record_status: recordStatusFilter !== 'all' ? recordStatusFilter : ''
+        };
 
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(item =>
-        item.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.sku.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Status filter
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(item => item.status === statusFilter);
-    }
-
-    // Quantity filter
-    if (quantityFilter !== 'all') {
-      switch (quantityFilter) {
-        case 'out-of-stock':
-          filtered = filtered.filter(item => item.current_qty === 0);
-          break;
-        case 'low-stock':
-          filtered = filtered.filter(item => item.current_qty > 0 && item.current_qty <= item.reorder_level);
-          break;
-        case 'in-stock':
-          filtered = filtered.filter(item => item.current_qty > item.reorder_level);
-          break;
-        default:
-          break;
+        const result = await getInventoryList(params);
+        
+        console.log('API Response:', result);
+        
+        // Check if API call was successful and returned data
+        if (result.success && result.data) {
+          // Handle different response structures
+          const data = result.data.data || result.data; // Some APIs return {data: [...]}, others return [...]
+          const total = result.data.total || data.length;
+          const totalPages = result.data.totalPages || Math.ceil(total / pageSize);
+          
+          setInventoryData(data);
+          setFilteredData(data);
+          setTotalItems(total);
+          setTotalPages(totalPages);
+        } else {
+          // Handle API error response
+          console.warn('API returned error:', result.error);
+          setError(result.error || 'Failed to load inventory data');
+          
+          // Set empty data on error
+          setInventoryData([]);
+          setFilteredData([]);
+          setTotalItems(0);
+          setTotalPages(0);
+        }
+      } catch (err) {
+        console.error('Error fetching inventory:', err);
+        setError(`Failed to load inventory data: ${err.message}`);
+        
+        // Set empty data on error
+        setInventoryData([]);
+        setFilteredData([]);
+        setTotalItems(0);
+        setTotalPages(0);
+      } finally {
+        setLoading(false);
       }
-    }
+    };
 
-    setFilteredData(filtered);
-  }, [inventoryData, searchTerm, statusFilter, quantityFilter]);
+    loadInventoryData();
+  }, [currentPage, pageSize, searchTerm, sortField, sortOrder, statusFilter, quantityFilter, recordStatusFilter, refreshKey]);
 
   const handleView = (item) => {
     setSelectedItem(item);
@@ -147,6 +117,73 @@ function InventoryTable() {
     if (window.confirm('Are you sure you want to delete this item?')) {
       setInventoryData(inventoryData.filter(item => item.id !== id));
     }
+  };
+
+  const handleCreateItem = async (itemData) => {
+    try {
+      const result = await createInventoryItem(itemData);
+      if (result.success) {
+        // Close modal immediately
+        setShowCreateModal(false);
+        
+        // Show success alert
+        setAlert({
+          show: true,
+          message: 'Inventory item created successfully!',
+          type: 'success'
+        });
+        
+        // Hide alert after 3 seconds
+        setTimeout(() => {
+          setAlert({ show: false, message: '', type: '' });
+        }, 3000);
+        
+        // Refresh data to show the new item
+        setCurrentPage(1); // Go to first page to see the new item
+        // Trigger data refresh by incrementing refresh key
+        setRefreshKey(prev => prev + 1);
+      } else {
+        setError(result.error || 'Failed to create item');
+      }
+      // Return the result so CreateInventoryModal can handle success/error states
+      return result;
+    } catch (err) {
+      setError('Failed to create inventory item');
+      // Return error result
+      return {
+        success: false,
+        error: 'Failed to create inventory item'
+      };
+    }
+  };
+
+  const handleEditItem = async (id, itemData) => {
+    try {
+      const result = await updateInventoryItem(id, itemData);
+      if (result.success) {
+        // Refresh the data to show the updated item
+        setSearchTerm(prev => prev); // This will trigger the useEffect
+      } else {
+        setError(result.error || 'Failed to update item');
+      }
+    } catch (err) {
+      setError('Failed to update inventory item');
+    }
+  };
+
+  const handleSort = (field) => {
+    const newOrder = sortField === field && sortOrder === 'asc' ? 'desc' : 'asc';
+    setSortField(field);
+    setSortOrder(newOrder);
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (newPageSize) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1);
   };
 
   const getStatusColor = (status) => {
@@ -169,123 +206,324 @@ function InventoryTable() {
   };
 
   return (
-    <div>
-      {/* Inventory Summary Statistics */}
-      <div className="mb-6 bg-white p-6 rounded-custom border border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Inventory Summary</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-gray-800">1,817</div>
-            <div className="text-sm text-gray-600">No. of Products</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">₱1,950,918.73</div>
-            <div className="text-sm text-gray-600">Current Inventory Value</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">₱1,193,482.74</div>
-            <div className="text-sm text-gray-600">Current Inventory Cost</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">1,444</div>
-            <div className="text-sm text-gray-600">In Stock</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-yellow-600">224</div>
-            <div className="text-sm text-gray-600">Low Stock</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-red-600">149</div>
-            <div className="text-sm text-gray-600">No Stock</div>
+    <div className="flex flex-col h-screen">
+      {/* Alert Component */}
+      {alert.show && (
+        <div className={`fixed top-4 right-4 z-50 p-4 rounded-md shadow-lg max-w-sm w-full ${
+          alert.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+        }`}>
+          <div className="flex">
+            <div className="flex-shrink-0">
+              {alert.type === 'success' ? (
+                <svg className="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              ) : (
+                <svg className="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              )}
+            </div>
+            <div className="ml-3">
+              <p className="text-sm font-medium text-white">
+                {alert.message}
+              </p>
+            </div>
+            <div className="ml-auto pl-3">
+              <button
+                onClick={() => setAlert({ show: false, message: '', type: '' })}
+                className="-mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-500 rounded-md p-1.5 inline-flex h-8 w-8 transition-colors"
+              >
+                <span className="sr-only">Dismiss</span>
+                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Search and Filters */}
-      <div className="mb-6 bg-white p-4 rounded-custom border border-gray-200">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-800">Inventory Management</h3>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="px-4 py-2 bg-button text-white rounded-custom hover:bg-button-hover transition-colors duration-200 flex items-center"
-          >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Create New Item
-          </button>
+      )}
+      
+      {/* Fixed Header Sections */}
+      <div className="flex-shrink-0 space-y-0">
+        {/* Inventory Statistics */}
+        <div className="bg-white p-2 rounded-custom border border-gray-200 mb-2">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-1 mb-1">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-gray-800">1,817</div>
+              <div className="text-xs text-gray-600">No. of Products</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">₱1,950,918.73</div>
+              <div className="text-xs text-gray-600">Current Inventory Value</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">₱1,193,482.74</div>
+              <div className="text-xs text-gray-600">Current Inventory Cost</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">1,444</div>
+              <div className="text-xs text-gray-600">In Stock</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-yellow-600">224</div>
+              <div className="text-xs text-gray-600">Low Stock</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-red-600">149</div>
+              <div className="text-xs text-gray-600">No Stock</div>
+            </div>
+          </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Search */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
-            <input
-              type="text"
-              placeholder="Search by name or SKU..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-            />
-          </div>
 
-          {/* Status Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-            >
-              <option value="all">All Status</option>
-              <option value="Available">Available</option>
-              <option value="Low Stock">Low Stock</option>
-              <option value="Out of Stock">Out of Stock</option>
-            </select>
+        {/* Search and Filters */}
+        <div className="bg-white pl-3 pr-3 pb-2 rounded-custom border border-gray-200">
+          <div className="flex justify-between items-center">
+            <h3 className="text-base font-semibold text-gray-800">Inventory Management</h3>
+            <div className="flex space-x-2 pb-2">
+              <button
+                onClick={handleRefresh}
+                className="mt-3 px-3 py-1.5 bg-gray-500 text-white rounded-custom hover:bg-gray-600 transition-colors duration-200 flex items-center text-sm"
+                title="Refresh table"
+              >
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Refresh
+              </button>
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="mt-3 px-3 py-1.5 bg-button text-white rounded-custom hover:bg-button-hover transition-colors duration-200 flex items-center text-sm"
+              >
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Create
+              </button>
+            </div>
           </div>
+          
+          {/* Search and Filters */}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-3">
+            {/* Search Bar */}
+            <div className="lg:col-span-2">
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">Search</label>
+              <input
+                type="text"
+                placeholder="Search product name or SKU..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+              />
+            </div>
 
-          {/* Quantity Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
-            <select
-              value={quantityFilter}
-              onChange={(e) => setQuantityFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-            >
-              <option value="all">All Quantities</option>
-              <option value="in-stock">In Stock</option>
-              <option value="low-stock">Low Stock</option>
-              <option value="out-of-stock">Out of Stock</option>
-            </select>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">Status</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+              >
+                <option value="all">All Status</option>
+                <option value="Available">Available</option>
+                <option value="Low Stock">Low Stock</option>
+                <option value="Out of Stock">Out of Stock</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">Quantity</label>
+              <select
+                value={quantityFilter}
+                onChange={(e) => setQuantityFilter(e.target.value)}
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+              >
+                <option value="all">All Quantities</option>
+                <option value="In Stock">In Stock</option>
+                <option value="Low Stock">Low Stock</option>
+                <option value="Out of Stock">Out of Stock</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">Record Status</label>
+              <select
+                value={recordStatusFilter}
+                onChange={(e) => setRecordStatusFilter(e.target.value)}
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+              >
+                <option value="all">All Records</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="archived">Archived</option>
+              </select>
+            </div>
           </div>
-
+          
           {/* Results count */}
-          <div className="flex items-end">
-            <div className="text-sm text-gray-600">
-              Showing {filteredData.length} of {inventoryData.length} items
+          <div className="mt-2">
+            <div className="text-xs text-gray-600">
+              Showing {filteredData.length} of {totalItems} items
             </div>
           </div>
         </div>
       </div>
 
-      {/* Inventory Table */}
-      <div className="bg-white border border-gray-200 rounded-custom shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-header">
-                <th className="px-4 py-3 text-left text-white font-semibold border-0">Product Name</th>
-                <th className="px-4 py-3 text-left text-white font-semibold border-0">SKU</th>
-                <th className="px-4 py-3 text-right text-white font-semibold border-0">Cost/Unit</th>
-                <th className="px-4 py-3 text-right text-white font-semibold border-0">Price/Unit</th>
-                <th className="px-4 py-3 text-left text-white font-semibold border-0">Current Qty</th>
-                <th className="px-4 py-3 text-left text-white font-semibold border-0">Reorder Level</th>
-                <th className="px-4 py-3 text-right text-white font-semibold border-0">Total Inventory Cost</th>
-                <th className="px-4 py-3 text-right text-white font-semibold border-0">Total Inventory Value</th>
-                <th className="px-4 py-3 text-left text-white font-semibold border-0">Total Sold</th>
-                <th className="px-4 py-3 text-left text-white font-semibold border-0">Status</th>
-                <th className="px-4 py-3 text-center text-white font-semibold border-0">Actions</th>
-              </tr>
-            </thead>
+      {/* Scrollable Table Container */}
+      <div className="flex-1 overflow-auto mt-2">
+        {/* Inventory Table */}
+        <div className="bg-white border border-gray-200 rounded-custom shadow-sm overflow-hidden">
+        {loading && (
+          <div className="flex justify-center items-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-button"></div>
+            <span className="ml-2 text-gray-600">Loading inventory data...</span>
+          </div>
+        )}
+        
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 m-4 rounded">
+            <strong>Error:</strong> {error}
+          </div>
+        )}
+        
+        {!loading && !error && (
+          <div className="bg-white border border-gray-200 rounded-custom shadow-sm overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-header text-white">
+                <tr>
+                  <th 
+                    onClick={() => handleSort('product_name')}
+                    className="px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                  >
+                    <div className="flex items-center">
+                      Product Name
+                      {sortField === 'product_name' && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleSort('sku')}
+                    className="px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                  >
+                    <div className="flex items-center">
+                      SKU
+                      {sortField === 'sku' && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleSort('cost_per_unit')}
+                    className="px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                  >
+                    <div className="flex items-center justify-end">
+                      Cost per Unit
+                      {sortField === 'cost_per_unit' && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleSort('price_per_unit')}
+                    className="px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                  >
+                    <div className="flex items-center justify-end">
+                      Price per Unit
+                      {sortField === 'price_per_unit' && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleSort('current_qty')}
+                    className="px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                  >
+                    <div className="flex items-center justify-end">
+                      Current Qty
+                      {sortField === 'current_qty' && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleSort('reorder_level')}
+                    className="px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                  >
+                    <div className="flex items-center justify-end">
+                      Reorder Level
+                      {sortField === 'reorder_level' && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleSort('total_inventory_cost')}
+                    className="px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                  >
+                    <div className="flex items-center justify-end">
+                      Total Cost
+                      {sortField === 'total_inventory_cost' && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleSort('total_inventory_value')}
+                    className="px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                  >
+                    <div className="flex items-center justify-end">
+                      Total Value
+                      {sortField === 'total_inventory_value' && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleSort('total_sold')}
+                    className="px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                  >
+                    <div className="flex items-center justify-end">
+                      Total Sold
+                      {sortField === 'total_sold' && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleSort('status')}
+                    className="px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                  >
+                    <div className="flex items-center">
+                      Status
+                      {sortField === 'status' && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th className="px-3 py-2 text-center text-white font-semibold border-0">Actions</th>
+                </tr>
+              </thead>
             <tbody>
               {filteredData.map((item, index) => {
                 const quantityStatus = getQuantityStatus(item.current_qty, item.reorder_level);
@@ -296,25 +534,25 @@ function InventoryTable() {
                       index % 2 === 0 ? 'bg-white hover:bg-green-50' : 'bg-row-alt hover:bg-green-100'
                     }`}
                   >
-                    <td className="px-4 py-3 border-0 font-medium">{item.product_name}</td>
-                    <td className="px-4 py-3 border-0">{item.sku}</td>
-                    <td className="px-4 py-3 border-0 text-right">₱{item.cost_per_unit.toFixed(2)}</td>
-                    <td className="px-4 py-3 border-0 text-right">₱{item.price_per_unit.toFixed(2)}</td>
-                    <td className="px-4 py-3 border-0">
+                    <td className="px-3 py-2 border-0 text-sm font-semibold text-green-900">{item.product_name}</td>
+                    <td className="px-3 py-2 border-0 text-sm">{item.sku}</td>
+                    <td className="px-4 py-3 border-0 text-sm">₱{Number(item.cost_per_unit).toFixed(2)}</td>
+                    <td className="px-4 py-3 border-0 text-sm">₱{Number(item.price_per_unit).toFixed(2)}</td>
+                    <td className="px-4 py-3 border-0 text-sm">
                       <span className={`font-medium ${quantityStatus.color}`}>
                         {item.current_qty}
                       </span>
                     </td>
-                    <td className="px-4 py-3 border-0">{item.reorder_level}</td>
-                    <td className="px-4 py-3 border-0 text-right text-blue-600 font-medium">₱{item.total_inventory_cost.toFixed(2)}</td>
-                    <td className="px-4 py-3 border-0 text-right text-green-600 font-medium">₱{item.total_inventory_value.toFixed(2)}</td>
-                    <td className="px-4 py-3 border-0">{item.total_sold}</td>
-                    <td className="px-4 py-3 border-0">
+                    <td className="px-4 py-3 border-0 text-sm">{item.reorder_level}</td>
+                    <td className="px-4 py-3 border-0 text-sm text-blue-600 font-medium">₱{Number(item.total_inventory_cost).toFixed(2)}</td>
+                    <td className="px-4 py-3 border-0 text-sm text-green-600 font-medium">₱{Number(item.total_inventory_value).toFixed(2)}</td>
+                    <td className="px-4 py-3 border-0 text-sm">{item.total_sold}</td>
+                    <td className="px-3 py-2 border-0">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(item.status)}`}>
                         {item.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 border-0">
+                    <td className="px-3 py-2 border-0">
                       <div className="flex justify-center space-x-2">
                         <button
                           onClick={() => handleView(item)}
@@ -352,239 +590,105 @@ function InventoryTable() {
             </tbody>
           </table>
         </div>
+        )}
 
         {filteredData.length === 0 && (
           <div className="text-center py-8 text-gray-500">
             No inventory items found matching your criteria.
           </div>
         )}
+        
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="px-4 py-3 border-t border-gray-200 bg-gray-50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-gray-700">
+                  Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalItems)} of {totalItems} results
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <select
+                  value={pageSize}
+                  onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                  className="px-3 py-1 border border-gray-300 rounded-custom text-sm focus:outline-none focus:ring-2 focus:ring-button"
+                >
+                  <option value={5}>5 per page</option>
+                  <option value={10}>10 per page</option>
+                  <option value={25}>25 per page</option>
+                  <option value={50}>50 per page</option>
+                </select>
+                
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 border border-gray-300 rounded-custom text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                >
+                  Previous
+                </button>
+                
+                <div className="flex space-x-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+                    
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => handlePageChange(pageNum)}
+                        className={`px-3 py-1 border rounded-custom text-sm ${
+                          currentPage === pageNum
+                            ? 'bg-button text-white border-button'
+                            : 'border-gray-300 hover:bg-gray-100'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+                
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1 border border-gray-300 rounded-custom text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        </div>
+
+        {/* New Modal Components */}
+        <ViewInventoryModal 
+          selectedItem={selectedItem}
+          showViewModal={showViewModal}
+          setShowViewModal={setShowViewModal}
+        />
+        
+        <EditInventoryModal 
+          selectedItem={selectedItem}
+          showEditModal={showEditModal}
+          setShowEditModal={setShowEditModal}
+          onSave={handleEditItem}
+        />
+        
+        <CreateInventoryModal 
+          showCreateModal={showCreateModal}
+          setShowCreateModal={setShowCreateModal}
+          onSave={handleCreateItem}
+        />
       </div>
-
-      {/* View Modal */}
-      {showViewModal && selectedItem && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-custom p-6 max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
-            <h3 className="text-xl font-bold mb-4">Inventory Item Details</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <strong>Product Name:</strong> {selectedItem.product_name}
-              </div>
-              <div>
-                <strong>SKU:</strong> {selectedItem.sku}
-              </div>
-              <div>
-                <strong>Cost per Unit:</strong> ${selectedItem.cost_per_unit.toFixed(2)}
-              </div>
-              <div>
-                <strong>Price per Unit:</strong> ${selectedItem.price_per_unit.toFixed(2)}
-              </div>
-              <div>
-                <strong>Initial Quantity:</strong> {selectedItem.initial_qty}
-              </div>
-              <div>
-                <strong>Current Quantity:</strong> {selectedItem.current_qty}
-              </div>
-              <div>
-                <strong>Reorder Level:</strong> {selectedItem.reorder_level}
-              </div>
-              <div>
-                <strong>Status:</strong> {selectedItem.status}
-              </div>
-              <div>
-                <strong>Date Created:</strong> {selectedItem.date_created}
-              </div>
-              <div>
-                <strong>Date Updated:</strong> {selectedItem.date_updated}
-              </div>
-            </div>
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={() => setShowViewModal(false)}
-                className="px-4 py-2 bg-button text-white rounded-custom hover:bg-button-hover transition-colors"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Modal */}
-      {showEditModal && selectedItem && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-custom p-6 max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
-            <h3 className="text-xl font-bold mb-4">Edit Inventory Item</h3>
-            <form className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
-                <input
-                  type="text"
-                  defaultValue={selectedItem.product_name}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
-                <input
-                  type="text"
-                  defaultValue={selectedItem.sku}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Cost per Unit</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  defaultValue={selectedItem.cost_per_unit}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Price per Unit</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  defaultValue={selectedItem.price_per_unit}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Current Quantity</label>
-                <input
-                  type="number"
-                  defaultValue={selectedItem.current_qty}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Reorder Level</label>
-                <input
-                  type="number"
-                  defaultValue={selectedItem.reorder_level}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-                />
-              </div>
-              <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select
-                  defaultValue={selectedItem.status}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-                >
-                  <option value="Available">Available</option>
-                  <option value="Low Stock">Low Stock</option>
-                  <option value="Out of Stock">Out of Stock</option>
-                </select>
-              </div>
-            </form>
-            <div className="mt-6 flex justify-end space-x-3">
-              <button
-                onClick={() => setShowEditModal(false)}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-custom hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => setShowEditModal(false)}
-                className="px-4 py-2 bg-button text-white rounded-custom hover:bg-button-hover transition-colors"
-              >
-                Save Changes
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Create New Item Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-custom p-6 max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
-            <h3 className="text-xl font-bold mb-4">Create New Inventory Item</h3>
-            <form className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
-                <input
-                  type="text"
-                  placeholder="Enter product name"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">SKU *</label>
-                <input
-                  type="text"
-                  placeholder="Enter SKU"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Cost per Unit *</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Price per Unit *</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Initial Quantity *</label>
-                <input
-                  type="number"
-                  placeholder="0"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Reorder Level *</label>
-                <input
-                  type="number"
-                  placeholder="0"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-                  required
-                />
-              </div>
-              <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select
-                  className="w-full px-3 py-2 border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-                >
-                  <option value="Available">Available</option>
-                  <option value="Low Stock">Low Stock</option>
-                  <option value="Out of Stock">Out of Stock</option>
-                </select>
-              </div>
-            </form>
-            <div className="mt-6 flex justify-end space-x-3">
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-custom hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="px-4 py-2 bg-button text-white rounded-custom hover:bg-button-hover transition-colors"
-              >
-                Create Item
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
