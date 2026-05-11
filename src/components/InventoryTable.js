@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getInventoryList, createInventoryItem, updateInventoryItem } from '../api/inventoryService';
+import { getInventoryList, createInventoryItem, updateInventoryItem, deleteInventoryItem } from '../api/inventoryService';
 import { APP_CONFIG } from '../config/constants';
 import ViewInventoryModal from './inventory/ViewInventoryModal';
 import EditInventoryModal from './inventory/EditInventoryModal';
@@ -113,9 +113,31 @@ function InventoryTable() {
     setShowEditModal(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this item?')) {
-      setInventoryData(inventoryData.filter(item => item.id !== id));
+      try {
+        const result = await deleteInventoryItem(id);
+        if (result.success) {
+          // Show success alert
+          setAlert({
+            show: true,
+            message: 'Item successfully deleted',
+            type: 'success'
+          });
+          
+          // Hide alert after 3 seconds
+          setTimeout(() => {
+            setAlert({ show: false, message: '', type: '' });
+          }, 3000);
+          
+          // Refresh data to show updated list
+          setRefreshKey(prev => prev + 1);
+        } else {
+          setError(result.error || 'Failed to delete item');
+        }
+      } catch (err) {
+        setError('Failed to delete inventory item');
+      }
     }
   };
 
@@ -157,17 +179,33 @@ function InventoryTable() {
     }
   };
 
-  const handleEditItem = async (id, itemData) => {
+  const handleEditItem = async (itemData) => {
     try {
-      const result = await updateInventoryItem(id, itemData);
+      const result = await updateInventoryItem(itemData);
       if (result.success) {
-        // Refresh the data to show the updated item
-        setSearchTerm(prev => prev); // This will trigger the useEffect
+        setShowEditModal(false);
+        
+        setAlert({
+          show: true,
+          message: 'Inventory item updated successfully!',
+          type: 'success'
+        });
+        setTimeout(() => {
+          setAlert({ show: false, message: '', type: '' });
+        }, 3000);
+
+        setCurrentPage(1);
+        setRefreshKey(prev => prev + 1); // Trigger data refresh
       } else {
         setError(result.error || 'Failed to update item');
       }
     } catch (err) {
       setError('Failed to update inventory item');
+
+      return {
+        success: false,
+        error: 'Failed to update inventory item'
+      };
     }
   };
 
@@ -188,11 +226,11 @@ function InventoryTable() {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Available':
+      case 'In Stock':
         return 'text-green-600 bg-green-100';
       case 'Low Stock':
         return 'text-yellow-600 bg-yellow-100';
-      case 'Out of Stock':
+      case 'No Stock':
         return 'text-red-600 bg-red-100';
       default:
         return 'text-gray-600 bg-gray-100';
@@ -283,7 +321,7 @@ function InventoryTable() {
             <div className="flex space-x-2 pb-2">
               <button
                 onClick={handleRefresh}
-                className="mt-3 px-3 py-1.5 bg-gray-500 text-white rounded-custom hover:bg-gray-600 transition-colors duration-200 flex items-center text-sm"
+                className="mt-3 px-3 py-1.5 bg-gray-500 text-white rounded-custom hover:bg-green-600 transition-colors duration-200 flex items-center text-sm"
                 title="Refresh table"
               >
                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -324,8 +362,7 @@ function InventoryTable() {
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
               >
-                <option value="all">All Status</option>
-                <option value="Available">Available</option>
+                <option value="In Stock">In Stock</option>
                 <option value="Low Stock">Low Stock</option>
                 <option value="Out of Stock">Out of Stock</option>
               </select>

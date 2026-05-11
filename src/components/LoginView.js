@@ -67,7 +67,7 @@ function LoginView() {
           {formError && <div className="form-error">{formError}</div>}
 
           <button 
-            className="button primary" 
+            className="mt-3 px-3 py-2 bg-button text-white rounded-custom hover:bg-button-hover transition-colors duration-200 flex items-center text-sm"
             type="submit"
             disabled={isLoading}
           >

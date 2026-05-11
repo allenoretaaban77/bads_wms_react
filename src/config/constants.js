@@ -24,7 +24,8 @@ export const APP_CONFIG = {
   
   // Inventory Settings
   INVENTORY_STATUSES: {
-    AVAILABLE: 'Available',
+    // AVAILABLE: 'Available',
+    IN_STOCK: 'In Stock',
     LOW_STOCK: 'Low Stock',
     OUT_OF_STOCK: 'Out of Stock'
   },

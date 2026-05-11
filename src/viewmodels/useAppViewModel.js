@@ -138,7 +138,7 @@ const useAppViewModel = create((set, get) => ({
           employee_number: data.employee_number,
           firstname: data.firstname,
           lastname: data.lastname,
-          surname: data.surname,
+          middlename: data.middlename,
           username: data.username,
           position_name: data.position_name,
           position_id: data.position_id,

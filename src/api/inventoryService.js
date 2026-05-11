@@ -119,11 +119,8 @@ export const getInventoryList = async (params = {}) => {
   }
 };
 
-// Additional inventory-related API functions can be added here
 export const createInventoryItem = async (itemData) => {
   try {
-    const headers = getApiHeadersPost();
-
     // Create URL-encoded form data like login system
     const formData = new URLSearchParams();
     Object.keys(itemData).forEach(key => {
@@ -132,10 +129,7 @@ export const createInventoryItem = async (itemData) => {
 
     const response = await fetch(`${API_BASE_URL}/api/inventory/create`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        ...headers
-      },
+      headers: getApiHeadersPost(),
       body: formData,
     });
 
@@ -176,14 +170,18 @@ export const createInventoryItem = async (itemData) => {
   }
 };
 
-export const updateInventoryItem = async (id, itemData) => {
+export const updateInventoryItem = async (itemData) => {
   try {
-    const headers = getApiHeaders();
+    // Create URL-encoded form data like login system
+    const formData = new URLSearchParams();
+    Object.keys(itemData).forEach(key => {
+      formData.append(key, itemData[key]);
+    });
 
-    const response = await fetch(`${API_BASE_URL}/api/inventory/update/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/inventory/update`, {
       method: 'PUT',
-      headers: headers,
-      body: JSON.stringify(itemData),
+      headers: getApiHeadersPost(),
+      body: formData,
     });
 
     if (!response.ok) {
@@ -225,11 +223,13 @@ export const updateInventoryItem = async (id, itemData) => {
 
 export const deleteInventoryItem = async (id) => {
   try {
-    const headers = getApiHeaders();
+    const formData = new URLSearchParams();
+    formData.append('id', id);
 
-    const response = await fetch(`${API_BASE_URL}/api/inventory/delete/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/inventory/delete`, {
       method: 'DELETE',
-      headers: headers,
+      headers: getApiHeadersPost(),
+      body: formData,
     });
 
     if (!response.ok) {

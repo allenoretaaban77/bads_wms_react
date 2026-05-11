@@ -23,10 +23,11 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
     initial_qty: '',
     current_qty: '',
     reorder_level: '',
+    type: '',
     rack: '',
     shelf: '',
     box: '',
-    status: 'Available',
+    status: 'In Stock',
     remarks: ''
   });
 
@@ -38,6 +39,10 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
     // Validate required fields
     if (!formData.product_name || formData.product_name.trim() === '') {
       newErrors.product_name = 'Product name is required';
+    }
+    
+    if (!formData.type || formData.type.trim() === '') {
+      newErrors.type = 'Type is required';
     }
     
     if (!formData.cost_per_unit || formData.cost_per_unit.trim() === '') {
@@ -110,6 +115,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
       initial_qty: Number(formData.initial_qty),
       current_qty: Number(formData.current_qty),
       reorder_level: Number(formData.reorder_level),
+      type: formData.type,
       rack: formData.rack,
       shelf: formData.shelf,
       box: formData.box,
@@ -130,10 +136,11 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
           initial_qty: '',
           current_qty: '',
           reorder_level: '',
+          type: '',
           rack: '',
           shelf: '',
           box: '',
-          status: 'Available',
+          status: 'In Stock',
           remarks: ''
         });
         
@@ -159,10 +166,11 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
       initial_qty: '',
       current_qty: '',
       reorder_level: '',
+      type: '',
       rack: '',
       shelf: '',
       box: '',
-      status: 'Available',
+      status: 'In Stock',
       remarks: ''
     });
   };
@@ -210,7 +218,6 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   value={formData.cost_per_unit}
                   onChange={handleChange}
                   placeholder="0.00"
-                  defaultValue="0"
                   className={`w-full px-2 py-1.5 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                     errors.cost_per_unit ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                   }`}
@@ -218,6 +225,27 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                 />
                 {errors.cost_per_unit && (
                   <p className="mt-1 text-xs text-red-600">{errors.cost_per_unit}</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                <select
+                  name="type"
+                  value={formData.type}
+                  onChange={handleChange}
+                  className={`w-full px-2 py-1.5 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                    errors.type ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
+                  }`}
+                  required
+                >
+                  <option value="">Select Type</option>
+                  <option value="Item">Item</option>
+                  <option value="Bakal">Bakal</option>
+                  <option value="Cement">Cement</option>
+                  <option value="Gravel and Sand">Gravel and Sand</option>
+                </select>
+                {errors.type && (
+                  <p className="mt-1 text-xs text-red-600">{errors.type}</p>
                 )}
               </div>
               <div>
@@ -229,7 +257,6 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   value={formData.price_per_unit}
                   onChange={handleChange}
                   placeholder="0.00"
-                  defaultValue="0"
                   className={`w-full px-2 py-1.5 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                     errors.price_per_unit ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                   }`}
@@ -240,6 +267,22 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                 )}
               </div>
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Rack</label>
+                <select
+                  name="rack"
+                  value={formData.rack}
+                  onChange={handleChange}
+                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+                >
+                  <option value="">Select Rack</option>
+                  {[...Array(10)].map((_, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      Rack {i + 1}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Initial Quantity *</label>
                 <input
                   type="number"
@@ -247,7 +290,6 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   value={formData.initial_qty}
                   onChange={handleChange}
                   placeholder="0"
-                  defaultValue="0"
                   className={`w-full px-2 py-1.5 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                     errors.initial_qty ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                   }`}
@@ -258,6 +300,22 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                 )}
               </div>
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Shelf</label>
+                <select
+                  name="shelf"
+                  value={formData.shelf}
+                  onChange={handleChange}
+                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+                >
+                  <option value="">Select Shelf</option>
+                  {[...Array(10)].map((_, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      Shelf {i + 1}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Current Quantity</label>
                 <input
                   type="number"
@@ -265,7 +323,6 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   value={formData.current_qty}
                   onChange={handleChange}
                   placeholder="0"
-                  defaultValue="0"
                   className={`w-full px-2 py-1.5 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                     errors.current_qty ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                   }`}
@@ -275,6 +332,22 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                 )}
               </div>
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Box</label>
+                <select
+                  name="box"
+                  value={formData.box}
+                  onChange={handleChange}
+                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+                >
+                  <option value="">Select Box</option>
+                  {[...Array(10)].map((_, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      Box {i + 1}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Reorder Level *</label>
                 <input
                   type="number"
@@ -282,7 +355,6 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   value={formData.reorder_level}
                   onChange={handleChange}
                   placeholder="0"
-                  defaultValue="0"
                   className={`w-full px-2 py-1.5 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                     errors.reorder_level ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                   }`}
@@ -291,52 +363,6 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                 {errors.reorder_level && (
                   <p className="mt-1 text-xs text-red-600">{errors.reorder_level}</p>
                 )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Rack</label>
-                <input
-                  type="text"
-                  name="rack"
-                  value={formData.rack}
-                  onChange={handleChange}
-                  placeholder="e.g., R1"
-                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Shelf</label>
-                <input
-                  type="text"
-                  name="shelf"
-                  value={formData.shelf}
-                  onChange={handleChange}
-                  placeholder="e.g., S1"
-                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Box</label>
-                <input
-                  type="text"
-                  name="box"
-                  value={formData.box}
-                  onChange={handleChange}
-                  placeholder="e.g., B1"
-                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select
-                  name="status"
-                  value={formData.status}
-                  onChange={handleChange}
-                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-                >
-                  <option value="Available">Available</option>
-                  <option value="Low Stock">Low Stock</option>
-                  <option value="Out of Stock">Out of Stock</option>
-                </select>
               </div>
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>

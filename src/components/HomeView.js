@@ -4,7 +4,7 @@ import HomeContent from './HomeContent';
 import useAppViewModel from '../viewmodels/useAppViewModel';
 
 function HomeView() {
-  const username = useAppViewModel((state) => state.username);
+  const userData = useAppViewModel((state) => state.userData);
   const logout = useAppViewModel((state) => state.logout);
 
   return (
@@ -18,7 +18,7 @@ function HomeView() {
               <h1 className="text-white text-xl font-semibold">Home</h1>
             </div>
             <div className="flex items-center text-white text-sm">
-              <span>Welcome, <strong>{username}</strong></span>
+              <span>Welcome, <strong>{userData?.firstname} {userData?.middlename} {userData?.lastname}</strong> | {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} {new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase()}</span>
               <span className="mx-3">|</span>
               <button
                 onClick={logout}
