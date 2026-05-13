@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { getStatusColor } from '../utils/statusColors';
 import { getInventoryList, createInventoryItem, updateInventoryItem, deleteInventoryItem } from '../api/inventoryService';
 import { APP_CONFIG } from '../config/constants';
 import ViewInventoryModal from './inventory/ViewInventoryModal';
 import EditInventoryModal from './inventory/EditInventoryModal';
 import CreateInventoryModal from './inventory/CreateInventoryModal';
+import { formatCurrency } from '../utils/formatters';
+import Alert from '../utils/alert';
 
 function InventoryTable() {
   // Data and loading states
@@ -190,6 +193,7 @@ function InventoryTable() {
           message: 'Inventory item updated successfully!',
           type: 'success'
         });
+
         setTimeout(() => {
           setAlert({ show: false, message: '', type: '' });
         }, 3000);
@@ -224,19 +228,7 @@ function InventoryTable() {
     setCurrentPage(1);
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'In Stock':
-        return 'text-green-600 bg-green-100';
-      case 'Low Stock':
-        return 'text-yellow-600 bg-yellow-100';
-      case 'No Stock':
-        return 'text-red-600 bg-red-100';
-      default:
-        return 'text-gray-600 bg-gray-100';
-    }
-  };
-
+  
   const getQuantityStatus = (current, reorder) => {
     if (current === 0) return { text: 'Out of Stock', color: 'text-red-600' };
     if (current <= reorder) return { text: 'Low Stock', color: 'text-yellow-600' };
@@ -246,41 +238,12 @@ function InventoryTable() {
   return (
     <div className="flex flex-col h-screen">
       {/* Alert Component */}
-      {alert.show && (
-        <div className={`fixed top-4 right-4 z-50 p-4 rounded-md shadow-lg max-w-sm w-full ${
-          alert.type === 'success' ? 'bg-green-500' : 'bg-red-500'
-        }`}>
-          <div className="flex">
-            <div className="flex-shrink-0">
-              {alert.type === 'success' ? (
-                <svg className="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-              ) : (
-                <svg className="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-              )}
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-white">
-                {alert.message}
-              </p>
-            </div>
-            <div className="ml-auto pl-3">
-              <button
-                onClick={() => setAlert({ show: false, message: '', type: '' })}
-                className="-mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-500 rounded-md p-1.5 inline-flex h-8 w-8 transition-colors"
-              >
-                <span className="sr-only">Dismiss</span>
-                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Alert 
+        show={alert.show}
+        message={alert.message}
+        type={alert.type}
+        onDismiss={() => setAlert({ show: false, message: '', type: '' })}
+      />
       
       {/* Fixed Header Sections */}
       <div className="flex-shrink-0 space-y-0">
@@ -549,7 +512,7 @@ function InventoryTable() {
                     onClick={() => handleSort('status')}
                     className="px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
                   >
-                    <div className="flex items-center">
+                    <div className="flex items-center justify-end">
                       Status
                       {sortField === 'status' && (
                         <span className="ml-1">
@@ -573,18 +536,18 @@ function InventoryTable() {
                   >
                     <td className="px-3 py-2 border-0 text-sm font-semibold text-green-900">{item.product_name}</td>
                     <td className="px-3 py-2 border-0 text-sm">{item.sku}</td>
-                    <td className="px-4 py-3 border-0 text-sm">₱{Number(item.cost_per_unit).toFixed(2)}</td>
-                    <td className="px-4 py-3 border-0 text-sm">₱{Number(item.price_per_unit).toFixed(2)}</td>
-                    <td className="px-4 py-3 border-0 text-sm">
+                    <td className="px-4 py-3 border-0 text-sm text-right">{formatCurrency(item.cost_per_unit)}</td>
+                    <td className="px-4 py-3 border-0 text-sm text-right">{formatCurrency(item.price_per_unit)}</td>
+                    <td className="px-4 py-3 border-0 text-sm text-right">
                       <span className={`font-medium ${quantityStatus.color}`}>
                         {item.current_qty}
                       </span>
                     </td>
-                    <td className="px-4 py-3 border-0 text-sm">{item.reorder_level}</td>
-                    <td className="px-4 py-3 border-0 text-sm text-blue-600 font-medium">₱{Number(item.total_inventory_cost).toFixed(2)}</td>
-                    <td className="px-4 py-3 border-0 text-sm text-green-600 font-medium">₱{Number(item.total_inventory_value).toFixed(2)}</td>
-                    <td className="px-4 py-3 border-0 text-sm">{item.total_sold}</td>
-                    <td className="px-3 py-2 border-0">
+                    <td className="px-4 py-3 border-0 text-sm text-right">{item.reorder_level}</td>
+                    <td className="px-4 py-3 border-0 text-sm text-blue-600 font-medium text-right">{formatCurrency(item.total_inventory_cost)}</td>
+                    <td className="px-4 py-3 border-0 text-sm text-green-600 font-medium text-right">{formatCurrency(item.total_inventory_value)}</td>
+                    <td className="px-4 py-3 border-0 text-sm text-right">{item.total_sold}</td>
+                    <td className="px-3 py-2 border-0 text-right">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(item.status)}`}>
                         {item.status}
                       </span>

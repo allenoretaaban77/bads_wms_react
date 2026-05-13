@@ -43,7 +43,7 @@ const loadInitialState = () => {
 
 const menuItems = [
   { key: 'inventory', label: 'Inventory' },
-  { key: 'stocks', label: 'Stocks' },
+  { key: 'stocks', label: 'Replenishment' },
   { key: 'sales', label: 'Sales' },
   { key: 'users', label: 'Users' },
   { key: 'profile', label: 'Profile' },

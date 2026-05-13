@@ -1,5 +1,35 @@
+import { getAccessToken } from '../api/apiService';
+
 // API Configuration - Using relative path for development proxy
 export const API_BASE_URL = '';  // Will be proxied to http://localhost:8080
+
+export const getApiHeaders = () => {
+  const headers = {
+    'Content-Type': 'application/json',
+  };
+
+  // Add authorization header if token is available
+  const token = getAccessToken();
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  return headers;
+};
+
+export const getApiHeadersPost = () => {
+  const headers = {
+    'Content-Type': 'application/x-www-form-urlencoded',
+  };
+
+  // Add authorization header if token is available
+  const token = getAccessToken();
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  return headers;
+};
 
 // Application Configuration
 export const APP_CONFIG = {

@@ -1,34 +1,4 @@
-import { getAccessToken } from './apiService';
-import { API_BASE_URL } from '../config/constants';
-
-// Centralized headers function
-const getApiHeaders = () => {
-  const headers = {
-    'Content-Type': 'application/json',
-  };
-
-  // Add authorization header if token is available
-  const token = getAccessToken();
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
-  return headers;
-};
-
-const getApiHeadersPost = () => {
-  const headers = {
-    'Content-Type': 'application/x-www-form-urlencoded',
-  };
-
-  // Add authorization header if token is available
-  const token = getAccessToken();
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
-  return headers;
-};
+import { API_BASE_URL, getApiHeaders, getApiHeadersPost } from '../config/constants';
 
 // Inventory service using native fetch API
 export const getInventoryList = async (params = {}) => {

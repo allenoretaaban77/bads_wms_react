@@ -1,6 +1,7 @@
 import React from 'react';
 import useAppViewModel from '../viewmodels/useAppViewModel';
 import InventoryTable from './InventoryTable';
+import ReplenishmentTable from './ReplenishmentTable';
 
 const descriptions = {
   profile: 'View your account details, role, and recent activity.',
@@ -20,6 +21,11 @@ function HomeContent() {
   // Render InventoryTable for inventory menu
   if (activeMenu === 'inventory') {
     return <InventoryTable />;
+  }
+
+  // Render ReplenishmentTable for stocks menu
+  if (activeMenu === 'stocks') {
+    return <ReplenishmentTable />;
   }
 
   // Render placeholder content for other menus
