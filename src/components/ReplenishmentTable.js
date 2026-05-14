@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { formatCurrency } from '../utils/formatters';
-import { getInventoryList, createInventoryItem, updateInventoryItem, deleteInventoryItem } from '../api/inventoryService';
+import { createInventoryItem, updateInventoryItem, deleteInventoryItem } from '../api/inventoryService';
 import { APP_CONFIG } from '../config/constants';
 import ViewInventoryModal from './inventory/ViewInventoryModal';
 import EditInventoryModal from './inventory/EditInventoryModal';
-import CreateReplenishmentModal from './replenishment/CreateReplenishmentModal';
 import { getReplenishmentList } from '../api/replenishmentService';
 import Alert from '../utils/alert';
+import CreateReplenishmentModal from './replenishment/CreateReplenishmentModal';
 
 function ReplenishmentTable() {
   // Data and loading states
@@ -280,7 +280,7 @@ function ReplenishmentTable() {
           {/* Search and Filters */}
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-3">
             {/* Search Bar */}
-            <div className="lg:col-span-12">
+            <div className="lg:col-span-5">
               <label className="block text-xs font-medium text-gray-700 mb-0.5">Search</label>
               <input
                 type="text"
@@ -538,7 +538,6 @@ function ReplenishmentTable() {
         />
         
         <CreateReplenishmentModal 
-          selectedItem={selectedItem}
           showCreateModal={showCreateModal}
           setShowCreateModal={setShowCreateModal}
           onSave={handleCreateItem}
