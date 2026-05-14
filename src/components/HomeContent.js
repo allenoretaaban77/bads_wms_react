@@ -1,7 +1,7 @@
 import React from 'react';
 import useAppViewModel from '../viewmodels/useAppViewModel';
-import InventoryTable from './InventoryTable';
-import ReplenishmentTable from './ReplenishmentTable';
+import InventoryTable from './inventory/InventoryTable';
+import ReplenishmentTable from './replenishment/ReplenishmentTable';
 
 const descriptions = {
   profile: 'View your account details, role, and recent activity.',

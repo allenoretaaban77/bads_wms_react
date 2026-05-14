@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getInventoryList } from '../../api/inventoryService';
 import { formatCurrency } from '../../utils/formatters';
+import { generateTransactionNumber } from '../../api/replenishmentService';
 
 const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
   const [formData, setFormData] = useState({
@@ -17,6 +18,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
   const [isSearching, setIsSearching] = useState(false);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [referenceNo, setReferenceNo] = useState('');
 
   const getItemsTotal = () => {
     return items.reduce((sum, item) => sum + (Number(item.total) || 0), 0);
@@ -90,6 +92,24 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
 
     return () => clearTimeout(timer);
   }, [itemSearchTerm]);
+
+  useEffect(() => {
+    async function fetchTransactionNumber() {
+      try {
+        const trnxNumber = await generateTransactionNumber();
+        setFormData({
+          reference_no: trnxNumber,
+        });
+        console.log(trnxNumber);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    if (showCreateModal) {
+      fetchTransactionNumber();
+    }
+  }, [showCreateModal]);
 
   const handleSelectSuggestion = (suggestion) => {
     const name = resolveSuggestionName(suggestion);

@@ -65,3 +65,25 @@ export const getReplenishmentList = async (params = {}) => {
     }
   }
 };
+
+export const generateTransactionNumber = async () => {
+  try {
+
+    const response = await fetch(`${API_BASE_URL}/replenishment/generatetrnxno`, {
+      method: 'GET',
+      headers: getApiHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to generate transaction number');
+    }
+
+    const data = await response.json();
+    console.log(data);
+
+    return data.trnxno;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};

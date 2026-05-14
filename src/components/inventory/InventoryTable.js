@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { formatCurrency } from '../utils/formatters';
-import { createInventoryItem, updateInventoryItem, deleteInventoryItem } from '../api/inventoryService';
-import { APP_CONFIG } from '../config/constants';
-import ViewInventoryModal from './inventory/ViewInventoryModal';
-import EditInventoryModal from './inventory/EditInventoryModal';
-import { getReplenishmentList } from '../api/replenishmentService';
-import Alert from '../utils/alert';
-import CreateReplenishmentModal from './replenishment/CreateReplenishmentModal';
+import { getStatusColor } from '../../utils/statusColors';
+import { getInventoryList, createInventoryItem, updateInventoryItem, deleteInventoryItem } from '../../api/inventoryService';
+import { APP_CONFIG } from '../../config/constants';
+import ViewInventoryModal from './ViewInventoryModal';
+import EditInventoryModal from './EditInventoryModal';
+import CreateInventoryModal from './CreateInventoryModal';
+import { formatCurrency } from '../../utils/formatters';
+import Alert from '../../utils/alert';
 
-function ReplenishmentTable() {
+function InventoryTable() {
   // Data and loading states
-  const [replenishmentData, setReplenishmentData] = useState([]);
+  const [inventoryData, setInventoryData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -48,7 +48,7 @@ function ReplenishmentTable() {
 
   // Fetch inventory data from API
   useEffect(() => {
-    const loadreplenishmentData = async () => {
+    const loadInventoryData = async () => {
       try {
         setLoading(true);
         setError(null);
@@ -63,7 +63,7 @@ function ReplenishmentTable() {
           record_status: recordStatusFilter !== 'all' ? recordStatusFilter : ''
         };
 
-        const result = await getReplenishmentList(params);
+        const result = await getInventoryList(params);
         
         console.log('API Response:', result);
         
@@ -74,7 +74,7 @@ function ReplenishmentTable() {
           const total = result.data.total || data.length;
           const totalPages = result.data.totalPages || Math.ceil(total / pageSize);
           
-          setReplenishmentData(data);
+          setInventoryData(data);
           setFilteredData(data);
           setTotalItems(total);
           setTotalPages(totalPages);
@@ -84,7 +84,7 @@ function ReplenishmentTable() {
           setError(result.error || 'Failed to load inventory data');
           
           // Set empty data on error
-          setReplenishmentData([]);
+          setInventoryData([]);
           setFilteredData([]);
           setTotalItems(0);
           setTotalPages(0);
@@ -94,7 +94,7 @@ function ReplenishmentTable() {
         setError(`Failed to load inventory data: ${err.message}`);
         
         // Set empty data on error
-        setReplenishmentData([]);
+        setInventoryData([]);
         setFilteredData([]);
         setTotalItems(0);
         setTotalPages(0);
@@ -103,7 +103,7 @@ function ReplenishmentTable() {
       }
     };
 
-    loadreplenishmentData();
+    loadInventoryData();
   }, [currentPage, pageSize, searchTerm, sortField, sortOrder, statusFilter, quantityFilter, recordStatusFilter, refreshKey]);
 
   const handleView = (item) => {
@@ -112,11 +112,8 @@ function ReplenishmentTable() {
   };
 
   const handleEdit = (item) => {
-    setAlert({ show: true, message: 'Edit functionality not implemented yet', type: 'warning' });
-    setTimeout(() => { setAlert({ show: false, message: '', type: '' }); }, 1000);
-    // window.alert('Edit functionality not implemented yet');
-    // setSelectedItem(item);
-    // setShowEditModal(true);
+    setSelectedItem(item);
+    setShowEditModal(true);
   };
 
   const handleDelete = async (id) => {
@@ -196,6 +193,7 @@ function ReplenishmentTable() {
           message: 'Inventory item updated successfully!',
           type: 'success'
         });
+
         setTimeout(() => {
           setAlert({ show: false, message: '', type: '' });
         }, 3000);
@@ -249,11 +247,40 @@ function ReplenishmentTable() {
       
       {/* Fixed Header Sections */}
       <div className="flex-shrink-0 space-y-0">
+        {/* Inventory Statistics */}
+        <div className="bg-white p-2 rounded-custom border border-gray-200 mb-2">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-1 mb-1">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-gray-800">1,817</div>
+              <div className="text-xs text-gray-600">No. of Products</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">₱1,950,918.73</div>
+              <div className="text-xs text-gray-600">Current Inventory Value</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">₱1,193,482.74</div>
+              <div className="text-xs text-gray-600">Current Inventory Cost</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">1,444</div>
+              <div className="text-xs text-gray-600">In Stock</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-yellow-600">224</div>
+              <div className="text-xs text-gray-600">Low Stock</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-red-600">149</div>
+              <div className="text-xs text-gray-600">No Stock</div>
+            </div>
+          </div>
+        </div>
 
         {/* Search and Filters */}
         <div className="bg-white pl-3 pr-3 pb-2 rounded-custom border border-gray-200">
           <div className="flex justify-between items-center">
-            <h3 className="text-base font-semibold text-gray-800">Replenishment</h3>
+            <h3 className="text-base font-semibold text-gray-800">Inventory Management</h3>
             <div className="flex space-x-2 pb-2">
               <button
                 onClick={handleRefresh}
@@ -280,15 +307,56 @@ function ReplenishmentTable() {
           {/* Search and Filters */}
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-3">
             {/* Search Bar */}
-            <div className="lg:col-span-5">
+            <div className="lg:col-span-2">
               <label className="block text-xs font-medium text-gray-700 mb-0.5">Search</label>
               <input
                 type="text"
-                placeholder="Search supplier or reference number..."
+                placeholder="Search product name or SKU..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
               />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">Status</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+              >
+                <option value="In Stock">In Stock</option>
+                <option value="Low Stock">Low Stock</option>
+                <option value="Out of Stock">Out of Stock</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">Quantity</label>
+              <select
+                value={quantityFilter}
+                onChange={(e) => setQuantityFilter(e.target.value)}
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+              >
+                <option value="all">All Quantities</option>
+                <option value="In Stock">In Stock</option>
+                <option value="Low Stock">Low Stock</option>
+                <option value="Out of Stock">Out of Stock</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">Record Status</label>
+              <select
+                value={recordStatusFilter}
+                onChange={(e) => setRecordStatusFilter(e.target.value)}
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+              >
+                <option value="all">All Records</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="archived">Archived</option>
+              </select>
             </div>
           </div>
           
@@ -324,12 +392,12 @@ function ReplenishmentTable() {
               <thead className="bg-header text-white">
                 <tr>
                   <th 
-                    onClick={() => handleSort('id')}
+                    onClick={() => handleSort('product_name')}
                     className="px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
                   >
                     <div className="flex items-center">
-                      ID
-                      {sortField === 'id' && (
+                      Product Name
+                      {sortField === 'product_name' && (
                         <span className="ml-1">
                           {sortOrder === 'asc' ? '↑' : '↓'}
                         </span>
@@ -337,12 +405,12 @@ function ReplenishmentTable() {
                     </div>
                   </th>
                   <th 
-                    onClick={() => handleSort('reference_no')}
+                    onClick={() => handleSort('sku')}
                     className="px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
                   >
                     <div className="flex items-center">
-                      Reference Number
-                      {sortField === 'reference_no' && (
+                      SKU
+                      {sortField === 'sku' && (
                         <span className="ml-1">
                           {sortOrder === 'asc' ? '↑' : '↓'}
                         </span>
@@ -350,25 +418,12 @@ function ReplenishmentTable() {
                     </div>
                   </th>
                   <th 
-                    onClick={() => handleSort('date_received')}
-                    className="px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
-                  >
-                    <div className="flex items-center">
-                      Date Received
-                      {sortField === 'date_received' && (
-                        <span className="ml-1">
-                          {sortOrder === 'asc' ? '↑' : '↓'}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    onClick={() => handleSort('amount')}
+                    onClick={() => handleSort('cost_per_unit')}
                     className="px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
                   >
                     <div className="flex items-center justify-end">
-                      Amount
-                      {sortField === 'amount' && (
+                      Cost per Unit
+                      {sortField === 'cost_per_unit' && (
                         <span className="ml-1">
                           {sortOrder === 'asc' ? '↑' : '↓'}
                         </span>
@@ -376,12 +431,90 @@ function ReplenishmentTable() {
                     </div>
                   </th>
                   <th 
-                    onClick={() => handleSort('supplier')}
+                    onClick={() => handleSort('price_per_unit')}
+                    className="px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                  >
+                    <div className="flex items-center justify-end">
+                      Price per Unit
+                      {sortField === 'price_per_unit' && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleSort('current_qty')}
+                    className="px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                  >
+                    <div className="flex items-center justify-end">
+                      Current Qty
+                      {sortField === 'current_qty' && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleSort('reorder_level')}
+                    className="px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                  >
+                    <div className="flex items-center justify-end">
+                      Reorder Level
+                      {sortField === 'reorder_level' && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleSort('total_inventory_cost')}
+                    className="px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                  >
+                    <div className="flex items-center justify-end">
+                      Total Cost
+                      {sortField === 'total_inventory_cost' && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleSort('total_inventory_value')}
+                    className="px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                  >
+                    <div className="flex items-center justify-end">
+                      Total Value
+                      {sortField === 'total_inventory_value' && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleSort('total_sold')}
+                    className="px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                  >
+                    <div className="flex items-center justify-end">
+                      Total Sold
+                      {sortField === 'total_sold' && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleSort('status')}
                     className="px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
                   >
-                    <div className="flex items-center">
-                      Supplier
-                      {sortField === 'supplier' && (
+                    <div className="flex items-center justify-end">
+                      Status
+                      {sortField === 'status' && (
                         <span className="ml-1">
                           {sortOrder === 'asc' ? '↑' : '↓'}
                         </span>
@@ -401,11 +534,24 @@ function ReplenishmentTable() {
                       index % 2 === 0 ? 'bg-white hover:bg-green-50' : 'bg-row-alt hover:bg-green-100'
                     }`}
                   >
-                    <td className="px-3 py-2 border-0 text-sm font-semibold text-green-900">{item.id}</td>
-                    <td className="px-3 py-2 border-0 text-sm">{item.reference_no}</td>
-                    <td className="px-3 py-2 border-0 text-sm">{item.date_received}</td>
-                    <td className="px-3 py-2 border-0 text-sm text-right">{formatCurrency(item.amount)}</td>
-                    <td className="px-3 py-2 border-0 text-sm">{item.supplier}</td>
+                    <td className="px-3 py-2 border-0 text-sm font-semibold text-green-900">{item.product_name}</td>
+                    <td className="px-3 py-2 border-0 text-sm">{item.sku}</td>
+                    <td className="px-4 py-3 border-0 text-sm text-right">{formatCurrency(item.cost_per_unit)}</td>
+                    <td className="px-4 py-3 border-0 text-sm text-right">{formatCurrency(item.price_per_unit)}</td>
+                    <td className="px-4 py-3 border-0 text-sm text-right">
+                      <span className={`font-medium ${quantityStatus.color}`}>
+                        {item.current_qty}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 border-0 text-sm text-right">{item.reorder_level}</td>
+                    <td className="px-4 py-3 border-0 text-sm text-blue-600 font-medium text-right">{formatCurrency(item.total_inventory_cost)}</td>
+                    <td className="px-4 py-3 border-0 text-sm text-green-600 font-medium text-right">{formatCurrency(item.total_inventory_value)}</td>
+                    <td className="px-4 py-3 border-0 text-sm text-right">{item.total_sold}</td>
+                    <td className="px-3 py-2 border-0 text-right">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(item.status)}`}>
+                        {item.status}
+                      </span>
+                    </td>
                     <td className="px-3 py-2 border-0">
                       <div className="flex justify-center space-x-2">
                         <button
@@ -537,7 +683,7 @@ function ReplenishmentTable() {
           onSave={handleEditItem}
         />
         
-        <CreateReplenishmentModal 
+        <CreateInventoryModal 
           showCreateModal={showCreateModal}
           setShowCreateModal={setShowCreateModal}
           onSave={handleCreateItem}
@@ -547,4 +693,4 @@ function ReplenishmentTable() {
   );
 }
 
-export default ReplenishmentTable;
+export default InventoryTable;
