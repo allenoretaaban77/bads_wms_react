@@ -215,6 +215,37 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
 
     setIsSubmitting(false);
 
+    try {
+      const result = await onSave(submitData);
+      
+      if (result.success) {
+        // Reset form and loading state
+        setFormData({
+          product_name: '',
+          sku: '',
+          cost_per_unit: '',
+          price_per_unit: '',
+          initial_qty: '',
+          current_qty: '',
+          reorder_level: '',
+          type: '',
+          rack: '',
+          shelf: '',
+          box: '',
+          status: 'In Stock',
+          remarks: ''
+        });
+        
+        // Clear errors
+        setErrors({});
+      }
+      // Reset loading state
+      setIsLoading(false);
+    } catch (error) {
+      // Reset loading state
+      setIsLoading(false);
+    }
+
     if (result && result.success) {
       setShowCreateModal(false);
       setFormData({
