@@ -4,9 +4,10 @@ import { createInventoryItem, updateInventoryItem, deleteInventoryItem } from '.
 import { APP_CONFIG } from '../../config/constants';
 import ViewInventoryModal from '../inventory/ViewInventoryModal';
 import EditInventoryModal from '../inventory/EditInventoryModal';
-import { getReplenishmentList } from '../../api/replenishmentService';
+import { getReplenishmentList, createRelenishmentTransaction } from '../../api/replenishmentService';
 import Alert from '../../utils/alert';
 import CreateReplenishmentModal from './CreateReplenishmentModal';
+import ViewReplenishmentModal from './ViewReplenishmentModal';
 
 function ReplenishmentTable() {
   // Data and loading states
@@ -149,7 +150,9 @@ function ReplenishmentTable() {
 
   const handleCreateItem = async (itemData) => {
     try {
-      const result = await createInventoryItem(itemData);
+      console.log(JSON.stringify(itemData));
+      
+      const result = await createRelenishmentTransaction(itemData);
       if (result.success) {
         // Close modal immediately
         setShowCreateModal(false);
@@ -319,13 +322,13 @@ function ReplenishmentTable() {
         )}
         
         {!loading && !error && (
-          <div className="bg-white border border-gray-200 rounded-custom shadow-sm overflow-hidden">
-            <table className="w-full">
+          <div className="bg-white border-gray-200 rounded-custom shadow-sm overflow-hidden">
+            <table className="w-full text-sm border-collapse">
               <thead className="bg-header text-white">
                 <tr>
                   <th 
                     onClick={() => handleSort('id')}
-                    className="px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                    className="border-r px-3 py-2 text-left cursor-pointer hover:bg-green-700 text-white text-sm"
                   >
                     <div className="flex items-center">
                       ID
@@ -338,7 +341,7 @@ function ReplenishmentTable() {
                   </th>
                   <th 
                     onClick={() => handleSort('reference_no')}
-                    className="px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold cursor-pointer hover:bg-green-700"
                   >
                     <div className="flex items-center">
                       Reference Number
@@ -351,7 +354,7 @@ function ReplenishmentTable() {
                   </th>
                   <th 
                     onClick={() => handleSort('date_received')}
-                    className="px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold cursor-pointer hover:bg-green-700"
                   >
                     <div className="flex items-center">
                       Date Received
@@ -364,7 +367,7 @@ function ReplenishmentTable() {
                   </th>
                   <th 
                     onClick={() => handleSort('amount')}
-                    className="px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                    className="border-r px-3 py-2 text-right text-white text-sm font-semibold cursor-pointer hover:bg-green-700"
                   >
                     <div className="flex items-center justify-end">
                       Amount
@@ -377,7 +380,7 @@ function ReplenishmentTable() {
                   </th>
                   <th 
                     onClick={() => handleSort('supplier')}
-                    className="px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
                   >
                     <div className="flex items-center">
                       Supplier
@@ -401,12 +404,12 @@ function ReplenishmentTable() {
                       index % 2 === 0 ? 'bg-white hover:bg-green-50' : 'bg-row-alt hover:bg-green-100'
                     }`}
                   >
-                    <td className="px-3 py-2 border-0 text-sm font-semibold text-green-900">{item.id}</td>
-                    <td className="px-3 py-2 border-0 text-sm">{item.reference_no}</td>
-                    <td className="px-3 py-2 border-0 text-sm">{item.date_received}</td>
-                    <td className="px-3 py-2 border-0 text-sm text-right">{formatCurrency(item.amount)}</td>
-                    <td className="px-3 py-2 border-0 text-sm">{item.supplier}</td>
-                    <td className="px-3 py-2 border-0">
+                    <td className="px-3 py-2 border-r text-sm font-semibold text-green-900">{item.id}</td>
+                    <td className="px-3 py-2 border-r text-sm">{item.reference_no}</td>
+                    <td className="px-3 py-2 border-r text-sm">{item.date_received}</td>
+                    <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.amount)}</td>
+                    <td className="px-3 py-2 border-r text-sm">{item.supplier}</td>
+                    <td className="px-3 py-2 border-r">
                       <div className="flex justify-center space-x-2">
                         <button
                           onClick={() => handleView(item)}
@@ -524,10 +527,10 @@ function ReplenishmentTable() {
         </div>
 
         {/* New Modal Components */}
-        <ViewInventoryModal 
-          selectedItem={selectedItem}
-          showViewModal={showViewModal}
-          setShowViewModal={setShowViewModal}
+        <ViewReplenishmentModal
+          show={showViewModal}
+          onClose={() => setShowViewModal(false)}
+          id={selectedItem?.id}
         />
         
         <EditInventoryModal 
@@ -548,3 +551,4 @@ function ReplenishmentTable() {
 }
 
 export default ReplenishmentTable;
+

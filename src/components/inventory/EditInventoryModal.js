@@ -31,7 +31,8 @@ const EditInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, onS
     shelf: '',
     box: '',
     status: 'In Stock',
-    remarks: ''
+    remarks: '',
+    updated_by: userData.employee_id
   });
 
   const [errors, setErrors] = useState({});
@@ -53,7 +54,8 @@ const EditInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, onS
         shelf: selectedItem.shelf || '',
         box: selectedItem.box || '',
         status: selectedItem.status || 'In Stock',
-        remarks: selectedItem.remarks || ''
+        remarks: selectedItem.remarks || '',
+        updated_by: userData.employee_id
       });
     }
   }, [selectedItem, showEditModal]);
@@ -146,7 +148,8 @@ const EditInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, onS
       shelf: formData.shelf,
       box: formData.box,
       status: formData.status,
-      remarks: formData.remarks
+      remarks: formData.remarks,
+      updated_by: formData.updated_by
     };
     
     try {
@@ -167,7 +170,8 @@ const EditInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, onS
           shelf: '',
           box: '',
           status: 'In Stock',
-          remarks: ''
+          remarks: '',
+          updated_by: ''
         });
         
         // Clear errors
@@ -197,7 +201,8 @@ const EditInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, onS
       shelf: '',
       box: '',
       status: 'In Stock',
-      remarks: ''
+      remarks: '',
+      updated_by: ''
     });
   };
 
@@ -206,7 +211,7 @@ const EditInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, onS
   return (
     <>
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-custom p-6 max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+        <div className="bg-white rounded-custom p-4 max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
           {/* Product Name at Top */}
           <div className="mb-6 pb-4 border-b border-gray-200">
             <h2 className="text-2xl font-bold text-gray-800 text-center">
@@ -404,7 +409,7 @@ const EditInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, onS
               </div>
             </div>
           </form>
-          <div className="mt-6 flex justify-end space-x-3">
+          <div className="mt-2 flex justify-end space-x-3">
             <button
               type="button"
               onClick={handleCancel}

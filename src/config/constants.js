@@ -1,4 +1,4 @@
-import { getAccessToken } from '../api/apiService';
+import { getAccessToken } from '../api/tokenService';
 
 // API Configuration - Using relative path for development proxy
 export const API_BASE_URL = '';  // Will be proxied to http://localhost:8080

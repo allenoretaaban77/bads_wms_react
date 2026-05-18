@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import useAppViewModel from '../../viewmodels/useAppViewModel';
 
 // Add CSS for loading circle animation
 const style = document.createElement('style');
@@ -14,6 +15,7 @@ style.textContent = `
 document.head.appendChild(style);
 
 const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
+  const userData = useAppViewModel((state) => state.userData);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     product_name: '',
@@ -28,7 +30,8 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
     shelf: '',
     box: '',
     status: 'In Stock',
-    remarks: ''
+    remarks: '',
+    added_by: userData.employee_id
   });
 
   const [errors, setErrors] = useState({});
@@ -120,7 +123,8 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
       shelf: formData.shelf,
       box: formData.box,
       status: formData.status,
-      remarks: formData.remarks
+      remarks: formData.remarks,
+      added_by: formData.added_by
     };
     
     try {
@@ -141,7 +145,8 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
           shelf: '',
           box: '',
           status: 'In Stock',
-          remarks: ''
+          remarks: '',
+          added_by: ''
         });
         
         // Clear errors
@@ -171,7 +176,8 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
       shelf: '',
       box: '',
       status: 'In Stock',
-      remarks: ''
+      remarks: '',
+      added_by: ''
     });
   };
 
@@ -180,7 +186,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
   return (
     <>
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-custom p-6 max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+        <div className="bg-white rounded-custom p-4 max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
           {/* Product Name at Top */}
           <div className="mb-6 pb-4 border-b border-gray-200">
             <h2 className="text-2xl font-bold text-gray-800 text-center">
@@ -377,7 +383,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
               </div>
             </div>
           </form>
-          <div className="mt-6 flex justify-end space-x-3">
+          <div className="mt-2 flex justify-end space-x-3">
             <button
               type="button"
               onClick={handleCancel}

@@ -1,6 +1,6 @@
 import create from 'zustand';
 import { login as loginApi } from '../api/authService';
-import { setAccessToken } from '../api/apiService';
+import { setAccessToken } from '../api/tokenService';
 
 // localStorage keys
 const STORAGE_KEYS = {
@@ -45,16 +45,10 @@ const menuItems = [
   { key: 'inventory', label: 'Inventory' },
   { key: 'stocks', label: 'Replenishment' },
   { key: 'sales', label: 'Sales' },
+  { key: 'suppliers', label: 'Suppliers' },
   { key: 'users', label: 'Users' },
   { key: 'profile', label: 'Profile' },
   { key: 'logout', label: 'Logout' },
-];
-
-const sampleRows = [
-  { item: 'Item A', status: 'Available', qty: 24 },
-  { item: 'Item B', status: 'Low Stock', qty: 8 },
-  { item: 'Item C', status: 'Pending', qty: 14 },
-  { item: 'Item D', status: 'Available', qty: 65 },
 ];
 
 const initialState = loadInitialState();
@@ -67,7 +61,6 @@ const useAppViewModel = create((set, get) => ({
   formError: '',
   isLoading: false,
   menuItems,
-  sampleRows,
 
   // Save state to localStorage
   saveAuthState: (isLoggedIn, accessToken, userData, username) => {

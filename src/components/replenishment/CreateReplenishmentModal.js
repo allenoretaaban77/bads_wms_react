@@ -1,15 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getInventoryList } from '../../api/inventoryService';
 import { formatCurrency } from '../../utils/formatters';
 import { generateTransactionNumber } from '../../api/replenishmentService';
+import useAppViewModel from '../../viewmodels/useAppViewModel';
 
 const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
+  const userData = useAppViewModel((state) => state.userData);
   const [formData, setFormData] = useState({
     supplier: '',
     reference_no: '',
-    date_received: '',
+    date_received: new Date().toISOString().split('T')[0],
     remarks: '',
+    added_by: userData.employee_id
   });
+  
   const [items, setItems] = useState([]);
   const [nextItemId, setNextItemId] = useState(2);
   const [itemSearchTerm, setItemSearchTerm] = useState('');
@@ -18,17 +22,16 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
   const [isSearching, setIsSearching] = useState(false);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [referenceNo, setReferenceNo] = useState('');
+  const searchInputRef = useRef(null);
 
   const getItemsTotal = () => {
     return items.reduce((sum, item) => sum + (Number(item.total) || 0), 0);
   };
 
   const addItemRow = () => {
-    setItems(prev => [
-      ...prev,
-    ]);
-    setNextItemId(prev => prev + 1);
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
   };
 
   const updateItemField = (id, field, value) => {
@@ -63,7 +66,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
 
     setIsSearching(true);
     try {
-      const result = await getInventoryList({ search: query, page: 1, pageSize: 10 });
+      const result = await getInventoryList({ search: query, page: 1, pageSize: 30 });
       if (!result.success || !result.data) {
         setItemSuggestions([]);
         setShowSuggestions(false);
@@ -95,12 +98,12 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
 
   useEffect(() => {
     async function fetchTransactionNumber() {
-      try {
+            try {
         const trnxNumber = await generateTransactionNumber();
-        setFormData({
+        setFormData(prev => ({
+          ...prev,
           reference_no: trnxNumber,
-        });
-        console.log(trnxNumber);
+        }));
       } catch (error) {
         console.error(error);
       }
@@ -182,11 +185,12 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
     setFormData({
       supplier: '',
       reference_no: '',
-      date_received: '',
+      date_received: new Date().toISOString().split('T')[0],
       remarks: '',
+      added_by: ''
     });
-    setItems([{ id: 1, item_name: '', quantity: '', cost: '', total: 0 }]);
-    setNextItemId(2);
+    setItems([]);
+    setNextItemId(1);
     setItemSearchTerm('');
     setItemSuggestions([]);
     setShowSuggestions(false);
@@ -199,64 +203,39 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
     if (!onSave) return;
     setIsSubmitting(true);
 
-    const result = await onSave({
-      supplier: formData.supplier,
-      reference_no: formData.reference_no,
-      date_received: formData.date_received,
-      amount: getItemsTotal(),
-      remarks: formData.remarks,
-      items: items.map(item => ({
-        item_name: item.item_name,
-        quantity: Number(item.quantity) || 0,
-        cost: Number(item.cost) || 0,
-        total: Number(item.total) || 0,
-      })),
-    });
-
-    setIsSubmitting(false);
-
     try {
-      const result = await onSave(submitData);
-      
-      if (result.success) {
-        // Reset form and loading state
+      const result = await onSave({
+        supplier: formData.supplier,
+        reference_no: formData.reference_no,
+        date_received: formData.date_received,
+        amount: getItemsTotal(),
+        remarks: formData.remarks,
+        added_by: formData.added_by,
+        items: items.map(item => ({
+          item_name: item.item_name,
+          quantity: Number(item.quantity) || 0,
+          cost: Number(item.cost) || 0,
+          total: Number(item.total) || 0,
+        })),
+      });
+
+      if (result && result.success) {
+        setShowCreateModal(false);
         setFormData({
-          product_name: '',
-          sku: '',
-          cost_per_unit: '',
-          price_per_unit: '',
-          initial_qty: '',
-          current_qty: '',
-          reorder_level: '',
-          type: '',
-          rack: '',
-          shelf: '',
-          box: '',
-          status: 'In Stock',
-          remarks: ''
+          supplier: '',
+          reference_no: '',
+          date_received: new Date().toISOString().split('T')[0],
+          remarks: '',
+          added_by: '',
         });
-        
-        // Clear errors
+        setItems([]);
+        setNextItemId(1);
         setErrors({});
       }
-      // Reset loading state
-      setIsLoading(false);
     } catch (error) {
-      // Reset loading state
-      setIsLoading(false);
-    }
-
-    if (result && result.success) {
-      setShowCreateModal(false);
-      setFormData({
-        supplier: '',
-        reference_no: '',
-        date_received: '',
-        remarks: '',
-      });
-      setItems([{ id: 1, item_name: '', quantity: '', cost: '', total: 0 }]);
-      setNextItemId(2);
-      setErrors({});
+      console.error("Error saving replenishment:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -264,7 +243,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-custom p-6 max-w-screen-2xl w-full mx-4 max-h-screen overflow-y-auto">
+      <div className="bg-white rounded-custom p-4 max-w-screen-2xl w-full mb-5 mt-5 mx-4 max-h-screen overflow-y-auto">
         <div className="mb-6 pb-4 border-b border-gray-200">
           <h2 className="text-2xl font-bold text-gray-800 text-center">Create Replenishment</h2>
         </div>
@@ -273,12 +252,13 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Reference Number</label>
-              <input
+                            <input
                 name="reference_no"
                 value={formData.reference_no}
                 onChange={handleChange}
                 placeholder="Enter reference number"
-                className={`w-full px-3 py-2 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                readOnly
+                className={`w-full px-3 py-2 text-sm border rounded-custom bg-gray-50 focus:outline-none ${
                   errors.reference_no ? 'border-red-300' : 'border-gray-300'
                 }`}
               />
@@ -328,8 +308,9 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
 
           <div className="relative"  style={{ marginTop: "0px" }}>
             <label className="block text-sm font-medium text-gray-700 mb-1">Search items</label>
-            <input
+                        <input
               type="text"
+              ref={searchInputRef}
               value={itemSearchTerm}
               onChange={(e) => {
                 setItemSearchTerm(e.target.value);
@@ -390,6 +371,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                           name="quantity"
                           value={item.quantity}
                           onChange={(e) => updateItemField(item.id, 'quantity', e.target.value)}
+                          onFocus={(e) => e.target.select()}
                           placeholder="0"
                           className={`w-full px-2 py-1 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                             errors[`quantity_${item.id}`] ? 'border-red-300' : 'border-gray-300'
@@ -404,6 +386,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                           name="cost"
                           value={item.cost}
                           onChange={(e) => updateItemField(item.id, 'cost', e.target.value)}
+                          onFocus={(e) => e.target.select()}
                           placeholder="0.00"
                           className={`w-full px-2 py-1 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                             errors[`cost_${item.id}`] ? 'border-red-300' : 'border-gray-300'
@@ -426,16 +409,13 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                 </tbody>
               </table>
             </div>
-            <div className="mt-2 flex items-center justify-between">
-              {errors.items && <p className="text-xs text-red-600">{errors.items}</p>}
-            </div>
           </div>
 
-          <div className="rounded-custom border border-gray-300 pr-2 py-1 bg-gray-50 text-right text-md font-semibold text-green-900" style={{ marginTop: "0px" }}>
+          <div className="rounded-custom border border-gray-300 pr-2 py-1 bg-gray-50 text-right text-md font-semibold text-green-900" style={{ marginTop: "5px" }}>
             Total: {formatCurrency(getItemsTotal()) || '₱ 0.00'}
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <div className="flex justify-end space-x-3">
             <button
               type="button"
               onClick={handleCancel}
