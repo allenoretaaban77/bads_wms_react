@@ -63,7 +63,7 @@ export const login = async (username, password) => {
     if (error.name === 'TypeError' && error.message.includes('fetch')) {
       return {
         success: false,
-        error: 'Network error. Please check if the server is running on localhost:8080.',
+        error: 'Network error. Please check if the server is running.',
       };
     } else {
       return {

@@ -7,6 +7,9 @@ export const getInventoryList = async (params = {}) => {
     const queryParams = new URLSearchParams();
     
     // Add parameters if they exist and are not empty
+    if (params.type !== undefined && params.type !== null) {
+      queryParams.append('type', params.type.toString());
+    }
     if (params.page !== undefined && params.page !== null) {
       queryParams.append('page', params.page.toString());
     }
@@ -78,7 +81,7 @@ export const getInventoryList = async (params = {}) => {
     if (error.name === 'TypeError' && error.message.includes('fetch')) {
       return {
         success: false,
-        error: 'Network error. Please check if the server is running on localhost:8080.',
+        error: 'Network error. Please check if the server is running.',
       };
     } else {
       return {
@@ -107,7 +110,7 @@ export const createInventoryItem = async (itemData) => {
       let errorMessage = 'Failed to create inventory item';
       try {
         const errorData = await response.json();
-        errorMessage = errorData.message || errorData.error || errorMessage;
+        errorMessage = errorData; // errorMessage || errorData.message || errorData.error;
       } catch (e) {
         errorMessage = response.statusText || errorMessage;
       }
@@ -129,7 +132,7 @@ export const createInventoryItem = async (itemData) => {
     if (error.name === 'TypeError' && error.message.includes('fetch')) {
       return {
         success: false,
-        error: 'Network error. Please check if the server is running on localhost:8080.',
+        error: 'Network error. Please check if the server is running.',
       };
     } else {
       return {
@@ -158,7 +161,8 @@ export const updateInventoryItem = async (itemData) => {
       let errorMessage = 'Failed to update inventory item';
       try {
         const errorData = await response.json();
-        errorMessage = errorData.message || errorData.error || errorMessage;
+        errorMessage = errorData;
+        // errorMessage = errorData.message || errorData.error || errorMessage;
       } catch (e) {
         errorMessage = response.statusText || errorMessage;
       }
@@ -180,7 +184,7 @@ export const updateInventoryItem = async (itemData) => {
     if (error.name === 'TypeError' && error.message.includes('fetch')) {
       return {
         success: false,
-        error: 'Network error. Please check if the server is running on localhost:8080.',
+        error: 'Network error. Please check if the server is running.',
       };
     } else {
       return {
@@ -228,7 +232,7 @@ export const deleteInventoryItem = async (id) => {
     if (error.name === 'TypeError' && error.message.includes('fetch')) {
       return {
         success: false,
-        error: 'Network error. Please check if the server is running on localhost:8080.',
+        error: 'Network error. Please check if the server is running.',
       };
     } else {
       return {

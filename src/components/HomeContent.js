@@ -2,6 +2,7 @@ import React from 'react';
 import useAppViewModel from '../viewmodels/useAppViewModel';
 import InventoryTable from './inventory/InventoryTable';
 import ReplenishmentTable from './replenishment/ReplenishmentTable';
+import SalesTable from './sales/SalesTable';
 
 const descriptions = {
   profile: 'View your account details, role, and recent activity.',
@@ -18,14 +19,22 @@ function HomeContent() {
   const title = activeMenu.charAt(0).toUpperCase() + activeMenu.slice(1);
   const description = descriptions[activeMenu] || 'Select a menu item to begin.';
 
-  // Render InventoryTable for inventory menu
-  if (activeMenu === 'inventory') {
-    return <InventoryTable />;
-  }
-
-  // Render ReplenishmentTable for stocks menu
-  if (activeMenu === 'stocks') {
-    return <ReplenishmentTable />;
+  const menuParts = activeMenu.split('_'); 
+  const menuParent = menuParts[0];
+  const menuChild = menuParts[1] ?? null; 
+  console.log(menuParent, menuChild);
+  switch(menuParent) {
+    case 'stocks':
+      return <ReplenishmentTable />;
+      break;
+    case 'sales':
+      return <SalesTable />;
+      break;
+    case 'inventory':
+      return <InventoryTable page_type={menuChild}/>;
+      break;
+    default:
+      return <InventoryTable page_type={''}/>;
   }
 
   // Render placeholder content for other menus

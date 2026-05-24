@@ -1,7 +1,6 @@
 import { getAccessToken } from '../api/tokenService';
 
-// API Configuration - Using relative path for development proxy
-export const API_BASE_URL = '';  // Will be proxied to http://localhost:8080
+export const API_BASE_URL = 'http://bhis.loc';
 
 export const getApiHeaders = () => {
   const headers = {

@@ -42,7 +42,15 @@ const loadInitialState = () => {
 };
 
 const menuItems = [
-  { key: 'inventory', label: 'Inventory' },
+  { 
+    key: 'inventory', 
+    label: 'Inventory',
+    children: [
+      { key: 'inventory', label: 'All Items' },
+      { key: 'inventory_cements',  label: 'Cement' },
+      { key: 'inventory_items', label: 'Hardware Items' }
+    ]
+  },
   { key: 'stocks', label: 'Replenishment' },
   { key: 'sales', label: 'Sales' },
   { key: 'suppliers', label: 'Suppliers' },
@@ -86,7 +94,7 @@ const useAppViewModel = create((set, get) => ({
 
   toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
 
-  selectMenu: (key) => {
+  selectMenu: (key, type = null) => {
     if (key === 'logout') {
       get().logout();
       return;

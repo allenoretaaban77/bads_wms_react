@@ -8,7 +8,7 @@ import CreateInventoryModal from './CreateInventoryModal';
 import { formatCurrency } from '../../utils/formatters';
 import Alert from '../../utils/alert';
 
-function InventoryTable() {
+function InventoryTable({ page_type }) {
   // Data and loading states
   const [inventoryData, setInventoryData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -54,6 +54,7 @@ function InventoryTable() {
         setError(null);
         
         const params = {
+          type: page_type,
           page: currentPage,
           pageSize: pageSize,
           search: searchTerm,
@@ -104,7 +105,7 @@ function InventoryTable() {
     };
 
     loadInventoryData();
-  }, [currentPage, pageSize, searchTerm, sortField, sortOrder, statusFilter, quantityFilter, recordStatusFilter, refreshKey]);
+  }, [page_type, currentPage, pageSize, searchTerm, sortField, sortOrder, statusFilter, quantityFilter, recordStatusFilter, refreshKey]);
 
   const handleView = (item) => {
     setSelectedItem(item);
@@ -168,7 +169,7 @@ function InventoryTable() {
         // Trigger data refresh by incrementing refresh key
         setRefreshKey(prev => prev + 1);
       } else {
-        setError(result.error || 'Failed to create item');
+        return result;
       }
       // Return the result so CreateInventoryModal can handle success/error states
       return result;
@@ -201,7 +202,8 @@ function InventoryTable() {
         setCurrentPage(1);
         setRefreshKey(prev => prev + 1); // Trigger data refresh
       } else {
-        setError(result.error || 'Failed to update item');
+        // setError(result.error || 'Failed to update item');
+        return result;
       }
     } catch (err) {
       setError('Failed to update inventory item');
@@ -307,7 +309,7 @@ function InventoryTable() {
           {/* Search and Filters */}
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-3">
             {/* Search Bar */}
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-4">
               <label className="block text-xs font-medium text-gray-700 mb-0.5">Search</label>
               <input
                 type="text"
@@ -325,27 +327,14 @@ function InventoryTable() {
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
               >
-                <option value="In Stock">In Stock</option>
-                <option value="Low Stock">Low Stock</option>
-                <option value="Out of Stock">Out of Stock</option>
-              </select>
-            </div>
-            
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-0.5">Quantity</label>
-              <select
-                value={quantityFilter}
-                onChange={(e) => setQuantityFilter(e.target.value)}
-                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-              >
                 <option value="all">All Quantities</option>
                 <option value="In Stock">In Stock</option>
                 <option value="Low Stock">Low Stock</option>
-                <option value="Out of Stock">Out of Stock</option>
+                <option value="No Stock">No Stock</option>
               </select>
             </div>
             
-            <div>
+            {/* <div>
               <label className="block text-xs font-medium text-gray-700 mb-0.5">Record Status</label>
               <select
                 value={recordStatusFilter}
@@ -355,9 +344,8 @@ function InventoryTable() {
                 <option value="all">All Records</option>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
-                <option value="archived">Archived</option>
               </select>
-            </div>
+            </div> */}
           </div>
           
           {/* Results count */}

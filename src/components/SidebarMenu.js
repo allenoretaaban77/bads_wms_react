@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import useAppViewModel from '../viewmodels/useAppViewModel';
 
 const drawerWidth = 240;
@@ -43,6 +43,11 @@ function SidebarMenu() {
   const sidebarCollapsed = useAppViewModel((state) => state.sidebarCollapsed);
   const selectMenu = useAppViewModel((state) => state.selectMenu);
   const toggleSidebar = useAppViewModel((state) => state.toggleSidebar);
+  const [expandedMenus, setExpandedMenus] = useState({});
+
+  const toggleExpand = (key) => {
+    setExpandedMenus(prev => ({ ...prev, [key]: !prev[key] }));
+  };
 
   return (
     <aside
@@ -73,7 +78,14 @@ function SidebarMenu() {
           {menuItems.map((item) => (
             <li key={item.key}>
               <button
-                onClick={() => selectMenu(item.key)}
+                onClick={() => {
+                  if (sidebarCollapsed) {
+                    selectMenu(item.key);
+                  } else {
+                    if (item.children) toggleExpand(item.key);
+                    else selectMenu(item.key);
+                  }
+                }}
                 className={`w-full flex items-center py-3 px-2 text-white transition-colors duration-200 ${
                   activeMenu === item.key
                     ? 'bg-white bg-opacity-10 hover:bg-opacity-15'
@@ -88,9 +100,28 @@ function SidebarMenu() {
                   )}
                 </div>
                 {!sidebarCollapsed && (
-                  <span className="text-white">{item.label}</span>
+                  <span className="flex-1 text-left">{item.label}</span>
+                )}
+                {item.children && !sidebarCollapsed && (
+                  <svg className={`w-4 h-4 transition-transform ${expandedMenus[item.key] ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 )}
               </button>
+              {item.children && expandedMenus[item.key] && !sidebarCollapsed && (
+                <ul className="bg-black bg-opacity-10">
+                  {item.children.map(child => (
+                    <li key={child.key}>
+                      <button
+                        onClick={() => selectMenu(child.key)}
+                        className={`text-left w-full py-2 pl-10 pr-2 text-sm text-gray-300 hover:text-white ${activeMenu === child.key ? 'bg-white bg-opacity-20' : ''}`}
+                      >
+                        {child.label}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </li>
           ))}
         </ul>
@@ -100,3 +131,4 @@ function SidebarMenu() {
 }
 
 export default SidebarMenu;
+

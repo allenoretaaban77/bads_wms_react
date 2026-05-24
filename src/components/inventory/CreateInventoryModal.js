@@ -36,49 +36,14 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
 
   const [errors, setErrors] = useState({});
 
-  const validateForm = () => {
+  const validateForm = (result) => {
     const newErrors = {};
-    
-    // Validate required fields
-    if (!formData.product_name || formData.product_name.trim() === '') {
-      newErrors.product_name = 'Product name is required';
-    }
-    
-    if (!formData.type || formData.type.trim() === '') {
-      newErrors.type = 'Type is required';
-    }
-    
-    if (!formData.cost_per_unit || formData.cost_per_unit.trim() === '') {
-      newErrors.cost_per_unit = 'Cost per unit is required';
-    } else if (isNaN(Number(formData.cost_per_unit))) {
-      newErrors.cost_per_unit = 'Cost per unit must be a valid number';
-    }
-    
-    if (!formData.price_per_unit || formData.price_per_unit.trim() === '') {
-      newErrors.price_per_unit = 'Price per unit is required';
-    } else if (isNaN(Number(formData.price_per_unit))) {
-      newErrors.price_per_unit = 'Price per unit must be a valid number';
-    }
-    
-    if (!formData.initial_qty || formData.initial_qty.trim() === '') {
-      newErrors.initial_qty = 'Initial quantity is required';
-    } else if (isNaN(Number(formData.initial_qty)) || Number(formData.initial_qty) < 0) {
-      newErrors.initial_qty = 'Initial quantity must be a valid positive number';
-    }
-    
-    if (!formData.current_qty || formData.current_qty.trim() === '') {
-      newErrors.current_qty = 'Current quantity is required';
-    } else if (isNaN(Number(formData.current_qty)) || Number(formData.current_qty) < 0) {
-      newErrors.current_qty = 'Current quantity must be a valid positive number';
-    }
-    
-    if (!formData.reorder_level || formData.reorder_level.trim() === '') {
-      newErrors.reorder_level = 'Reorder level is required';
-    } else if (isNaN(Number(formData.reorder_level)) || Number(formData.reorder_level) < 0) {
-      newErrors.reorder_level = 'Reorder level must be a valid positive number';
-    }
-    
+
     setErrors(newErrors);
+    if (result && !result.success) {
+      setErrors(result.error.errors);
+    }
+    
     return Object.keys(newErrors).length === 0;
   };
 
@@ -101,34 +66,14 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate form before submission
     if (!validateForm()) {
       return;
     }
     
-    // Set loading state
     setIsLoading(true);
     
-    // Convert numeric fields to numbers
-    const submitData = {
-      product_name: formData.product_name,
-      sku: formData.sku,
-      cost_per_unit: Number(formData.cost_per_unit),
-      price_per_unit: Number(formData.price_per_unit),
-      initial_qty: Number(formData.initial_qty),
-      current_qty: Number(formData.current_qty),
-      reorder_level: Number(formData.reorder_level),
-      type: formData.type,
-      rack: formData.rack,
-      shelf: formData.shelf,
-      box: formData.box,
-      status: formData.status,
-      remarks: formData.remarks,
-      added_by: formData.added_by
-    };
-    
     try {
-      const result = await onSave(submitData);
+      const result = await onSave(formData);
       
       if (result.success) {
         // Reset form and loading state
@@ -151,6 +96,8 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
         
         // Clear errors
         setErrors({});
+      } else {
+        validateForm(result);
       }
       // Reset loading state
       setIsLoading(false);
@@ -196,9 +143,8 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
           
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Product Name - Full Width */}
-            
             <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-2">
+              <div className="product_name col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
                 <input
                   type="text"
@@ -215,7 +161,24 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   <p className="mt-1 text-xs text-red-600">{errors.product_name}</p>
                 )}
               </div>
-                          <div>
+              <div className="sku">
+                <label className="block text-sm font-medium text-gray-700 mb-1">SKU *</label>
+                <input
+                  type="text"
+                  name="sku"
+                  value={formData.sku}
+                  onChange={handleChange}
+                  placeholder="Enter SKU"
+                  className={`w-full px-2 py-1.5 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                    errors.sku ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
+                  }`}
+                  required
+                />
+                {errors.sku && (
+                  <p className="mt-1 text-xs text-red-600">{errors.sku}</p>
+                )}
+              </div>
+              <div className="cost_per_unit">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Cost per Unit *</label>
                 <input
                   type="number"
@@ -233,7 +196,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   <p className="mt-1 text-xs text-red-600">{errors.cost_per_unit}</p>
                 )}
               </div>
-              <div>
+              <div class="type">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
                 <select
                   name="type"
@@ -245,16 +208,16 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   required
                 >
                   <option value="">Select Type</option>
-                  <option value="Item">Item</option>
-                  <option value="Bakal">Bakal</option>
-                  <option value="Cement">Cement</option>
-                  <option value="Gravel and Sand">Gravel and Sand</option>
+                  <option value="items">Item</option>
+                  <option value="bakal">Bakal</option>
+                  <option value="cements">Cement</option>
+                  <option value="gravel_sand">Gravel and Sand</option>
                 </select>
                 {errors.type && (
                   <p className="mt-1 text-xs text-red-600">{errors.type}</p>
                 )}
               </div>
-              <div>
+              <div className="price_per_unit">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Price per Unit *</label>
                 <input
                   type="number"
@@ -272,7 +235,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   <p className="mt-1 text-xs text-red-600">{errors.price_per_unit}</p>
                 )}
               </div>
-              <div>
+              <div class="rack">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Rack</label>
                 <select
                   name="rack"
@@ -288,7 +251,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   ))}
                 </select>
               </div>
-              <div>
+              <div className="initial_qty">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Initial Quantity *</label>
                 <input
                   type="number"
@@ -305,7 +268,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   <p className="mt-1 text-xs text-red-600">{errors.initial_qty}</p>
                 )}
               </div>
-              <div>
+              <div class="shelf">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Shelf</label>
                 <select
                   name="shelf"
@@ -321,7 +284,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   ))}
                 </select>
               </div>
-              <div>
+              <div className="current_qty">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Current Quantity</label>
                 <input
                   type="number"
@@ -337,7 +300,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   <p className="mt-1 text-xs text-red-600">{errors.current_qty}</p>
                 )}
               </div>
-              <div>
+              <div className="box">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Box</label>
                 <select
                   name="box"
@@ -353,7 +316,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   ))}
                 </select>
               </div>
-              <div>
+              <div className="reorder_level">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Reorder Level *</label>
                 <input
                   type="number"
@@ -370,7 +333,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   <p className="mt-1 text-xs text-red-600">{errors.reorder_level}</p>
                 )}
               </div>
-              <div className="col-span-2">
+              <div className="remarks col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
                 <textarea
                   name="remarks"
