@@ -42,7 +42,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
     setErrors(newErrors);
     if (result && !result.success) {
       setErrors(result.error.errors);
-    }
+    } 
     
     return Object.keys(newErrors).length === 0;
   };
@@ -65,10 +65,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
     
     setIsLoading(true);
     

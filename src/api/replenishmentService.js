@@ -79,7 +79,6 @@ export const generateTransactionNumber = async () => {
     }
 
     const data = await response.json();
-    console.log(data);
 
     return data.trnxno;
   } catch (error) {
@@ -97,11 +96,13 @@ export const createRelenishmentTransaction = async (itemData) => {
       body: JSON.stringify(itemData),
     });
 
+
     if (!response.ok) {
+
       let errorMessage = 'Failed to create inventory item';
       try {
         const errorData = await response.json();
-        errorMessage = errorData.message || errorData.error || errorMessage;
+        errorMessage = errorData;
       } catch (e) {
         errorMessage = response.statusText || errorMessage;
       }

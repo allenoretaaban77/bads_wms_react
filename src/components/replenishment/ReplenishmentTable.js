@@ -70,8 +70,6 @@ function ReplenishmentTable() {
 
         const result = await getReplenishmentList(params);
         
-        console.log('API Response:', result);
-        
         // Check if API call was successful and returned data
         if (result.success && result.data) {
           // Handle different response structures
@@ -152,11 +150,10 @@ function ReplenishmentTable() {
     }
   };
 
-  const handleCreateItem = async (itemData) => {
+  const handleCreateReplenishment = async (itemData) => {
     try {
-      console.log(JSON.stringify(itemData));
-      
       const result = await createRelenishmentTransaction(itemData);
+      
       if (result.success) {
         // Close modal immediately
         setShowCreateModal(false);
@@ -178,7 +175,7 @@ function ReplenishmentTable() {
         // Trigger data refresh by incrementing refresh key
         setRefreshKey(prev => prev + 1);
       } else {
-        setError(result.error || 'Failed to create item');
+        return result;
       }
       // Return the result so CreateInventoryModal can handle success/error states
       return result;
@@ -547,7 +544,7 @@ function ReplenishmentTable() {
         <CreateReplenishmentModal 
           showCreateModal={showCreateModal}
           setShowCreateModal={setShowCreateModal}
-          onSave={handleCreateItem}
+          onSave={handleCreateReplenishment}
         />
       </div>
     </div>

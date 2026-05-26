@@ -436,7 +436,7 @@ function InventoryTable({ page_type }) {
                     className="px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
                   >
                     <div className="flex items-center justify-end">
-                      Current Qty
+                      Current Quantity
                       {sortField === 'current_qty' && (
                         <span className="ml-1">
                           {sortOrder === 'asc' ? '↑' : '↓'}

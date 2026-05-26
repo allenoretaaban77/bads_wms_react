@@ -34,9 +34,9 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
     }
   };
 
-  const updateItemField = (id, field, value) => {
+  const updateItemField = (inventory_id, field, value) => {
     setItems(prev => prev.map(item => {
-      if (item.id !== id) return item;
+      if (item.inventory_id !== inventory_id) return item;
       const updated = { ...item, [field]: value };
       const qty = Number(updated.quantity) || 0;
       const cost = Number(updated.cost) || 0;
@@ -46,7 +46,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
   };
 
   const removeItemRow = (id) => {
-    setItems(prev => prev.filter(item => item.id !== id));
+    setItems(prev => prev.filter(item => item.inventory_id !== id));
   };
 
   const resolveSuggestionName = (suggestion) => {
@@ -98,7 +98,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
 
   useEffect(() => {
     async function fetchTransactionNumber() {
-            try {
+      try {
         const trnxNumber = await generateTransactionNumber();
         setFormData(prev => ({
           ...prev,
@@ -117,51 +117,52 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
   const handleSelectSuggestion = (suggestion) => {
     const name = resolveSuggestionName(suggestion);
     const costValue = resolveSuggestionCost(suggestion);
+    const newErrors = {};
 
-    setItems(prev => [
-      ...prev,
-      {
-        id: nextItemId,
-        item_name: name,
-        quantity: '',
-        cost: costValue !== undefined ? costValue.toString() : '',
-        total: 0,
-      },
-    ]);
+    setItems(prev => {
+      const exists = prev.some(item => item.inventory_id === suggestion.id);
+      if (exists) {
+        newErrors['items'] = `Item with inventory_id ${suggestion.product_name} already selected`;
+        setErrors(newErrors);
+        return prev; // return unchanged
+      } else {
+        setErrors(newErrors);
+      }
+
+      return [
+        ...prev,
+        {
+          id: nextItemId,
+          inventory_id: suggestion.id,
+          item_name: name,
+          quantity: '',
+          sku: suggestion.sku,
+          cost: costValue !== undefined ? costValue.toString() : '',
+          total: 0,
+        },
+      ];
+    });
     setNextItemId(prev => prev + 1);
     setItemSearchTerm('');
     setItemSuggestions([]);
     setShowSuggestions(false);
   };
 
-  const validateForm = () => {
-    const validationErrors = {};
+  
+  useEffect(() => {
+    console.log('errors', errors);
+  }, [errors]);
 
-    if (!formData.reference_no.trim()) {
-      validationErrors.reference_no = 'Reference number is required';
-    }
-    if (!formData.supplier.trim()) {
-      validationErrors.supplier = 'Supplier is required';
-    }
-    if (!formData.date_received.trim()) {
-      validationErrors.date_received = 'Date received is required';
-    }
+  const validateForm = (result) => {
+    const newErrors = {};
+    console.log('validateForm', newErrors);
 
-    if (!items.length) {
-      validationErrors.items = 'Add at least one item';
-    }
+    setErrors(newErrors);
+    if (result && !result.success) {
+      setErrors(result.error.errors);
+    } 
 
-    items.forEach(item => {
-      if (!item.quantity.toString().trim() || Number.isNaN(Number(item.quantity))) {
-        validationErrors[`quantity_${item.id}`] = 'Quantity must be a valid number';
-      }
-      if (!item.cost.toString().trim() || Number.isNaN(Number(item.cost))) {
-        validationErrors[`cost_${item.id}`] = 'Cost must be a valid number';
-      }
-    });
-
-    setErrors(validationErrors);
-    return Object.keys(validationErrors).length === 0;
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleChange = (e) => {
@@ -198,9 +199,9 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    // if (!validateForm()) return;
 
-    if (!onSave) return;
+    // if (!onSave) return;
     setIsSubmitting(true);
 
     try {
@@ -220,6 +221,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
       });
 
       if (result && result.success) {
+        console.log('setShowCreateModal', result);
         setShowCreateModal(false);
         setFormData({
           supplier: '',
@@ -231,7 +233,11 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
         setItems([]);
         setNextItemId(1);
         setErrors({});
+      } else {
+        validateForm(result);
       }
+
+      setIsSubmitting(false);
     } catch (error) {
       console.error("Error saving replenishment:", error);
     } finally {
@@ -257,7 +263,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                 value={formData.reference_no}
                 onChange={handleChange}
                 placeholder="Enter reference number"
-                readOnly
+                // readOnly
                 className={`w-full px-3 py-2 text-sm border rounded-custom bg-gray-50 focus:outline-none ${
                   errors.reference_no ? 'border-red-300' : 'border-gray-300'
                 }`}
@@ -306,9 +312,9 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           </div>
 
-          <div className="relative"  style={{ marginTop: "0px" }}>
+          <div className="relative" style={{ marginTop: "0px" }}>
             <label className="block text-sm font-medium text-gray-700 mb-1">Search items</label>
-                        <input
+            <input
               type="text"
               ref={searchInputRef}
               value={itemSearchTerm}
@@ -325,8 +331,8 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                   <div className="px-3 py-2 text-sm text-gray-500">Searching...</div>
                 ) : itemSuggestions.length > 0 ? (
                   itemSuggestions.map((suggestion, index) => {
-                    const name = suggestion.name || suggestion.product_name || suggestion.item_name || suggestion.description || `Item ${index + 1}`;
-                    const costValue = suggestion.cost_per_unit || suggestion.cost || suggestion.price_per_unit || suggestion.price || 0;
+                    const name = suggestion.name || suggestion.product_name || suggestion.item_name || suggestion.sku || `Item ${index + 1}`;
+                    const costValue = suggestion.cost_per_unit || suggestion.cost || 0;
                     return (
                       <button
                         key={`${name}-${index}`}
@@ -347,12 +353,12 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Items</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Items {errors.items && <label className="mt-1 text-xs text-red-600">{errors.items}</label>}</label>
             <div className="rounded-custom border border-gray-300 overflow-hidden">
               <table className="min-w-full text-left text-sm">
                 <thead className="bg-header text-white">
                   <tr>
-                    <th className="px-3 py-2">ID</th>
+                    <th className="px-3 py-2">SKU</th>
                     <th className="px-3 py-2">Item Name</th>
                     <th className="px-3 py-2">Quantity</th>
                     <th className="px-3 py-2">Cost</th>
@@ -362,22 +368,22 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                 </thead>
                 <tbody>
                   {items.map(item => (
-                    <tr key={item.id} className="border-t border-gray-200">
-                      <td className="px-3 py-2 align-top">{item.id}</td>
+                    <tr key={item.inventory_id} className="border-t border-gray-200">
+                      <td className="px-3 py-2 align-top">{item.sku}</td>
                       <td className="px-3 py-2 align-top text-gray-700">{item.item_name}</td>
                       <td className="px-3 py-2 align-top">
                         <input
                           type="number"
                           name="quantity"
                           value={item.quantity}
-                          onChange={(e) => updateItemField(item.id, 'quantity', e.target.value)}
+                          onChange={(e) => updateItemField(item.inventory_id, 'quantity', e.target.value)}
                           onFocus={(e) => e.target.select()}
                           placeholder="0"
                           className={`w-full px-2 py-1 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
-                            errors[`quantity_${item.id}`] ? 'border-red-300' : 'border-gray-300'
+                            errors[`quantity_${item.inventory_id}`] ? 'border-red-300' : 'border-gray-300'
                           }`}
                         />
-                        {errors[`quantity_${item.id}`] && <p className="mt-1 text-[11px] text-red-600">{errors[`quantity_${item.id}`]}</p>}
+                        {errors[`quantity_${item.inventory_id}`] && <p className="mt-1 text-[11px] text-red-600">{errors[`quantity_${item.inventory_id}`]}</p>}
                       </td>
                       <td className="px-3 py-2 align-top">
                         <input
@@ -385,20 +391,20 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                           step="0.01"
                           name="cost"
                           value={item.cost}
-                          onChange={(e) => updateItemField(item.id, 'cost', e.target.value)}
+                          onChange={(e) => updateItemField(item.inventory_id, 'cost', e.target.value)}
                           onFocus={(e) => e.target.select()}
                           placeholder="0.00"
                           className={`w-full px-2 py-1 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
-                            errors[`cost_${item.id}`] ? 'border-red-300' : 'border-gray-300'
+                            errors[`cost_${item.inventory_id}`] ? 'border-red-300' : 'border-gray-300'
                           }`}
                         />
-                        {errors[`cost_${item.id}`] && <p className="mt-1 text-[11px] text-red-600">{errors[`cost_${item.id}`]}</p>}
+                        {errors[`cost_${item.inventory_id}`] && <p className="mt-1 text-[11px] text-red-600">{errors[`cost_${item.inventory_id}`]}</p>}
                       </td>
                       <td className="px-3 py-2 align-top">{formatCurrency(item.total) || '₱ 0.00'}</td>
                       <td className="px-3 py-2 align-top">
                         <button
                           type="button"
-                          onClick={() => removeItemRow(item.id)}
+                          onClick={() => removeItemRow(item.inventory_id)}
                           className="text-sm text-red-600 hover:text-red-800"
                         >
                           Remove
