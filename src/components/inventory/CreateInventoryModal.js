@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import useAppViewModel from '../../viewmodels/useAppViewModel';
 
 // Add CSS for loading circle animation
@@ -105,6 +105,8 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
   };
 
   const handleCancel = () => {
+    setErrors({});
+
     setShowCreateModal(false);
     // Reset form
     setFormData({
@@ -193,7 +195,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   <p className="mt-1 text-xs text-red-600">{errors.cost_per_unit}</p>
                 )}
               </div>
-              <div class="type">
+              <div className="type">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
                 <select
                   name="type"
@@ -232,7 +234,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   <p className="mt-1 text-xs text-red-600">{errors.price_per_unit}</p>
                 )}
               </div>
-              <div class="rack">
+              <div className="rack">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Rack</label>
                 <select
                   name="rack"
@@ -251,6 +253,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
               <div className="initial_qty">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Initial Quantity *</label>
                 <input
+                  min={0}
                   type="number"
                   name="initial_qty"
                   value={formData.initial_qty}
@@ -265,7 +268,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   <p className="mt-1 text-xs text-red-600">{errors.initial_qty}</p>
                 )}
               </div>
-              <div class="shelf">
+              <div className="shelf">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Shelf</label>
                 <select
                   name="shelf"

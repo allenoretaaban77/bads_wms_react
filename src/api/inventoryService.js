@@ -195,10 +195,11 @@ export const updateInventoryItem = async (itemData) => {
   }
 };
 
-export const deleteInventoryItem = async (id) => {
+export const deleteInventoryItem = async (id, employee_id) => {
   try {
     const formData = new URLSearchParams();
     formData.append('id', id);
+    formData.append('employee_id', employee_id);
 
     const response = await fetch(`${API_BASE_URL}/api/inventory/delete`, {
       method: 'DELETE',

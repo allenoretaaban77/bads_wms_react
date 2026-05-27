@@ -2,16 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { formatCurrency } from '../../utils/formatters';
 import { createInventoryItem, updateInventoryItem, deleteInventoryItem } from '../../api/inventoryService';
 import { APP_CONFIG } from '../../config/constants';
-import ViewInventoryModal from '../inventory/ViewInventoryModal';
-import EditInventoryModal from '../inventory/EditInventoryModal';
 import { 
   getReplenishmentList, 
   createRelenishmentTransaction,
   deleteRelenishmentTransaction
 } from '../../api/replenishmentService';
 import Alert from '../../utils/alert';
-import CreateReplenishmentModal from './CreateReplenishmentModal';
 import ViewReplenishmentModal from './ViewReplenishmentModal';
+import CreateReplenishmentModal from './CreateReplenishmentModal';
+import EditReplenishmentModal from './EditReplenishmentModal';
 
 function ReplenishmentTable() {
   // Data and loading states
@@ -534,18 +533,18 @@ function ReplenishmentTable() {
           id={selectedItem?.id}
         />
         
-        <EditInventoryModal 
-          selectedItem={selectedItem}
-          showEditModal={showEditModal}
-          setShowEditModal={setShowEditModal}
-          onSave={handleEditItem}
-        />
-        
         <CreateReplenishmentModal 
           showCreateModal={showCreateModal}
           setShowCreateModal={setShowCreateModal}
           onSave={handleCreateReplenishment}
         />
+        
+        <EditReplenishmentModal 
+          showCreateModal={showCreateModal}
+          setShowCreateModal={setShowEditModal}
+          onSave={handleCreateReplenishment}
+        />
+
       </div>
     </div>
   );

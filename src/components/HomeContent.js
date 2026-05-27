@@ -22,7 +22,7 @@ function HomeContent() {
   const menuParts = activeMenu.split('_'); 
   const menuParent = menuParts[0];
   const menuChild = menuParts[1] ?? null; 
-  console.log(menuParent, menuChild);
+  
   switch(menuParent) {
     case 'stocks':
       return <ReplenishmentTable />;

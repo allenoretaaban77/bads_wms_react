@@ -7,8 +7,11 @@ import EditInventoryModal from './EditInventoryModal';
 import CreateInventoryModal from './CreateInventoryModal';
 import { formatCurrency } from '../../utils/formatters';
 import Alert from '../../utils/alert';
+import useAppViewModel from '../../viewmodels/useAppViewModel';
 
 function InventoryTable({ page_type }) {
+  const userData = useAppViewModel((state) => state.userData);
+
   // Data and loading states
   const [inventoryData, setInventoryData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -66,7 +69,7 @@ function InventoryTable({ page_type }) {
 
         const result = await getInventoryList(params);
         
-        console.log('API Response:', result);
+        // console.log('API Response:', result);
         
         // Check if API call was successful and returned data
         if (result.success && result.data) {
@@ -113,6 +116,7 @@ function InventoryTable({ page_type }) {
   };
 
   const handleEdit = (item) => {
+    console.log('handleEdit', item);
     setSelectedItem(item);
     setShowEditModal(true);
   };
@@ -120,7 +124,7 @@ function InventoryTable({ page_type }) {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this item?')) {
       try {
-        const result = await deleteInventoryItem(id);
+        const result = await deleteInventoryItem(id, userData.employee_id);
         if (result.success) {
           // Show success alert
           setAlert({

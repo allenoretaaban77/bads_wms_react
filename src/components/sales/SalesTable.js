@@ -11,7 +11,7 @@ import Alert from '../../utils/alert';
 import CreateSalesModal from './CreateSalesModal';
 import ViewSalesModal from './ViewSalesModal';
 
-function SalesTable() {
+function ReplenishmentTable() {
   // Data and loading states
   const [replenishmentData, setReplenishmentData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -67,8 +67,6 @@ function SalesTable() {
         };
 
         const result = await getReplenishmentList(params);
-        
-        console.log('API Response:', result);
         
         // Check if API call was successful and returned data
         if (result.success && result.data) {
@@ -150,11 +148,10 @@ function SalesTable() {
     }
   };
 
-  const handleCreateItem = async (itemData) => {
+  const handleCreateReplenishment = async (itemData) => {
     try {
-      console.log(JSON.stringify(itemData));
-      
       const result = await createRelenishmentTransaction(itemData);
+      
       if (result.success) {
         // Close modal immediately
         setShowCreateModal(false);
@@ -176,7 +173,7 @@ function SalesTable() {
         // Trigger data refresh by incrementing refresh key
         setRefreshKey(prev => prev + 1);
       } else {
-        setError(result.error || 'Failed to create item');
+        return result;
       }
       // Return the result so CreateInventoryModal can handle success/error states
       return result;
@@ -258,7 +255,7 @@ function SalesTable() {
         {/* Search and Filters */}
         <div className="bg-white pl-3 pr-3 pb-2 rounded-custom border border-gray-200">
           <div className="flex justify-between items-center">
-            <h3 className="text-base font-semibold text-gray-800">Sales Management</h3>
+            <h3 className="text-base font-semibold text-gray-800">Replenishment</h3>
             <div className="flex space-x-2 pb-2">
               <button
                 onClick={handleRefresh}
@@ -289,7 +286,7 @@ function SalesTable() {
               <label className="block text-xs font-medium text-gray-700 mb-0.5">Search</label>
               <input
                 type="text"
-                placeholder="Search supplier or reference number..."
+                placeholder="Search customer name or invoice number..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
@@ -346,7 +343,20 @@ function SalesTable() {
                     className="border-r px-3 py-2 text-left text-white text-sm font-semibold cursor-pointer hover:bg-green-700"
                   >
                     <div className="flex items-center">
-                      Reference Number
+                      Invoice Number
+                      {sortField === 'reference_no' && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleSort('reference_no')}
+                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold cursor-pointer hover:bg-green-700"
+                  >
+                    <div className="flex items-center">
+                      Customer Name
                       {sortField === 'reference_no' && (
                         <span className="ml-1">
                           {sortOrder === 'asc' ? '↑' : '↓'}
@@ -359,8 +369,21 @@ function SalesTable() {
                     className="border-r px-3 py-2 text-left text-white text-sm font-semibold cursor-pointer hover:bg-green-700"
                   >
                     <div className="flex items-center">
-                      Date Received
+                      Date Sold
                       {sortField === 'date_received' && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleSort('amount')}
+                    className="border-r px-3 py-2 text-right text-white text-sm font-semibold cursor-pointer hover:bg-green-700"
+                  >
+                    <div className="flex items-center">
+                      Payment Method
+                      {sortField === 'amount' && (
                         <span className="ml-1">
                           {sortOrder === 'asc' ? '↑' : '↓'}
                         </span>
@@ -374,19 +397,6 @@ function SalesTable() {
                     <div className="flex items-center justify-end">
                       Amount
                       {sortField === 'amount' && (
-                        <span className="ml-1">
-                          {sortOrder === 'asc' ? '↑' : '↓'}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    onClick={() => handleSort('supplier')}
-                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
-                  >
-                    <div className="flex items-center">
-                      Supplier
-                      {sortField === 'supplier' && (
                         <span className="ml-1">
                           {sortOrder === 'asc' ? '↑' : '↓'}
                         </span>
@@ -538,12 +548,12 @@ function SalesTable() {
         <CreateSalesModal 
           showCreateModal={showCreateModal}
           setShowCreateModal={setShowCreateModal}
-          onSave={handleCreateItem}
+          onSave={handleCreateReplenishment}
         />
       </div>
     </div>
   );
 }
 
-export default SalesTable;
+export default ReplenishmentTable;
 

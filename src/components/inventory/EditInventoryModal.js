@@ -40,15 +40,16 @@ const EditInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, onS
   // Populate form with selected item data when modal opens
   useEffect(() => {
     if (selectedItem) {
+      console.log('EditInventoryModal selectedItem', selectedItem);
       setFormData({
         id: selectedItem.id || '',
         product_name: selectedItem.product_name || '',
         sku: selectedItem.sku || '',
-        cost_per_unit: selectedItem.cost_per_unit || '',
-        price_per_unit: selectedItem.price_per_unit || '',
-        initial_qty: selectedItem.initial_qty || '',
-        current_qty: selectedItem.current_qty || '',
-        reorder_level: selectedItem.reorder_level || '',
+        cost_per_unit: selectedItem.cost_per_unit,
+        price_per_unit: selectedItem.price_per_unit,
+        initial_qty: selectedItem.initial_qty,
+        current_qty: selectedItem.current_qty,
+        reorder_level: selectedItem.reorder_level,
         type: selectedItem.type || '',
         rack: selectedItem.rack || '',
         shelf: selectedItem.shelf || '',
@@ -153,6 +154,8 @@ const EditInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, onS
   };
 
   const handleCancel = () => {
+    setErrors({});
+
     setShowEditModal(false);
     // Reset form
     setFormData({
@@ -241,7 +244,7 @@ const EditInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, onS
                   <p className="mt-1 text-xs text-red-600">{errors.cost_per_unit}</p>
                 )}
               </div>
-              <div class="type">
+              <div className="type">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
                 <select
                   name="type"
@@ -280,7 +283,7 @@ const EditInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, onS
                   <p className="mt-1 text-xs text-red-600">{errors.price_per_unit}</p>
                 )}
               </div>
-              <div class="rack">
+              <div className="rack">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Rack</label>
                 <select
                   name="rack"
@@ -313,7 +316,7 @@ const EditInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, onS
                   <p className="mt-1 text-xs text-red-600">{errors.initial_qty}</p>
                 )}
               </div>
-              <div class="shelf">
+              <div className="shelf">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Shelf</label>
                 <select
                   name="shelf"

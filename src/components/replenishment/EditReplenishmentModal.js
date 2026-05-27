@@ -4,7 +4,7 @@ import { formatCurrency } from '../../utils/formatters';
 import { generateTransactionNumber } from '../../api/replenishmentService';
 import useAppViewModel from '../../viewmodels/useAppViewModel';
 
-const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
+const EditReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
   const userData = useAppViewModel((state) => state.userData);
   const [formData, setFormData] = useState({
     supplier: '',
@@ -480,4 +480,4 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
   );
 };
 
-export default CreateReplenishmentModal;
+export default EditReplenishmentModal;
