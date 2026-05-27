@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getInventoryList } from '../../api/inventoryService';
+import { getInventoryListsearch } from '../../api/inventoryService';
 import { formatCurrency } from '../../utils/formatters';
 import { generateTransactionNumber } from '../../api/replenishmentService';
 import useAppViewModel from '../../viewmodels/useAppViewModel';
@@ -97,7 +97,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
 
     setIsSearching(true);
     try {
-      const result = await getInventoryList({ search: query, page: 1, pageSize: 30 });
+      const result = await getInventoryListsearch({ search: query, page: 1, pageSize: 30 });
       if (!result.success || !result.data) {
         setItemSuggestions([]);
         setShowSuggestions(false);
@@ -135,6 +135,8 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
           id: nextItemId,
           inventory_id: suggestion.id,
           item_name: name,
+          current_qty: suggestion.current_qty,
+          reorder_level: suggestion.reorder_level,
           quantity: '',
           sku: suggestion.sku,
           cost: costValue !== undefined ? costValue.toString() : '',
@@ -147,11 +149,10 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
     setItemSuggestions([]);
     setShowSuggestions(false);
   };
-
   
-  useEffect(() => {
-    console.log('errors', errors);
-  }, [errors]);
+  // useEffect(() => {
+  //   console.log('errors', errors);
+  // }, [errors]);
 
   const validateForm = (result) => {
     const newErrors = {};
@@ -181,8 +182,9 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
   };
 
   const handleCancel = () => {
-    setShowCreateModal(false);
     setErrors({});
+
+    setShowCreateModal(false);
     setFormData({
       supplier: '',
       reference_no: '',
@@ -213,6 +215,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
         remarks: formData.remarks,
         added_by: formData.added_by,
         items: items.map(item => ({
+          inventory_id: item.inventory_id,
           item_name: item.item_name,
           quantity: Number(item.quantity) || 0,
           cost: Number(item.cost) || 0,
@@ -360,7 +363,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                         onClick={() => handleSelectSuggestion(suggestion)}
                         className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
                       >
-                        <div className="font-medium">{name}</div>
+                        <div className="font-medium">{name} [{suggestion.sku}]</div>
                         <div className="text-xs text-gray-500">Cost: ₱{Number(costValue).toFixed(2)}</div>
                       </button>
                     );
@@ -390,7 +393,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                   {items.map(item => (
                     <tr key={item.inventory_id} className="border-t border-gray-200">
                       <td className="px-3 py-2 align-top">{item.sku}</td>
-                      <td className="px-3 py-2 align-top text-gray-700">{item.item_name}</td>
+                      <td className="px-3 py-2 align-top text-gray-700">{item.item_name} [{item.current_qty}/{item.reorder_level}]</td>
                       <td className="px-3 py-2 align-top">
                         <input
                           type="number"

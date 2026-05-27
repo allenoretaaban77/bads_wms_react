@@ -18,7 +18,7 @@ function HomeView() {
               <h1 className="text-white text-xl font-semibold">Home</h1>
             </div>
             <div className="flex items-center text-white text-sm">
-              <span>Welcome, <strong>{userData?.firstname} {userData?.middlename} {userData?.lastname} {userData?.employee_id}</strong> | {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} {new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase()}</span>
+              <span>Welcome, <strong>{userData?.firstname} {userData?.middlename} {userData?.lastname} [{userData?.employee_number}]</strong> | {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} {new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase()}</span>
               <span className="mx-3">|</span>
               <button
                 onClick={logout}

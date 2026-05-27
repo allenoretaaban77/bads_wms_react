@@ -87,54 +87,6 @@ export const generateTransactionNumber = async () => {
   }
 };
 
-export const createRelenishmentTransaction = async (itemData) => {
-  try {
-
-    const response = await fetch(`${API_BASE_URL}/api/replenishment/create`, {
-      method: 'POST',
-      headers: getApiHeaders(),
-      body: JSON.stringify(itemData),
-    });
-
-
-    if (!response.ok) {
-
-      let errorMessage = 'Failed to create inventory item';
-      try {
-        const errorData = await response.json();
-        errorMessage = errorData;
-      } catch (e) {
-        errorMessage = response.statusText || errorMessage;
-      }
-      
-      return {
-        success: false,
-        error: errorMessage,
-        status: response.status,
-      };
-    }
-
-    const data = await response.json();
-    
-    return {
-      success: true,
-      data: data,
-    };
-  } catch (error) {
-    if (error.name === 'TypeError' && error.message.includes('fetch')) {
-      return {
-        success: false,
-        error: 'Network error. Please check if the server is running.',
-      };
-    } else {
-      return {
-        success: false,
-        error: 'An unexpected error occurred while creating inventory item',
-      };
-    }
-  }
-};
-
 export const getReplenishmentView = async (id) => {
   try {
     const headers = getApiHeaders();
@@ -216,6 +168,104 @@ export const deleteRelenishmentTransaction = async (id) => {
       return {
         success: false,
         error: 'An unexpected error occurred while deleting inventory item',
+      };
+    }
+  }
+};
+
+export const createRelenishmentTransaction = async (itemData) => {
+  try {
+
+    const response = await fetch(`${API_BASE_URL}/api/replenishment/create`, {
+      method: 'POST',
+      headers: getApiHeaders(),
+      body: JSON.stringify(itemData),
+    });
+
+
+    if (!response.ok) {
+
+      let errorMessage = 'Failed to create inventory item';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData;
+      } catch (e) {
+        errorMessage = response.statusText || errorMessage;
+      }
+      
+      return {
+        success: false,
+        error: errorMessage,
+        status: response.status,
+      };
+    }
+
+    const data = await response.json();
+    
+    return {
+      success: true,
+      data: data,
+    };
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      return {
+        success: false,
+        error: 'Network error. Please check if the server is running.',
+      };
+    } else {
+      return {
+        success: false,
+        error: 'An unexpected error occurred while creating inventory item',
+      };
+    }
+  }
+};
+
+export const updateRelenishmentTransaction = async (itemData) => {
+  try {
+    const formData = new URLSearchParams();
+    Object.keys(itemData).forEach(key => {
+      formData.append(key, itemData[key]);
+    });
+
+    const response = await fetch(`${API_BASE_URL}/api/replenishment/update`, {
+      method: 'PUT',
+      headers: getApiHeaders(),
+      body: JSON.stringify(itemData),
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to create inventory item';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData;
+      } catch (e) {
+        errorMessage = response.statusText || errorMessage;
+      }
+      
+      return {
+        success: false,
+        error: errorMessage,
+        status: response.status,
+      };
+    }
+
+    const data = await response.json();
+    
+    return {
+      success: true,
+      data: data,
+    };
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      return {
+        success: false,
+        error: 'Network error. Please check if the server is running.',
+      };
+    } else {
+      return {
+        success: false,
+        error: 'An unexpected error occurred while creating inventory item',
       };
     }
   }

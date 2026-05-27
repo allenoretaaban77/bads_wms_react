@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getInventoryList } from '../../api/inventoryService';
-import { formatCurrency } from '../../utils/formatters';
+import { formatCurrency, formatReplinishmentDate } from '../../utils/formatters';
 import { generateTransactionNumber } from '../../api/replenishmentService';
 import useAppViewModel from '../../viewmodels/useAppViewModel';
 
-const EditReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
+const EditReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModal, onSave }) => {
   const userData = useAppViewModel((state) => state.userData);
   const [formData, setFormData] = useState({
     supplier: '',
@@ -20,9 +20,37 @@ const EditReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave })
   const [itemSuggestions, setItemSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
-  const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const searchInputRef = useRef(null);
+  const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    if (selectedItem) {
+      console.log('EditInventoryModal selectedItem', selectedItem);
+      setFormData({
+        // id: selectedItem.id || '',
+        // product_name: selectedItem.product_name || '',
+        // sku: selectedItem.sku || '',
+        // cost_per_unit: selectedItem.cost_per_unit,
+        // price_per_unit: selectedItem.price_per_unit,
+        // initial_qty: selectedItem.initial_qty,
+        // current_qty: selectedItem.current_qty,
+        // reorder_level: selectedItem.reorder_level,
+        // type: selectedItem.type || '',
+        // rack: selectedItem.rack || '',
+        // shelf: selectedItem.shelf || '',
+        // box: selectedItem.box || '',
+        // status: selectedItem.status || 'In Stock',
+        // remarks: selectedItem.remarks || '',
+        // updated_by: userData.employee_id
+        reference_no: selectedItem.reference_no || '',
+        supplier: selectedItem.supplier || '',
+        remarks: selectedItem.remarks || '',
+        date_received: formatReplinishmentDate(selectedItem.date_received) || '',
+        added_by: userData.employee_id
+      });
+    }
+  }, [selectedItem, showEditModal]);
 
   const getItemsTotal = () => {
     return items.reduce((sum, item) => sum + (Number(item.total) || 0), 0);
@@ -46,12 +74,6 @@ const EditReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave })
 
     return () => clearTimeout(timer);
   }, [itemSearchTerm]);
-
-  useEffect(() => {
-    if (showCreateModal) {
-      fetchTransactionNumber();
-    }
-  }, [showCreateModal]);
 
   const fetchTransactionNumber = async () => {
     try {
@@ -148,11 +170,6 @@ const EditReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave })
     setShowSuggestions(false);
   };
 
-  
-  useEffect(() => {
-    console.log('errors', errors);
-  }, [errors]);
-
   const validateForm = (result) => {
     const newErrors = {};
     console.log('validateForm', newErrors);
@@ -181,7 +198,7 @@ const EditReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave })
   };
 
   const handleCancel = () => {
-    setShowCreateModal(false);
+    setShowEditModal(false);
     setErrors({});
     setFormData({
       supplier: '',
@@ -221,8 +238,7 @@ const EditReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave })
       });
 
       if (result && result.success) {
-        console.log('setShowCreateModal', result);
-        setShowCreateModal(false);
+        setShowEditModal(false);
         setFormData({
           supplier: '',
           reference_no: '',
@@ -245,16 +261,16 @@ const EditReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave })
     }
   };
 
-  if (!showCreateModal) return null;
+  if (!showEditModal) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-custom p-4 max-w-screen-2xl w-full mb-5 mt-5 mx-4 max-h-screen overflow-y-auto">
         <div className="mb-6 pb-4 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-800 text-center">Create Replenishment</h2>
+          <h2 className="text-2xl font-bold text-gray-800 text-center">Update Replenishment</h2>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Reference Number</label>

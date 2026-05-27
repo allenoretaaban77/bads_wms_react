@@ -11,7 +11,7 @@ import Alert from '../../utils/alert';
 import CreateSalesModal from './CreateSalesModal';
 import ViewSalesModal from './ViewSalesModal';
 
-function ReplenishmentTable() {
+function SalesTable() {
   // Data and loading states
   const [replenishmentData, setReplenishmentData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -255,7 +255,7 @@ function ReplenishmentTable() {
         {/* Search and Filters */}
         <div className="bg-white pl-3 pr-3 pb-2 rounded-custom border border-gray-200">
           <div className="flex justify-between items-center">
-            <h3 className="text-base font-semibold text-gray-800">Replenishment</h3>
+            <h3 className="text-base font-semibold text-gray-800">Sales</h3>
             <div className="flex space-x-2 pb-2">
               <button
                 onClick={handleRefresh}
@@ -555,5 +555,5 @@ function ReplenishmentTable() {
   );
 }
 
-export default ReplenishmentTable;
+export default SalesTable;
 

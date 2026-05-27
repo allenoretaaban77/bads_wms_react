@@ -17,6 +17,8 @@ document.head.appendChild(style);
 const EditInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, onSave }) => {
   const userData = useAppViewModel((state) => state.userData);
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+  
   const [formData, setFormData] = useState({
     id: '',
     product_name: '',
@@ -35,7 +37,6 @@ const EditInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, onS
     updated_by: userData.employee_id
   });
 
-  const [errors, setErrors] = useState({});
 
   // Populate form with selected item data when modal opens
   useEffect(() => {

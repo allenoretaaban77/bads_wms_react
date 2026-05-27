@@ -5,6 +5,7 @@ import { APP_CONFIG } from '../../config/constants';
 import { 
   getReplenishmentList, 
   createRelenishmentTransaction,
+  updateRelenishmentTransaction,
   deleteRelenishmentTransaction
 } from '../../api/replenishmentService';
 import Alert from '../../utils/alert';
@@ -114,11 +115,11 @@ function ReplenishmentTable() {
   };
 
   const handleEdit = (item) => {
-    setAlert({ show: true, message: 'Edit functionality not implemented yet', type: 'warning' });
-    setTimeout(() => { setAlert({ show: false, message: '', type: '' }); }, 1000);
-    // window.alert('Edit functionality not implemented yet');
-    // setSelectedItem(item);
-    // setShowEditModal(true);
+    // setAlert({ show: true, message: 'Edit functionality not implemented yet', type: 'warning' });
+    // setTimeout(() => { setAlert({ show: false, message: '', type: '' }); }, 1000);
+
+    setSelectedItem(item);
+    setShowEditModal(true);
   };
 
   const handleDelete = async (id) => {
@@ -160,7 +161,7 @@ function ReplenishmentTable() {
         // Show success alert
         setAlert({
           show: true,
-          message: 'Inventory item created successfully!',
+          message: 'Replenishment transaction created successfully!',
           type: 'success'
         });
         
@@ -179,24 +180,24 @@ function ReplenishmentTable() {
       // Return the result so CreateInventoryModal can handle success/error states
       return result;
     } catch (err) {
-      setError('Failed to create inventory item');
+      setError('Failed to create replenishment transaction.');
       // Return error result
       return {
         success: false,
-        error: 'Failed to create inventory item'
+        error: 'Failed to create replenishment transaction.'
       };
     }
   };
 
-  const handleEditItem = async (itemData) => {
+  const handleEditReplenishment = async (itemData) => {
     try {
-      const result = await updateInventoryItem(itemData);
+      const result = await updateRelenishmentTransaction(itemData);
       if (result.success) {
         setShowEditModal(false);
         
         setAlert({
           show: true,
-          message: 'Inventory item updated successfully!',
+          message: 'Replenishment transaction updated successfully!',
           type: 'success'
         });
         setTimeout(() => {
@@ -206,14 +207,14 @@ function ReplenishmentTable() {
         setCurrentPage(1);
         setRefreshKey(prev => prev + 1); // Trigger data refresh
       } else {
-        setError(result.error || 'Failed to update item');
+        setError(result.error || 'Failed to update transaction.');
       }
     } catch (err) {
-      setError('Failed to update inventory item');
+      setError('Failed to update replenishment transaction.');
 
       return {
         success: false,
-        error: 'Failed to update inventory item'
+        error: 'Failed to update replenishment transaction.'
       };
     }
   };
@@ -380,11 +381,24 @@ function ReplenishmentTable() {
                   </th>
                   <th 
                     onClick={() => handleSort('supplier')}
-                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold cursor-pointer hover:bg-green-700"
                   >
                     <div className="flex items-center">
                       Supplier
                       {sortField === 'supplier' && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleSort('remarks')}
+                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                  >
+                    <div className="flex items-center">
+                      Remarks
+                      {sortField === 'remarks' && (
                         <span className="ml-1">
                           {sortOrder === 'asc' ? '↑' : '↓'}
                         </span>
@@ -409,6 +423,7 @@ function ReplenishmentTable() {
                     <td className="px-3 py-2 border-r text-sm">{item.date_received}</td>
                     <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.amount)}</td>
                     <td className="px-3 py-2 border-r text-sm">{item.supplier}</td>
+                    <td className="px-3 py-2 border-r text-sm">{item.remarks}</td>
                     <td className="px-3 py-2 border-r">
                       <div className="flex justify-center space-x-2">
                         <button
@@ -421,7 +436,7 @@ function ReplenishmentTable() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                           </svg>
                         </button>
-                        {/* <button
+                        <button
                           onClick={() => handleEdit(item)}
                           className="text-green-600 hover:text-green-800 px-2 py-1 rounded hover:bg-green-50 transition-colors"
                           title="Edit"
@@ -429,7 +444,7 @@ function ReplenishmentTable() {
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
-                        </button> */}
+                        </button>
                         <button
                           onClick={() => handleDelete(item.id)}
                           className="text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
@@ -540,9 +555,10 @@ function ReplenishmentTable() {
         />
         
         <EditReplenishmentModal 
-          showCreateModal={showCreateModal}
-          setShowCreateModal={setShowEditModal}
-          onSave={handleCreateReplenishment}
+          selectedItem={selectedItem}
+          showEditModal={showEditModal}
+          setShowEditModal={setShowEditModal}
+          onSave={handleEditReplenishment}
         />
 
       </div>

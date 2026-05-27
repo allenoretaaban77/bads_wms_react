@@ -56,16 +56,18 @@ function ViewReplenishmentModal({ show, onClose, id }) {
                 <table className="w-full text-sm border-collapse">
                   <thead className="bg-header text-white">
                     <tr className="border-0">
+                      <th className="border-r px-3 text-left cursor-pointer hover:bg-green-700 text-white">SKU</th>
                       <th className="border-r px-3 text-left cursor-pointer hover:bg-green-700 text-white">Product Name</th>
-                      <th className="border-r p-2 text-right">Qty Added</th>
-                      <th className="border-r p-2 text-right">Cost/Unit</th>
+                      <th className="border-r p-2 text-right">Quantity</th>
+                      <th className="border-r p-2 text-right">Cost per Unit</th>
                       <th className="border-r p-2 text-right">Total</th>
                     </tr>
                   </thead>
                   <tbody>
                     {data.items.map((item) => (
                       <tr key={item.id}>
-                        <td className="border-r border-b border-l p-2">{item.product_name}</td>
+                        <td className="border-r border-b border-l p-2">{item.sku}</td>
+                        <td className="border-r border-b p-2">{item.product_name}</td>
                         <td className="border-r border-b p-2 text-right">{item.qty_added}</td>
                         <td className="border-r border-b p-2 text-right">{formatCurrency(item.cost_per_unit)}</td>
                         <td className="border-r border-b p-2 text-right">{formatCurrency(item.total)}</td>
@@ -74,7 +76,7 @@ function ViewReplenishmentModal({ show, onClose, id }) {
                   </tbody>
                   <tfoot>
                     <tr className="font-bold bg-gray-50">
-                      <td colSpan="3" className="border-r border-b border-l p-2 text-right">Grand Total</td>
+                      <td colSpan="4" className="border-r border-b border-l p-2 text-right">Grand Total</td>
                       <td className="border-r p-2 text-right">{formatCurrency(calculateGrandTotal(data.items))}</td>
                     </tr>
                   </tfoot>

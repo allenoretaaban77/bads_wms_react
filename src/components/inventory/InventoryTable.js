@@ -116,7 +116,6 @@ function InventoryTable({ page_type }) {
   };
 
   const handleEdit = (item) => {
-    console.log('handleEdit', item);
     setSelectedItem(item);
     setShowEditModal(true);
   };
@@ -668,6 +667,12 @@ function InventoryTable({ page_type }) {
           setShowViewModal={setShowViewModal}
         />
         
+        <CreateInventoryModal 
+          showCreateModal={showCreateModal}
+          setShowCreateModal={setShowCreateModal}
+          onSave={handleCreateItem}
+        />
+        
         <EditInventoryModal 
           selectedItem={selectedItem}
           showEditModal={showEditModal}
@@ -675,11 +680,6 @@ function InventoryTable({ page_type }) {
           onSave={handleEditItem}
         />
         
-        <CreateInventoryModal 
-          showCreateModal={showCreateModal}
-          setShowCreateModal={setShowCreateModal}
-          onSave={handleCreateItem}
-        />
       </div>
     </div>
   );
