@@ -167,7 +167,7 @@ export const deleteRelenishmentTransaction = async (id) => {
     } else {
       return {
         success: false,
-        error: 'An unexpected error occurred while deleting inventory item',
+        error: 'An unexpected error occurred while deleting replenishment transaction.',
       };
     }
   }
@@ -185,7 +185,7 @@ export const createRelenishmentTransaction = async (itemData) => {
 
     if (!response.ok) {
 
-      let errorMessage = 'Failed to create inventory item';
+      let errorMessage = 'Failed to create replenishment transaction.';
       try {
         const errorData = await response.json();
         errorMessage = errorData;
@@ -215,7 +215,7 @@ export const createRelenishmentTransaction = async (itemData) => {
     } else {
       return {
         success: false,
-        error: 'An unexpected error occurred while creating inventory item',
+        error: 'An unexpected error occurred while creating replenishment transaction.',
       };
     }
   }
@@ -235,7 +235,7 @@ export const updateRelenishmentTransaction = async (itemData) => {
     });
 
     if (!response.ok) {
-      let errorMessage = 'Failed to create inventory item';
+      let errorMessage = 'Failed to update replenishment transaction.';
       try {
         const errorData = await response.json();
         errorMessage = errorData;
@@ -265,7 +265,7 @@ export const updateRelenishmentTransaction = async (itemData) => {
     } else {
       return {
         success: false,
-        error: 'An unexpected error occurred while creating inventory item',
+        error: 'An unexpected error occurred while creating replenishment transaction.',
       };
     }
   }

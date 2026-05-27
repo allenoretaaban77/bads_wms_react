@@ -28,12 +28,6 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
     return items.reduce((sum, item) => sum + (Number(item.total) || 0), 0);
   };
 
-  const addItemRow = () => {
-    if (searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  };
-
   useEffect(() => {
     const timer = setTimeout(() => {
       if (itemSearchTerm.trim()) {
@@ -149,10 +143,6 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
     setItemSuggestions([]);
     setShowSuggestions(false);
   };
-  
-  // useEffect(() => {
-  //   console.log('errors', errors);
-  // }, [errors]);
 
   const validateForm = (result) => {
     const newErrors = {};
@@ -224,7 +214,6 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
       });
 
       if (result && result.success) {
-        console.log('setShowCreateModal', result);
         setShowCreateModal(false);
         setFormData({
           supplier: '',
@@ -383,9 +372,9 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                   <tr>
                     <th className="px-3 py-2">SKU</th>
                     <th className="px-3 py-2">Item Name</th>
-                    <th className="px-3 py-2">Quantity</th>
-                    <th className="px-3 py-2">Cost</th>
-                    <th className="px-3 py-2">Total</th>
+                    <th className="px-3 py-2 text-right pr-9">Quantity</th>
+                    <th className="px-3 py-2 text-right pr-9">Cost</th>
+                    <th className="px-3 py-2 text-right">Total</th>
                     <th className="px-3 py-2"> </th>
                   </tr>
                 </thead>
@@ -402,7 +391,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                           onChange={(e) => updateItemField(item.inventory_id, 'quantity', e.target.value)}
                           onFocus={(e) => e.target.select()}
                           placeholder="0"
-                          className={`w-full px-2 py-1 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                          className={`w-full px-2 py-1 text-right text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                             errors[`quantity_${item.inventory_id}`] ? 'border-red-300' : 'border-gray-300'
                           }`}
                         />
@@ -417,18 +406,18 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                           onChange={(e) => updateItemField(item.inventory_id, 'cost', e.target.value)}
                           onFocus={(e) => e.target.select()}
                           placeholder="0.00"
-                          className={`w-full px-2 py-1 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                          className={`w-full px-2 py-1 text-right text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                             errors[`cost_${item.inventory_id}`] ? 'border-red-300' : 'border-gray-300'
                           }`}
                         />
                         {errors[`cost_${item.inventory_id}`] && <p className="mt-1 text-[11px] text-red-600">{errors[`cost_${item.inventory_id}`]}</p>}
                       </td>
-                      <td className="px-3 py-2 align-top">{formatCurrency(item.total) || '₱ 0.00'}</td>
-                      <td className="px-3 py-2 align-top">
+                      <td className="px-3 py-2 align-top text-right">{formatCurrency(item.total) || '₱ 0.00'}</td>
+                      <td className="px-3 py-2 align-top text-right">
                         <button
                           type="button"
                           onClick={() => removeItemRow(item.inventory_id)}
-                          className="text-sm text-red-600 hover:text-red-800"
+                          className="text-sm text-red-600 hover:text-red-800 pt-1 pr-1"
                         >
                           Remove
                         </button>
@@ -440,7 +429,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
             </div>
           </div>
 
-          <div className="rounded-custom border border-gray-300 pr-2 py-1 bg-gray-50 text-right text-md font-semibold text-green-900" style={{ marginTop: "5px" }}>
+          <div className="rounded-custom border border-gray-300 pr-4 py-1 bg-gray-50 text-right text-md font-semibold text-green-900" style={{ marginTop: "5px" }}>
             Total: {formatCurrency(getItemsTotal()) || '₱ 0.00'}
           </div>
 

@@ -207,7 +207,7 @@ function ReplenishmentTable() {
         setCurrentPage(1);
         setRefreshKey(prev => prev + 1); // Trigger data refresh
       } else {
-        setError(result.error || 'Failed to update transaction.');
+        return result;
       }
     } catch (err) {
       setError('Failed to update replenishment transaction.');
