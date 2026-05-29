@@ -237,11 +237,11 @@ function SalesTable() {
     setPageSize(newPageSize);
     setCurrentPage(1);
   };
-
   
   const getQuantityStatus = (status) => {
-    if (status === 'unpaid') return { text: 'Out of Stock', color: 'text-red-600' };
-    return { text: 'In Stock', color: 'text-green-600' };
+    if (status === 'unpaid') return { text: 'Paid', color: 'text-red-600' };
+    if (status === 'draft') return { text: 'Draft', color: 'text-yellow-600' };
+    return { text: 'Paid', color: 'text-green-600' };
   };
 
   return (
@@ -439,13 +439,13 @@ function SalesTable() {
                     <td className="px-3 py-2 border-r text-sm">{item.date_sold}</td>
                     <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.amount)}</td>
                     <td className="px-3 py-2 border-r text-sm">{item.customer_name}</td>
-                    <td className="px-4 py-3 border-0 text-sm text-right">
+                    <td className="px-4 py-3 border-r text-sm text-right">
                       <span className={`font-medium ${quantityStatus.color}`}>
                         {toTitleCase(item.payment_status)}
                       </span>
                     </td>
                     <td className="px-3 py-2 border-r text-sm">{item.remarks}</td>
-                    <td className="px-3 py-2 border-r">
+                    <td className="px-3 py-2 border-0">
                       <div className="flex justify-center space-x-2">
                         <button
                           onClick={() => handleView(item)}

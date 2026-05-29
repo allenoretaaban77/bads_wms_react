@@ -384,7 +384,7 @@ function InventoryTable({ page_type }) {
                 <tr>
                   <th 
                     onClick={() => handleSort('product_name')}
-                    className="px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
                   >
                     <div className="flex items-center">
                       Product Name
@@ -397,7 +397,7 @@ function InventoryTable({ page_type }) {
                   </th>
                   <th 
                     onClick={() => handleSort('sku')}
-                    className="px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
                   >
                     <div className="flex items-center">
                       SKU
@@ -410,7 +410,7 @@ function InventoryTable({ page_type }) {
                   </th>
                   <th 
                     onClick={() => handleSort('cost_per_unit')}
-                    className="px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                    className="border-r px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
                   >
                     <div className="flex items-center justify-end">
                       Cost per Unit
@@ -423,7 +423,7 @@ function InventoryTable({ page_type }) {
                   </th>
                   <th 
                     onClick={() => handleSort('price_per_unit')}
-                    className="px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                    className="border-r px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
                   >
                     <div className="flex items-center justify-end">
                       Price per Unit
@@ -436,7 +436,7 @@ function InventoryTable({ page_type }) {
                   </th>
                   <th 
                     onClick={() => handleSort('current_qty')}
-                    className="px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                    className="border-r px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
                   >
                     <div className="flex items-center justify-end">
                       Current Quantity
@@ -449,7 +449,7 @@ function InventoryTable({ page_type }) {
                   </th>
                   <th 
                     onClick={() => handleSort('reorder_level')}
-                    className="px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                    className="border-r px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
                   >
                     <div className="flex items-center justify-end">
                       Reorder Level
@@ -462,7 +462,7 @@ function InventoryTable({ page_type }) {
                   </th>
                   <th 
                     onClick={() => handleSort('total_inventory_cost')}
-                    className="px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                    className="border-r px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
                   >
                     <div className="flex items-center justify-end">
                       Total Cost
@@ -475,7 +475,7 @@ function InventoryTable({ page_type }) {
                   </th>
                   <th 
                     onClick={() => handleSort('total_inventory_value')}
-                    className="px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                    className="border-r px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
                   >
                     <div className="flex items-center justify-end">
                       Total Value
@@ -488,7 +488,7 @@ function InventoryTable({ page_type }) {
                   </th>
                   <th 
                     onClick={() => handleSort('total_sold')}
-                    className="px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                    className="border-r px-3 py-2 text-right text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
                   >
                     <div className="flex items-center justify-end">
                       Total Sold
@@ -501,7 +501,7 @@ function InventoryTable({ page_type }) {
                   </th>
                   <th 
                     onClick={() => handleSort('status')}
-                    className="px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
                   >
                     <div className="flex items-center justify-end">
                       Status
@@ -512,7 +512,7 @@ function InventoryTable({ page_type }) {
                       )}
                     </div>
                   </th>
-                  <th className="px-3 py-2 text-center text-white font-semibold border-0">Actions</th>
+                  <th className="border-0 px-3 py-2 text-center text-white font-semibold border-0">Actions</th>
                 </tr>
               </thead>
             <tbody>
@@ -525,20 +525,20 @@ function InventoryTable({ page_type }) {
                       index % 2 === 0 ? 'bg-white hover:bg-green-50' : 'bg-row-alt hover:bg-green-100'
                     }`}
                   >
-                    <td className="px-3 py-2 border-0 text-sm font-semibold text-green-900">{item.product_name}</td>
-                    <td className="px-3 py-2 border-0 text-sm">{item.sku}</td>
-                    <td className="px-4 py-3 border-0 text-sm text-right">{formatCurrency(item.cost_per_unit)}</td>
-                    <td className="px-4 py-3 border-0 text-sm text-right">{formatCurrency(item.price_per_unit)}</td>
-                    <td className="px-4 py-3 border-0 text-sm text-right">
+                    <td className="px-3 py-2 border-r text-sm font-semibold text-green-900">{item.product_name}</td>
+                    <td className="px-3 py-2 border-r text-sm">{item.sku}</td>
+                    <td className="px-4 py-3 border-r text-sm text-right">{formatCurrency(item.cost_per_unit)}</td>
+                    <td className="px-4 py-3 border-r text-sm text-right">{formatCurrency(item.price_per_unit)}</td>
+                    <td className="px-4 py-3 border-r text-sm text-right">
                       <span className={`font-medium ${quantityStatus.color}`}>
                         {item.current_qty}
                       </span>
                     </td>
-                    <td className="px-4 py-3 border-0 text-sm text-right">{item.reorder_level}</td>
-                    <td className="px-4 py-3 border-0 text-sm text-blue-600 font-medium text-right">{formatCurrency(item.total_inventory_cost)}</td>
-                    <td className="px-4 py-3 border-0 text-sm text-green-600 font-medium text-right">{formatCurrency(item.total_inventory_value)}</td>
-                    <td className="px-4 py-3 border-0 text-sm text-right">{item.total_sold}</td>
-                    <td className="px-3 py-2 border-0 text-right">
+                    <td className="px-4 py-3 border-r text-sm text-right">{item.reorder_level}</td>
+                    <td className="px-4 py-3 border-r text-sm text-blue-600 font-medium text-right">{formatCurrency(item.total_inventory_cost)}</td>
+                    <td className="px-4 py-3 border-r text-sm text-green-600 font-medium text-right">{formatCurrency(item.total_inventory_value)}</td>
+                    <td className="px-4 py-3 border-r text-sm text-right">{item.total_sold}</td>
+                    <td className="px-3 py-2 border-r text-right">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(item.status)}`}>
                         {item.status}
                       </span>

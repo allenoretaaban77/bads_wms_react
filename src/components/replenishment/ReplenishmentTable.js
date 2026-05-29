@@ -424,7 +424,7 @@ function ReplenishmentTable() {
                     <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.amount)}</td>
                     <td className="px-3 py-2 border-r text-sm">{item.supplier}</td>
                     <td className="px-3 py-2 border-r text-sm">{item.remarks}</td>
-                    <td className="px-3 py-2 border-r">
+                    <td className="px-3 py-2 border-0">
                       <div className="flex justify-center space-x-2">
                         <button
                           onClick={() => handleView(item)}

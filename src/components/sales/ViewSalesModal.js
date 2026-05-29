@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getSalesView } from '../../api/salesService';
-import { formatCurrency } from '../../utils/formatters';
+import { formatCurrency, toTitleCase } from '../../utils/formatters';
 
 function ViewReplenishmentModal({ show, onClose, id }) {
   const [data, setData] = useState(null);
@@ -25,6 +25,12 @@ function ViewReplenishmentModal({ show, onClose, id }) {
       fetchData();
     }
   }, [show, id]);
+  
+  const getQuantityStatus = (status) => {
+    if (status === 'unpaid') return { text: 'Paid', color: 'text-red-600' };
+    if (status === 'draft') return { text: 'Draft', color: 'text-yellow-600' };
+    return { text: 'Paid', color: 'text-green-600' };
+  };
 
   if (!show) return null;
 
@@ -49,7 +55,7 @@ function ViewReplenishmentModal({ show, onClose, id }) {
               <div><strong>Transaction No:</strong> {data.invoice_no}</div>
               <div><strong>Date Sold:</strong> {data.date_sold}</div>
               <div><strong>Customer Name:</strong> {data.customer_name}</div>
-              <div><strong>Payment Type:</strong> {data.payment_method}</div>
+              <div><strong>Payment Status:</strong><span className={getQuantityStatus(data.payment_status).color}> {toTitleCase(data.payment_status)}</span></div>
               <div><strong>Remarks:</strong> {data.remarks}</div>
             </div>
 
@@ -70,8 +76,8 @@ function ViewReplenishmentModal({ show, onClose, id }) {
                       <tr key={item.id}>
                         <td className="border-r border-b border-l p-2">{item.sku}</td>
                         <td className="border-r border-b p-2">{item.product_name}</td>
-                        <td className="border-r border-b p-2 text-right">{item.qty_added}</td>
-                        <td className="border-r border-b p-2 text-right">{formatCurrency(item.cost_per_unit)}</td>
+                        <td className="border-r border-b p-2 text-right">{item.qty_sold}</td>
+                        <td className="border-r border-b p-2 text-right">{formatCurrency(item.price_per_unit)}</td>
                         <td className="border-r border-b p-2 text-right">{formatCurrency(item.total)}</td>
                       </tr>
                     ))}
