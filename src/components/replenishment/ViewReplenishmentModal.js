@@ -9,6 +9,8 @@ function ViewReplenishmentModal({ show, onClose, id }) {
 
   useEffect(() => {
     if (show && id) {
+      setData(null);
+
       const fetchData = async () => {
         setLoading(true);
         setError(null);
@@ -26,24 +28,24 @@ function ViewReplenishmentModal({ show, onClose, id }) {
 
   if (!show) return null;
 
-  const calculateGrandTotal = (items) => {
-    return items.reduce((sum, item) => sum + parseFloat(item.total || 0), 0);
-  };
+  // const calculateGrandTotal = (items) => {
+  //   return items.reduce((sum, item) => sum + parseFloat(item.total || 0), 0);
+  // };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-custom p-4 max-w-screen-xl w-full mx-2 max-h-screen overflow-y-auto">
+  
+        <div className="mb-6 pb-4 border-b border-gray-200">
+          <h2 className="text-2xl font-bold text-gray-800 text-center">
+            Replenishment Details
+          </h2>
+        </div>
 
-        {loading && <p>Loading...</p>}
-        {error && <p className="text-red-500">{error}</p>}
-
+        {loading && <p className="text-green-700 text-sm pb-7">Loading...</p>}
+        {error && <p className="text-red-500 pb-7">{error}</p>}
         {data && (
-          <div>       
-            <div className="mb-6 pb-4 border-b border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-800 text-center">
-                Replenishment Details
-              </h2>
-            </div>
+          <div>
             <div className="grid grid-cols-4 gap-4 mb-4 text-sm">
               <div><strong>Reference No:</strong> {data.reference_no}</div>
               <div><strong>Supplier:</strong> {data.supplier}</div>
@@ -77,27 +79,30 @@ function ViewReplenishmentModal({ show, onClose, id }) {
                   <tfoot>
                     <tr className="font-bold bg-gray-50">
                       <td colSpan="4" className="border-r border-b border-l p-2 text-right">Grand Total</td>
-                      <td className="border-r p-2 text-right">{formatCurrency(calculateGrandTotal(data.items))}</td>
+                      <td className="border-r p-2 text-right">{formatCurrency(data.amount)}</td>
+                      {/* <td className="border-r p-2 text-right">{formatCurrency(calculateGrandTotal(data.items))}</td> */}
                     </tr>
                   </tfoot>
                 </table>
               </div>
             </div>
+
           </div>
         )}
 
-          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-3 py-1.5 border border-gray-300 text-gray-700 rounded-custom hover:bg-gray-50 transition-colors text-sm flex items-center"
-            >
-              <svg className="w-4 h-4 mr-1" fill="red" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              Close
-            </button>
-          </div>
+        <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-3 py-1.5 border border-gray-300 text-gray-700 rounded-custom hover:bg-gray-50 transition-colors text-sm flex items-center"
+          >
+            <svg className="w-4 h-4 mr-1" fill="red" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Close
+          </button>
+        </div>
+
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import useAppViewModel from '../../viewmodels/useAppViewModel';
+import { APP_CONFIG } from '../../config/constants';
 
 // Add CSS for loading circle animation
 const style = document.createElement('style');
@@ -207,10 +208,11 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   required
                 >
                   <option value="">Select Type</option>
-                  <option value="items">Item</option>
-                  <option value="bakal">Bakal</option>
-                  <option value="cements">Cement</option>
-                  <option value="gravel_sand">Gravel and Sand</option>
+                  {Object.entries(APP_CONFIG.INVENTORY_TYPES).map(([key, value]) => (
+                    <option key={key} value={value}>
+                      {key.charAt(0) + key.slice(1).toLowerCase()}
+                    </option>
+                  ))}
                 </select>
                 {errors.type && (
                   <p className="mt-1 text-xs text-red-600">{errors.type}</p>

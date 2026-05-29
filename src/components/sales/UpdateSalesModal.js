@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getInventoryListsearch } from '../../api/inventoryService';
-import { formatCurrency } from '../../utils/formatters';
-import { generateTransactionNumber } from '../../api/replenishmentService';
+import { getInventoryList } from '../../api/inventoryService';
+import { formatCurrency, formatReplinishmentDate } from '../../utils/formatters';
+import { generateTransactionNumber, getReplenishmentView } from '../../api/replenishmentService';
 import useAppViewModel from '../../viewmodels/useAppViewModel';
 
-const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
+const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModal, onSave }) => {
   const userData = useAppViewModel((state) => state.userData);
   const [formData, setFormData] = useState({
     supplier: '',
@@ -20,9 +20,57 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
   const [itemSuggestions, setItemSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
-  const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const searchInputRef = useRef(null);
+  const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    if (showEditModal && selectedItem) {
+      setFormData({
+        id: selectedItem.id || '',
+        reference_no: selectedItem.reference_no || '',
+        supplier: selectedItem.supplier || '',
+        remarks: selectedItem.remarks || '',
+        date_received: formatReplinishmentDate(selectedItem.date_received) || '',
+        updated_by: userData.employee_id
+      });
+
+      const fetchData = async () => {
+        setIsSubmitting(true);
+        setErrors({});
+        
+        const result = await getReplenishmentView(selectedItem.id);
+        if (result.success) {
+          const formattedItems = result.data.items.map((inventory_item, index) => {
+            console.log(inventory_item);
+            const name = resolveSuggestionName(inventory_item);
+            const costValue = resolveSuggestionCost(inventory_item);      
+            const qty = Number(inventory_item.qty_added) || 0;
+            const cost = Number(costValue) || 0;
+
+            return {
+              ...inventory_item,
+              id: nextItemId + index,
+              inventory_id: inventory_item.inventory_id,
+              item_name: name,
+              quantity: inventory_item.qty_added,
+              current_qty: inventory_item.current_qty,
+              reorder_level: inventory_item.reorder_level,
+              sku: inventory_item.sku,
+              cost: costValue !== undefined ? costValue.toString() : '',
+              total: inventory_item.total
+            };
+          });
+          
+          setItems(formattedItems);
+        } else {
+          setErrors(result.error);
+        }
+        setIsSubmitting(false);
+      };
+      fetchData();
+    }
+  }, [selectedItem, showEditModal]);
 
   const getItemsTotal = () => {
     return items.reduce((sum, item) => sum + (Number(item.total) || 0), 0);
@@ -41,15 +89,8 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
     return () => clearTimeout(timer);
   }, [itemSearchTerm]);
 
-  useEffect(() => {
-    if (showCreateModal) {
-      fetchTransactionNumber();
-    }
-  }, [showCreateModal]);
-
   const fetchTransactionNumber = async () => {
     try {
-      setErrors({});
       const trnxNumber = await generateTransactionNumber();
       setFormData(prev => ({
         ...prev,
@@ -76,7 +117,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
   };
 
   const resolveSuggestionName = (suggestion) => {
-    return suggestion.name || suggestion.product_name || suggestion.item_name || suggestion.description || `Item ${nextItemId}`;
+    return suggestion.product_name || suggestion.item_name || suggestion.description || `Item ${nextItemId}`;
   };
 
   const resolveSuggestionCost = (suggestion) => {
@@ -92,7 +133,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
 
     setIsSearching(true);
     try {
-      const result = await getInventoryListsearch({ search: query, page: 1, pageSize: 30 });
+      const result = await getInventoryList({ search: query, page: 1, pageSize: 30 });
       if (!result.success || !result.data) {
         setItemSuggestions([]);
         setShowSuggestions(false);
@@ -147,7 +188,6 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
 
   const validateForm = (result) => {
     const newErrors = {};
-    console.log('validateForm', newErrors);
 
     setErrors(newErrors);
     if (result && !result.success) {
@@ -173,9 +213,8 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
   };
 
   const handleCancel = () => {
+    setShowEditModal(false);
     setErrors({});
-
-    setShowCreateModal(false);
     setFormData({
       supplier: '',
       reference_no: '',
@@ -199,12 +238,13 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
 
     try {
       const result = await onSave({
+        id: formData.id,
         supplier: formData.supplier,
         reference_no: formData.reference_no,
         date_received: formData.date_received,
         amount: getItemsTotal(),
         remarks: formData.remarks,
-        added_by: userData.employee_id,
+        updated_by: formData.updated_by,
         items: items.map(item => ({
           inventory_id: item.inventory_id,
           item_name: item.item_name,
@@ -215,7 +255,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
       });
 
       if (result && result.success) {
-        setShowCreateModal(false);
+        setShowEditModal(false);
         setFormData({
           supplier: '',
           reference_no: '',
@@ -238,19 +278,19 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
     }
   };
 
-  if (!showCreateModal) return null;
+  if (!showEditModal) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-custom p-4 max-w-screen-2xl w-full mb-5 mt-5 mx-4 max-h-screen overflow-y-auto">
         <div className="mb-6 pb-4 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-800 text-center">Create Replenishment</h2>
+          <h2 className="text-2xl font-bold text-gray-800 text-center">Update Replenishment</h2>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* <div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Reference Number</label>
               <input
                 name="reference_no"
@@ -263,8 +303,8 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                 }`}
               />
               {errors.reference_no && <p className="mt-1 text-xs text-red-600">{errors.reference_no}</p>}
-            </div> */}
-            <div>
+            </div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Reference Number</label>
               <div className={`flex gap-2 w-full px-3 py-2 text-sm border rounded-custom bg-gray-50 focus:outline-none ${
                     errors.reference_no ? 'border-red-300' : 'border-gray-300'
@@ -283,7 +323,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                 </button>
               </div>
               {errors.reference_no && <p className="mt-1 text-xs text-red-600">{errors.reference_no}</p>}
-            </div>
+            </div> */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
               <input
@@ -387,7 +427,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                         <button
                           type="button"
                           onClick={() => removeItemRow(item.inventory_id)}
-                          className="text-sm text-red-600 hover:text-red-800 pt-1 pr-1"
+                          className="text-sm text-red-600 hover:text-red-800 pt-1"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -404,7 +444,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                           onChange={(e) => updateItemField(item.inventory_id, 'quantity', e.target.value)}
                           onFocus={(e) => e.target.select()}
                           placeholder="0"
-                          className={`w-full px-2 py-1 text-right text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                          className={`w-full px-1 py-1 text-right text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                             errors[`quantity_${item.inventory_id}`] ? 'border-red-300' : 'border-gray-300'
                           }`}
                         />
@@ -458,24 +498,24 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                   <svg className="animate-spin h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
-                  Saving...
+                  Updating...
                 </>
               ) : (
                 <>
                   <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  Save
+                  Update
                 </>
               )}
             </button>
           </div>
-
+          
         </form>
-        
+
       </div>
     </div>
   );
 };
 
-export default CreateReplenishmentModal;
+export default UpdateReplenishmentModal;

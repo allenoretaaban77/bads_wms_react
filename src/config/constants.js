@@ -63,7 +63,28 @@ export const APP_CONFIG = {
     ACTIVE: 'active',
     INACTIVE: 'inactive',
     ARCHIVED: 'archived'
+  },
+
+  INVENTORY_TYPES: {
+    ITEMS: 'items',
+    CEMENT: 'cement',
+    BAKAL: 'bakal',
+    UNCATEGORIZED: 'uncategorized',
+  },
+
+  INVENTORY_MENU: {
+    ITEMS: 'items',
+    CEMENT: 'cement',
+    BAKAL: 'bakal',
+    UNCATEGORIZED: 'uncategorized',
+    ALL: '',
+  },
+
+  PAYMENT_STATUS: {
+    PAID: 'paid',
+    UNPAID: 'unpaid',
   }
 };
 
 export default APP_CONFIG;
+

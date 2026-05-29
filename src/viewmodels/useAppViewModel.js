@@ -1,6 +1,7 @@
 import create from 'zustand';
 import { login as loginApi } from '../api/authService';
 import { setAccessToken } from '../api/tokenService';
+import { APP_CONFIG } from '../config/constants';
 
 // localStorage keys
 const STORAGE_KEYS = {
@@ -46,9 +47,10 @@ const menuItems = [
     key: 'inventory', 
     label: 'Inventory',
     children: [
-      { key: 'inventory', label: 'All Items' },
-      { key: 'inventory_cements',  label: 'Cement' },
-      { key: 'inventory_items', label: 'Hardware Items' }
+      { key: 'inventory_' + APP_CONFIG.INVENTORY_TYPES.ALL, label: 'All Items' },
+      { key: 'inventory_' + APP_CONFIG.INVENTORY_TYPES.ITEMS, label: 'Hadware Items' },
+      { key: 'inventory_' + APP_CONFIG.INVENTORY_TYPES.BAKAL, label: 'Bakal' },
+      { key: 'inventory_' + APP_CONFIG.INVENTORY_TYPES.CEMENT, label: 'Cement' },
     ]
   },
   { key: 'stocks', label: 'Replenishment' },

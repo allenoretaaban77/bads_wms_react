@@ -11,7 +11,7 @@ import {
 import Alert from '../../utils/alert';
 import ViewReplenishmentModal from './ViewReplenishmentModal';
 import CreateReplenishmentModal from './CreateReplenishmentModal';
-import EditReplenishmentModal from './EditReplenishmentModal';
+import UpdateReplenishmentModal from './UpdateReplenishmentModal';
 
 function ReplenishmentTable() {
   // Data and loading states
@@ -288,7 +288,7 @@ function ReplenishmentTable() {
               <label className="block text-xs font-medium text-gray-700 mb-0.5">Search</label>
               <input
                 type="text"
-                placeholder="Search supplier or reference number..."
+                placeholder="Search reference number, supplier, amount, remarks..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
@@ -554,7 +554,7 @@ function ReplenishmentTable() {
           onSave={handleCreateReplenishment}
         />
         
-        <EditReplenishmentModal 
+        <UpdateReplenishmentModal 
           selectedItem={selectedItem}
           showEditModal={showEditModal}
           setShowEditModal={setShowEditModal}

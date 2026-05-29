@@ -3,7 +3,7 @@ import { getStatusColor } from '../../utils/statusColors';
 import { getInventoryList, createInventoryItem, updateInventoryItem, deleteInventoryItem } from '../../api/inventoryService';
 import { APP_CONFIG } from '../../config/constants';
 import ViewInventoryModal from './ViewInventoryModal';
-import EditInventoryModal from './EditInventoryModal';
+import UpdateInventoryModal from './UpdateInventoryModal';
 import CreateInventoryModal from './CreateInventoryModal';
 import { formatCurrency } from '../../utils/formatters';
 import Alert from '../../utils/alert';
@@ -673,7 +673,7 @@ function InventoryTable({ page_type }) {
           onSave={handleCreateItem}
         />
         
-        <EditInventoryModal 
+        <UpdateInventoryModal 
           selectedItem={selectedItem}
           showEditModal={showEditModal}
           setShowEditModal={setShowEditModal}

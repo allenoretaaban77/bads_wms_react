@@ -1,19 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { formatCurrency } from '../../utils/formatters';
+import { formatCurrency, toTitleCase } from '../../utils/formatters';
 import { createInventoryItem, updateInventoryItem, deleteInventoryItem } from '../../api/inventoryService';
 import { APP_CONFIG } from '../../config/constants';
+import {
+  getSalesList,
+  createSalesTransaction
+} from '../../api/salesService';
+
 import { 
-  getReplenishmentList, 
-  createRelenishmentTransaction,
+  updateRelenishmentTransaction,
   deleteRelenishmentTransaction
 } from '../../api/replenishmentService';
+
 import Alert from '../../utils/alert';
-import CreateSalesModal from './CreateSalesModal';
 import ViewSalesModal from './ViewSalesModal';
+import CreateSalesModal from './CreateSalesModal';
+import UpdateSalesModal from './UpdateSalesModal';
 
 function SalesTable() {
   // Data and loading states
-  const [replenishmentData, setReplenishmentData] = useState([]);
+  const [saleDate, satSalesData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -51,7 +57,7 @@ function SalesTable() {
 
   // Fetch inventory data from API
   useEffect(() => {
-    const loadreplenishmentData = async () => {
+    const loadsatSalesData = async () => {
       try {
         setLoading(true);
         setError(null);
@@ -66,7 +72,7 @@ function SalesTable() {
           record_status: recordStatusFilter !== 'all' ? recordStatusFilter : ''
         };
 
-        const result = await getReplenishmentList(params);
+        const result = await getSalesList(params);
         
         // Check if API call was successful and returned data
         if (result.success && result.data) {
@@ -75,7 +81,7 @@ function SalesTable() {
           const total = result.data.total || data.length;
           const totalPages = result.data.totalPages || Math.ceil(total / pageSize);
           
-          setReplenishmentData(data);
+          satSalesData(data);
           setFilteredData(data);
           setTotalItems(total);
           setTotalPages(totalPages);
@@ -85,7 +91,7 @@ function SalesTable() {
           setError(result.error || 'Failed to load inventory data');
           
           // Set empty data on error
-          setReplenishmentData([]);
+          satSalesData([]);
           setFilteredData([]);
           setTotalItems(0);
           setTotalPages(0);
@@ -95,7 +101,7 @@ function SalesTable() {
         setError(`Failed to load inventory data: ${err.message}`);
         
         // Set empty data on error
-        setReplenishmentData([]);
+        satSalesData([]);
         setFilteredData([]);
         setTotalItems(0);
         setTotalPages(0);
@@ -104,7 +110,7 @@ function SalesTable() {
       }
     };
 
-    loadreplenishmentData();
+    loadsatSalesData();
   }, [currentPage, pageSize, searchTerm, sortField, sortOrder, statusFilter, quantityFilter, recordStatusFilter, refreshKey]);
 
   const handleView = (item) => {
@@ -113,11 +119,11 @@ function SalesTable() {
   };
 
   const handleEdit = (item) => {
-    setAlert({ show: true, message: 'Edit functionality not implemented yet', type: 'warning' });
-    setTimeout(() => { setAlert({ show: false, message: '', type: '' }); }, 1000);
-    // window.alert('Edit functionality not implemented yet');
-    // setSelectedItem(item);
-    // setShowEditModal(true);
+    // setAlert({ show: true, message: 'Edit functionality not implemented yet', type: 'warning' });
+    // setTimeout(() => { setAlert({ show: false, message: '', type: '' }); }, 1000);
+
+    setSelectedItem(item);
+    setShowEditModal(true);
   };
 
   const handleDelete = async (id) => {
@@ -148,9 +154,9 @@ function SalesTable() {
     }
   };
 
-  const handleCreateReplenishment = async (itemData) => {
+  const handleCreateSales = async (itemData) => {
     try {
-      const result = await createRelenishmentTransaction(itemData);
+      const result = await createSalesTransaction(itemData);
       
       if (result.success) {
         // Close modal immediately
@@ -159,7 +165,7 @@ function SalesTable() {
         // Show success alert
         setAlert({
           show: true,
-          message: 'Inventory item created successfully!',
+          message: 'Sales transaction created successfully!',
           type: 'success'
         });
         
@@ -178,24 +184,24 @@ function SalesTable() {
       // Return the result so CreateInventoryModal can handle success/error states
       return result;
     } catch (err) {
-      setError('Failed to create inventory item');
+      setError('Failed to create sales transaction.');
       // Return error result
       return {
         success: false,
-        error: 'Failed to create inventory item'
+        error: 'Failed to create sales transaction.'
       };
     }
   };
 
-  const handleEditItem = async (itemData) => {
+  const handleEditSales = async (itemData) => {
     try {
-      const result = await updateInventoryItem(itemData);
+      const result = await updateRelenishmentTransaction(itemData);
       if (result.success) {
         setShowEditModal(false);
         
         setAlert({
           show: true,
-          message: 'Inventory item updated successfully!',
+          message: 'Sales transaction updated successfully!',
           type: 'success'
         });
         setTimeout(() => {
@@ -205,14 +211,14 @@ function SalesTable() {
         setCurrentPage(1);
         setRefreshKey(prev => prev + 1); // Trigger data refresh
       } else {
-        setError(result.error || 'Failed to update item');
+        return result;
       }
     } catch (err) {
-      setError('Failed to update inventory item');
+      setError('Failed to update sales transaction.');
 
       return {
         success: false,
-        error: 'Failed to update inventory item'
+        error: 'Failed to update sales transaction.'
       };
     }
   };
@@ -233,9 +239,8 @@ function SalesTable() {
   };
 
   
-  const getQuantityStatus = (current, reorder) => {
-    if (current === 0) return { text: 'Out of Stock', color: 'text-red-600' };
-    if (current <= reorder) return { text: 'Low Stock', color: 'text-yellow-600' };
+  const getQuantityStatus = (status) => {
+    if (status === 'unpaid') return { text: 'Out of Stock', color: 'text-red-600' };
     return { text: 'In Stock', color: 'text-green-600' };
   };
 
@@ -286,7 +291,7 @@ function SalesTable() {
               <label className="block text-xs font-medium text-gray-700 mb-0.5">Search</label>
               <input
                 type="text"
-                placeholder="Search customer name or invoice number..."
+                placeholder="Search transaction number, customer name, amount, payment type, remarks..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
@@ -343,20 +348,7 @@ function SalesTable() {
                     className="border-r px-3 py-2 text-left text-white text-sm font-semibold cursor-pointer hover:bg-green-700"
                   >
                     <div className="flex items-center">
-                      Invoice Number
-                      {sortField === 'reference_no' && (
-                        <span className="ml-1">
-                          {sortOrder === 'asc' ? '↑' : '↓'}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    onClick={() => handleSort('reference_no')}
-                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold cursor-pointer hover:bg-green-700"
-                  >
-                    <div className="flex items-center">
-                      Customer Name
+                      Transaction Number
                       {sortField === 'reference_no' && (
                         <span className="ml-1">
                           {sortOrder === 'asc' ? '↑' : '↓'}
@@ -381,8 +373,8 @@ function SalesTable() {
                     onClick={() => handleSort('amount')}
                     className="border-r px-3 py-2 text-right text-white text-sm font-semibold cursor-pointer hover:bg-green-700"
                   >
-                    <div className="flex items-center">
-                      Payment Method
+                    <div className="flex items-center justify-end">
+                      Amount
                       {sortField === 'amount' && (
                         <span className="ml-1">
                           {sortOrder === 'asc' ? '↑' : '↓'}
@@ -391,12 +383,38 @@ function SalesTable() {
                     </div>
                   </th>
                   <th 
-                    onClick={() => handleSort('amount')}
-                    className="border-r px-3 py-2 text-right text-white text-sm font-semibold cursor-pointer hover:bg-green-700"
+                    onClick={() => handleSort('supplier')}
+                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold cursor-pointer hover:bg-green-700"
                   >
-                    <div className="flex items-center justify-end">
-                      Amount
-                      {sortField === 'amount' && (
+                    <div className="flex items-center">
+                      Customer
+                      {sortField === 'supplier' && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleSort('supplier')}
+                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold cursor-pointer hover:bg-green-700"
+                  >
+                    <div className="flex items-center">
+                      Payment Status
+                      {sortField === 'supplier' && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleSort('remarks')}
+                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                  >
+                    <div className="flex items-center">
+                      Remarks
+                      {sortField === 'remarks' && (
                         <span className="ml-1">
                           {sortOrder === 'asc' ? '↑' : '↓'}
                         </span>
@@ -408,7 +426,7 @@ function SalesTable() {
               </thead>
             <tbody>
               {filteredData.map((item, index) => {
-                const quantityStatus = getQuantityStatus(item.current_qty, item.reorder_level);
+                const quantityStatus = getQuantityStatus(item.payment_status);
                 return (
                   <tr 
                     key={item.id}
@@ -417,10 +435,16 @@ function SalesTable() {
                     }`}
                   >
                     <td className="px-3 py-2 border-r text-sm font-semibold text-green-900">{item.id}</td>
-                    <td className="px-3 py-2 border-r text-sm">{item.reference_no}</td>
-                    <td className="px-3 py-2 border-r text-sm">{item.date_received}</td>
+                    <td className="px-3 py-2 border-r text-sm">{item.invoice_no}</td>
+                    <td className="px-3 py-2 border-r text-sm">{item.date_sold}</td>
                     <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.amount)}</td>
-                    <td className="px-3 py-2 border-r text-sm">{item.supplier}</td>
+                    <td className="px-3 py-2 border-r text-sm">{item.customer_name}</td>
+                    <td className="px-4 py-3 border-0 text-sm text-right">
+                      <span className={`font-medium ${quantityStatus.color}`}>
+                        {toTitleCase(item.payment_status)}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 border-r text-sm">{item.remarks}</td>
                     <td className="px-3 py-2 border-r">
                       <div className="flex justify-center space-x-2">
                         <button
@@ -433,7 +457,7 @@ function SalesTable() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                           </svg>
                         </button>
-                        {/* <button
+                        <button
                           onClick={() => handleEdit(item)}
                           className="text-green-600 hover:text-green-800 px-2 py-1 rounded hover:bg-green-50 transition-colors"
                           title="Edit"
@@ -441,7 +465,7 @@ function SalesTable() {
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
-                        </button> */}
+                        </button>
                         <button
                           onClick={() => handleDelete(item.id)}
                           className="text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
@@ -548,8 +572,16 @@ function SalesTable() {
         <CreateSalesModal 
           showCreateModal={showCreateModal}
           setShowCreateModal={setShowCreateModal}
-          onSave={handleCreateReplenishment}
+          onSave={handleCreateSales}
         />
+        
+        <UpdateSalesModal 
+          selectedItem={selectedItem}
+          showEditModal={showEditModal}
+          setShowEditModal={setShowEditModal}
+          onSave={handleEditSales}
+        />
+
       </div>
     </div>
   );

@@ -4,7 +4,7 @@ import { formatCurrency, formatReplinishmentDate } from '../../utils/formatters'
 import { generateTransactionNumber, getReplenishmentView } from '../../api/replenishmentService';
 import useAppViewModel from '../../viewmodels/useAppViewModel';
 
-const EditReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModal, onSave }) => {
+const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModal, onSave }) => {
   const userData = useAppViewModel((state) => state.userData);
   const [formData, setFormData] = useState({
     supplier: '',
@@ -32,7 +32,7 @@ const EditReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModal,
         supplier: selectedItem.supplier || '',
         remarks: selectedItem.remarks || '',
         date_received: formatReplinishmentDate(selectedItem.date_received) || '',
-        added_by: userData.employee_id
+        updated_by: userData.employee_id
       });
 
       const fetchData = async () => {
@@ -58,7 +58,7 @@ const EditReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModal,
               reorder_level: inventory_item.reorder_level,
               sku: inventory_item.sku,
               cost: costValue !== undefined ? costValue.toString() : '',
-              total: qty * cost,
+              total: inventory_item.total
             };
           });
           
@@ -244,7 +244,7 @@ const EditReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModal,
         date_received: formData.date_received,
         amount: getItemsTotal(),
         remarks: formData.remarks,
-        added_by: formData.added_by,
+        updated_by: formData.updated_by,
         items: items.map(item => ({
           inventory_id: item.inventory_id,
           item_name: item.item_name,
@@ -287,7 +287,8 @@ const EditReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModal,
           <h2 className="text-2xl font-bold text-gray-800 text-center">Update Replenishment</h2>
         </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Reference Number</label>
@@ -411,17 +412,28 @@ const EditReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModal,
               <table className="min-w-full text-left text-sm">
                 <thead className="bg-header text-white">
                   <tr>
+                    <th className="py-2"> </th>
                     <th className="px-3 py-2">SKU</th>
                     <th className="px-3 py-2">Item Name</th>
                     <th className="px-3 py-2 text-right pr-9">Quantity</th>
                     <th className="px-3 py-2 text-right pr-9">Cost</th>
                     <th className="px-3 py-2 text-right">Total</th>
-                    <th className="px-3 py-2"> </th>
                   </tr>
                 </thead>
                 <tbody>
                   {items.map(item => (
                     <tr key={item.inventory_id} className="border-t border-gray-200">
+                      <td className="px-1 py-2 align-top text-center">
+                        <button
+                          type="button"
+                          onClick={() => removeItemRow(item.inventory_id)}
+                          className="text-sm text-red-600 hover:text-red-800 pt-1"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </td>
                       <td className="px-3 py-2 align-top">{item.sku}</td>
                       <td className="px-3 py-2 align-top text-gray-700">{item.item_name} [{item.current_qty}/{item.reorder_level}]</td>
                       <td className="px-3 py-2 align-top">
@@ -432,7 +444,7 @@ const EditReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModal,
                           onChange={(e) => updateItemField(item.inventory_id, 'quantity', e.target.value)}
                           onFocus={(e) => e.target.select()}
                           placeholder="0"
-                          className={`w-full px-2 py-1 text-right text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                          className={`w-full px-1 py-1 text-right text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                             errors[`quantity_${item.inventory_id}`] ? 'border-red-300' : 'border-gray-300'
                           }`}
                         />
@@ -454,15 +466,6 @@ const EditReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModal,
                         {errors[`cost_${item.inventory_id}`] && <p className="mt-1 text-[11px] text-red-600">{errors[`cost_${item.inventory_id}`]}</p>}
                       </td>
                       <td className="px-3 py-2 align-top text-right">{formatCurrency(item.total) || '₱ 0.00'}</td>
-                      <td className="px-3 py-2 align-top text-right">
-                        <button
-                          type="button"
-                          onClick={() => removeItemRow(item.inventory_id)}
-                          className="text-sm text-red-600 hover:text-red-800 pt-1 pr-1"
-                        >
-                          Remove
-                        </button>
-                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -470,7 +473,7 @@ const EditReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModal,
             </div>
           </div>
 
-          <div className="rounded-custom border border-gray-300 pr-4 py-1 bg-gray-50 text-right text-md font-semibold text-green-900" style={{ marginTop: "5px" }}>
+          <div className="rounded-custom border border-gray-300 pr-3 py-1 bg-gray-50 text-right text-md font-semibold text-green-900" style={{ marginTop: "5px" }}>
             Total: {formatCurrency(getItemsTotal()) || '₱ 0.00'}
           </div>
 
@@ -495,22 +498,24 @@ const EditReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModal,
                   <svg className="animate-spin h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
-                  Saving...
+                  Updating...
                 </>
               ) : (
                 <>
                   <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  Save
+                  Update
                 </>
               )}
             </button>
           </div>
+          
         </form>
+
       </div>
     </div>
   );
 };
 
-export default EditReplenishmentModal;
+export default UpdateReplenishmentModal;

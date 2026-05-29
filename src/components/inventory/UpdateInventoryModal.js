@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import useAppViewModel from '../../viewmodels/useAppViewModel';
+import { APP_CONFIG } from '../../config/constants';
 
 // Add CSS for loading circle animation
 const style = document.createElement('style');
@@ -14,7 +15,7 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-const EditInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, onSave }) => {
+const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, onSave }) => {
   const userData = useAppViewModel((state) => state.userData);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -41,7 +42,6 @@ const EditInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, onS
   // Populate form with selected item data when modal opens
   useEffect(() => {
     if (selectedItem) {
-      console.log('EditInventoryModal selectedItem', selectedItem);
       setFormData({
         id: selectedItem.id || '',
         product_name: selectedItem.product_name || '',
@@ -257,10 +257,11 @@ const EditInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, onS
                   required
                 >
                   <option value="">Select Type</option>
-                  <option value="items">Item</option>
-                  <option value="bakal">Bakal</option>
-                  <option value="cements">Cement</option>
-                  <option value="gravel_sand">Gravel and Sand</option>
+                  {Object.entries(APP_CONFIG.INVENTORY_TYPES).map(([key, value]) => (
+                    <option key={key} value={value}>
+                      {key.charAt(0) + key.slice(1).toLowerCase()}
+                    </option>
+                  ))}
                 </select>
                 {errors.type && (
                   <p className="mt-1 text-xs text-red-600">{errors.type}</p>
@@ -436,4 +437,4 @@ const EditInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, onS
   );
 }
 
-export default EditInventoryModal;
+export default UpdateInventoryModal;
