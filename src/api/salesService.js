@@ -151,6 +151,152 @@ export const createSalesTransaction = async (itemData) => {
   }
 };
 
+export const updateSalesTransaction = async (itemData) => {
+  try {
+    const formData = new URLSearchParams();
+    Object.keys(itemData).forEach(key => {
+      formData.append(key, itemData[key]);
+    });
+
+    const response = await fetch(`${API_BASE_URL}/api/sales/update`, {
+      method: 'PUT',
+      headers: getApiHeaders(),
+      body: JSON.stringify(itemData),
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to update sales transaction.';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData;
+      } catch (e) {
+        errorMessage = response.statusText || errorMessage;
+      }
+      
+      return {
+        success: false,
+        error: errorMessage,
+        status: response.status,
+      };
+    }
+
+    const data = await response.json();
+    
+    return {
+      success: true,
+      data: data,
+    };
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      return {
+        success: false,
+        error: 'Network error. Please check if the server is running.',
+      };
+    } else {
+      return {
+        success: false,
+        error: 'An unexpected error occurred while updating sales transaction.',
+      };
+    }
+  }
+};
+
+export const voidSalesTransaction = async (id) => {
+  try {
+    const formData = new URLSearchParams();
+    formData.append('id', id);
+
+    const response = await fetch(`${API_BASE_URL}/api/sales/void`, {
+      method: 'DELETE',
+      headers: getApiHeadersPost(),
+      body: formData,
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to void sales transaction';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch (e) {
+        errorMessage = response.statusText || errorMessage;
+      }
+      
+      return {
+        success: false,
+        error: errorMessage,
+        status: response.status,
+      };
+    }
+
+    const data = await response.json();
+    
+    return {
+      success: true,
+      data: data,
+    };
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      return {
+        success: false,
+        error: 'Network error. Please check if the server is running.',
+      };
+    } else {
+      return {
+        success: false,
+        error: 'An unexpected error occurred while void sales transaction.',
+      };
+    }
+  }
+};
+
+export const deleteSalesTransaction = async (id) => {
+  try {
+    const formData = new URLSearchParams();
+    formData.append('id', id);
+
+    const response = await fetch(`${API_BASE_URL}/api/sales/delete`, {
+      method: 'DELETE',
+      headers: getApiHeadersPost(),
+      body: formData,
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to delete sales transaction';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch (e) {
+        errorMessage = response.statusText || errorMessage;
+      }
+      
+      return {
+        success: false,
+        error: errorMessage,
+        status: response.status,
+      };
+    }
+
+    const data = await response.json();
+    
+    return {
+      success: true,
+      data: data,
+    };
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      return {
+        success: false,
+        error: 'Network error. Please check if the server is running.',
+      };
+    } else {
+      return {
+        success: false,
+        error: 'An unexpected error occurred while deleting sales transaction.',
+      };
+    }
+  }
+};
+
 export const generateTransactionNumber = async () => {
   try {
 

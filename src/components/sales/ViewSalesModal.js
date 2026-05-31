@@ -31,6 +31,11 @@ function ViewReplenishmentModal({ show, onClose, id }) {
     if (status === 'draft') return { text: 'Draft', color: 'text-yellow-600' };
     return { text: 'Paid', color: 'text-green-600' };
   };
+  
+  const getRecordStatus = (status) => {
+    if (status === 'inactive') return { text: 'Voided', color: 'text-red-600' };
+    return { text: '', color: 'text-green-600' };
+  };
 
   if (!show) return null;
 
@@ -56,7 +61,8 @@ function ViewReplenishmentModal({ show, onClose, id }) {
               <div><strong>Date Sold:</strong> {data.date_sold}</div>
               <div><strong>Customer Name:</strong> {data.customer_name}</div>
               <div><strong>Payment Status:</strong><span className={getQuantityStatus(data.payment_status).color}> {toTitleCase(data.payment_status)}</span></div>
-              <div><strong>Remarks:</strong> {data.remarks}</div>
+              <div><strong>Remarks:</strong> <span className={getRecordStatus(data.record_status).color}> {toTitleCase(getRecordStatus(data.record_status).text)}</span>{data.remarks}</div>
+              <div><strong>Status:</strong> {data.remarks}</div>
             </div>
 
             <div className="bg-white border border-gray-200 rounded-custom shadow-sm overflow-hidden">

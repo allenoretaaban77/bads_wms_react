@@ -4,9 +4,9 @@ import { createInventoryItem, updateInventoryItem, deleteInventoryItem } from '.
 import { APP_CONFIG } from '../../config/constants';
 import { 
   getReplenishmentList, 
-  createRelenishmentTransaction,
-  updateRelenishmentTransaction,
-  deleteRelenishmentTransaction
+  createReplenishmentTransaction,
+  updateReplenishmentTransaction,
+  deleteReplenishmentTransaction
 } from '../../api/replenishmentService';
 import Alert from '../../utils/alert';
 import ViewReplenishmentModal from './ViewReplenishmentModal';
@@ -122,10 +122,16 @@ function ReplenishmentTable() {
     setShowEditModal(true);
   };
 
+  const handleShowUpdateFromView = (item) => {
+    setShowViewModal(false);
+    setSelectedItem(item);
+    setShowEditModal(true);
+  } 
+
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this transaction?')) {
       try {
-        const result = await deleteRelenishmentTransaction(id);
+        const result = await deleteReplenishmentTransaction(id);
         if (result.success) {
           // Show success alert
           setAlert({
@@ -142,17 +148,17 @@ function ReplenishmentTable() {
           // Refresh data to show updated list
           setRefreshKey(prev => prev + 1);
         } else {
-          setError(result.error || 'Failed to delete item');
+          setError(result.error || 'Failed to replenishment transaction.');
         }
       } catch (err) {
-        setError('Failed to delete inventory item');
+        setError('Failed to delete replenishment transaction.');
       }
     }
   };
 
   const handleCreateReplenishment = async (itemData) => {
     try {
-      const result = await createRelenishmentTransaction(itemData);
+      const result = await createReplenishmentTransaction(itemData);
       
       if (result.success) {
         // Close modal immediately
@@ -191,7 +197,7 @@ function ReplenishmentTable() {
 
   const handleEditReplenishment = async (itemData) => {
     try {
-      const result = await updateRelenishmentTransaction(itemData);
+      const result = await updateReplenishmentTransaction(itemData);
       if (result.success) {
         setShowEditModal(false);
         
@@ -234,11 +240,15 @@ function ReplenishmentTable() {
     setCurrentPage(1);
   };
 
-  
   const getQuantityStatus = (current, reorder) => {
     if (current === 0) return { text: 'Out of Stock', color: 'text-red-600' };
     if (current <= reorder) return { text: 'Low Stock', color: 'text-yellow-600' };
     return { text: 'In Stock', color: 'text-green-600' };
+  };
+
+  const getStatus = (current) => {
+    if (current == "draft") return { text: 'Draft', color: 'text-yellow-600' };
+    return { text: 'Approved', color: 'text-green-600' };
   };
 
   return (
@@ -257,7 +267,7 @@ function ReplenishmentTable() {
         {/* Search and Filters */}
         <div className="bg-white pl-3 pr-3 pb-2 rounded-custom border border-gray-200">
           <div className="flex justify-between items-center">
-            <h3 className="text-base font-semibold text-gray-800">Replenishment</h3>
+            <h3 className="text-base font-semibold text-gray-800">Replenishment Management</h3>
             <div className="flex space-x-2 pb-2">
               <button
                 onClick={handleRefresh}
@@ -405,6 +415,19 @@ function ReplenishmentTable() {
                       )}
                     </div>
                   </th>
+                  <th 
+                    onClick={() => handleSort('status')}
+                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                  >
+                    <div className="flex items-center">
+                      Status
+                      {sortField === 'status' && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
                   <th className="px-3 py-2 text-center text-white font-semibold border-0">Actions</th>
                 </tr>
               </thead>
@@ -424,6 +447,7 @@ function ReplenishmentTable() {
                     <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.amount)}</td>
                     <td className="px-3 py-2 border-r text-sm">{item.supplier}</td>
                     <td className="px-3 py-2 border-r text-sm">{item.remarks}</td>
+                    <td className="px-3 py-2 border-r text-sm"><span className={getStatus(item.status).color}>{getStatus(item.status).text}</span></td>
                     <td className="px-3 py-2 border-0">
                       <div className="flex justify-center space-x-2">
                         <button
@@ -436,15 +460,17 @@ function ReplenishmentTable() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                           </svg>
                         </button>
-                        <button
-                          onClick={() => handleEdit(item)}
-                          className="text-green-600 hover:text-green-800 px-2 py-1 rounded hover:bg-green-50 transition-colors"
-                          title="Edit"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                        </button>
+                        {item.status == "draft" && (
+                          <button
+                            onClick={() => handleEdit(item)}
+                            className="text-green-600 hover:text-green-800 px-2 py-1 rounded hover:bg-green-50 transition-colors"
+                            title="Edit"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button> 
+                        )}
                         <button
                           onClick={() => handleDelete(item.id)}
                           className="text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
@@ -545,6 +571,7 @@ function ReplenishmentTable() {
         <ViewReplenishmentModal
           show={showViewModal}
           onClose={() => setShowViewModal(false)}
+          onUpdate={handleShowUpdateFromView}
           id={selectedItem?.id}
         />
         

@@ -103,7 +103,7 @@ export const getReplenishmentView = async (id) => {
   }
 };
 
-export const createRelenishmentTransaction = async (itemData) => {
+export const createReplenishmentTransaction = async (itemData) => {
   try {
 
     const response = await fetch(`${API_BASE_URL}/api/replenishment/create`, {
@@ -151,7 +151,7 @@ export const createRelenishmentTransaction = async (itemData) => {
   }
 };
 
-export const updateRelenishmentTransaction = async (itemData) => {
+export const updateReplenishmentTransaction = async (itemData) => {
   try {
     const formData = new URLSearchParams();
     Object.keys(itemData).forEach(key => {
@@ -201,7 +201,7 @@ export const updateRelenishmentTransaction = async (itemData) => {
   }
 };
 
-export const deleteRelenishmentTransaction = async (id) => {
+export const deleteReplenishmentTransaction = async (id) => {
   try {
     const formData = new URLSearchParams();
     formData.append('id', id);

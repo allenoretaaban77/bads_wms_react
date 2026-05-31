@@ -9,7 +9,7 @@ export const formatReplinishmentDate = (dateString) => {
   return rawDate;
 }
 
-export const toTitleCase = (str) => {
+export const toTitleCase = (str = "") => {
   return str
     .toLowerCase()
     .split(' ')

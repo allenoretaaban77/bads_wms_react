@@ -190,8 +190,8 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
     setShowSuggestions(false);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (action) => {
+    // e.preventDefault();
     // if (!validateForm()) return;
 
     // if (!onSave) return;
@@ -212,6 +212,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
           cost: Number(item.cost) || 0,
           total: Number(item.total) || 0,
         })),
+        status : action,
       });
 
       if (result && result.success) {
@@ -247,7 +248,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
           <h2 className="text-2xl font-bold text-gray-800 text-center">Create Replenishment</h2>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* <div>
@@ -441,15 +442,16 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
             <button
               type="button"
               onClick={handleCancel}
-              className="px-3 py-1.5 border border-gray-300 text-gray-700 rounded-custom hover:bg-gray-50 transition-colors text-sm flex items-center"
+              className="px-3 py-1.5 border border-gray-300 hover:text-white hover:border-gray-500/50 rounded-custom hover:bg-gray-900/50 transition-colors text-sm flex items-center disabled:opacity-50"
             >
               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
               Cancel
             </button>
-            <button
-              type="submit"
+            {/* <button
+              type="button"
+              onClick={() => handleSubmit("approved")}
               disabled={isSubmitting}
               className="px-3 py-1.5 bg-button text-white rounded-custom hover:bg-button-hover transition-colors text-sm flex items-center disabled:opacity-50"
             >
@@ -458,7 +460,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                   <svg className="animate-spin h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
-                  Saving...
+                  Processing...
                 </>
               ) : (
                 <>
@@ -466,6 +468,29 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   Save
+                </>
+              )}
+            </button> */}
+            <button
+              type="button"
+              onClick={() => handleSubmit("draft")}
+              disabled={isSubmitting}
+              className="px-3 py-1.5 bg-gray-900/50 text-white rounded-custom hover:bg-gray-900 transition-colors text-sm flex items-center disabled:opacity-50"
+            >
+              {isSubmitting ? (
+                <>
+                  <svg className="animate-spin h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V5l-2-2zM7 3v4h10V3M12 12v4m0 0h4m-4 0H8"
+                    />
+                  </svg>
+                  Save as Draft
                 </>
               )}
             </button>

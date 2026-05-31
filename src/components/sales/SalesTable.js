@@ -4,12 +4,13 @@ import { createInventoryItem, updateInventoryItem, deleteInventoryItem } from '.
 import { APP_CONFIG } from '../../config/constants';
 import {
   getSalesList,
-  createSalesTransaction
+  createSalesTransaction,
+  voidSalesTransaction,
+  deleteSalesTransaction
 } from '../../api/salesService';
 
 import { 
-  updateRelenishmentTransaction,
-  deleteRelenishmentTransaction
+  updateReplenishmentTransaction,
 } from '../../api/replenishmentService';
 
 import Alert from '../../utils/alert';
@@ -126,10 +127,10 @@ function SalesTable() {
     setShowEditModal(true);
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this transaction?')) {
+  const handleVoid = async (id) => {
+    if (window.confirm('Are you sure you want to VOID this transaction?')) {
       try {
-        const result = await deleteRelenishmentTransaction(id);
+        const result = await voidSalesTransaction(id);
         if (result.success) {
           // Show success alert
           setAlert({
@@ -146,10 +147,38 @@ function SalesTable() {
           // Refresh data to show updated list
           setRefreshKey(prev => prev + 1);
         } else {
-          setError(result.error || 'Failed to delete item');
+          setError(result.error || 'Failed to void sales transaction.');
         }
       } catch (err) {
-        setError('Failed to delete inventory item');
+        setError('Failed to void sales transaction.');
+      }
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to DELETE this transaction?')) {
+      try {
+        const result = await deleteSalesTransaction(id);
+        if (result.success) {
+          // Show success alert
+          setAlert({
+            show: true,
+            message: 'Item successfully deleted',
+            type: 'success'
+          });
+          
+          // Hide alert after 3 seconds
+          setTimeout(() => {
+            setAlert({ show: false, message: '', type: '' });
+          }, 3000);
+          
+          // Refresh data to show updated list
+          setRefreshKey(prev => prev + 1);
+        } else {
+          setError(result.error || 'Failed to delete sales transaction.');
+        }
+      } catch (err) {
+        setError('Failed to void delete transaction.');
       }
     }
   };
@@ -195,7 +224,7 @@ function SalesTable() {
 
   const handleEditSales = async (itemData) => {
     try {
-      const result = await updateRelenishmentTransaction(itemData);
+      const result = await updateReplenishmentTransaction(itemData);
       if (result.success) {
         setShowEditModal(false);
         
@@ -243,6 +272,11 @@ function SalesTable() {
     if (status === 'draft') return { text: 'Draft', color: 'text-yellow-600' };
     return { text: 'Paid', color: 'text-green-600' };
   };
+  
+  const getRecordStatus = (status) => {
+    if (status === 'inactive') return { text: 'Voided', color: 'text-red-600' };
+    return { text: 'Active', color: 'text-green-600' };
+  };
 
   return (
     <div className="flex flex-col h-screen">
@@ -260,7 +294,7 @@ function SalesTable() {
         {/* Search and Filters */}
         <div className="bg-white pl-3 pr-3 pb-2 rounded-custom border border-gray-200">
           <div className="flex justify-between items-center">
-            <h3 className="text-base font-semibold text-gray-800">Sales</h3>
+            <h3 className="text-base font-semibold text-gray-800">Sales Management</h3>
             <div className="flex space-x-2 pb-2">
               <button
                 onClick={handleRefresh}
@@ -396,12 +430,12 @@ function SalesTable() {
                     </div>
                   </th>
                   <th 
-                    onClick={() => handleSort('supplier')}
+                    onClick={() => handleSort('payment_status')}
                     className="border-r px-3 py-2 text-left text-white text-sm font-semibold cursor-pointer hover:bg-green-700"
                   >
                     <div className="flex items-center">
                       Payment Status
-                      {sortField === 'supplier' && (
+                      {sortField === 'payment_status' && (
                         <span className="ml-1">
                           {sortOrder === 'asc' ? '↑' : '↓'}
                         </span>
@@ -415,6 +449,19 @@ function SalesTable() {
                     <div className="flex items-center">
                       Remarks
                       {sortField === 'remarks' && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleSort('record_status')}
+                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
+                  >
+                    <div className="flex items-center">
+                      Status
+                      {sortField === 'record_status' && (
                         <span className="ml-1">
                           {sortOrder === 'asc' ? '↑' : '↓'}
                         </span>
@@ -445,6 +492,7 @@ function SalesTable() {
                       </span>
                     </td>
                     <td className="px-3 py-2 border-r text-sm">{item.remarks}</td>
+                    <td className="px-3 py-2 border-r text-sm"><span className={getRecordStatus(item.record_status).color}> {toTitleCase(getRecordStatus(item.record_status).text)}</span></td>
                     <td className="px-3 py-2 border-0">
                       <div className="flex justify-center space-x-2">
                         <button
@@ -457,24 +505,40 @@ function SalesTable() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                           </svg>
                         </button>
-                        <button
-                          onClick={() => handleEdit(item)}
-                          className="text-green-600 hover:text-green-800 px-2 py-1 rounded hover:bg-green-50 transition-colors"
-                          title="Edit"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => handleDelete(item.id)}
-                          className="text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
-                          title="Delete"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
+                        {item.payment_status == "draft" && (
+                          <button
+                            onClick={() => handleEdit(item)}
+                            className="text-green-600 hover:text-green-800 px-2 py-1 rounded hover:bg-green-50 transition-colors"
+                            title="Edit"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                        )}
+                        {item.payment_status != "draft" && (
+                          <button
+                            onClick={() => handleVoid(item.id)}
+                            className="text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                            title="Void"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <circle cx="12" cy="12" r="9" strokeWidth={2} />
+                              <line x1="5" y1="5" x2="19" y2="19" strokeWidth={2} />
+                            </svg>
+                          </button>
+                        )}
+                        {item.payment_status == "draft" && (
+                          <button
+                            onClick={() => handleDelete(item.id)}
+                            className="text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                            title="Delete"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

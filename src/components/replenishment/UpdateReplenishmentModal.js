@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getInventoryList } from '../../api/inventoryService';
-import { formatCurrency, formatReplinishmentDate } from '../../utils/formatters';
+import { formatCurrency, formatReplinishmentDate, toTitleCase } from '../../utils/formatters';
 import { generateTransactionNumber, getReplenishmentView } from '../../api/replenishmentService';
 import useAppViewModel from '../../viewmodels/useAppViewModel';
 
@@ -31,6 +31,7 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
         reference_no: selectedItem.reference_no || '',
         supplier: selectedItem.supplier || '',
         remarks: selectedItem.remarks || '',
+        status: selectedItem.status || '',
         date_received: formatReplinishmentDate(selectedItem.date_received) || '',
         updated_by: userData.employee_id
       });
@@ -229,8 +230,8 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
     setShowSuggestions(false);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (action) => {
+    // e.preventDefault();
     // if (!validateForm()) return;
 
     // if (!onSave) return;
@@ -252,6 +253,7 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
           cost: Number(item.cost) || 0,
           total: Number(item.total) || 0,
         })),
+        status : action,
       });
 
       if (result && result.success) {
@@ -278,16 +280,21 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
     }
   };
 
+  const getStatus = (current) => {
+    if (current == "draft") return { text: 'Draft', color: 'text-yellow-600' };
+    return { text: 'Approved', color: 'text-green-600' };
+  };
+
   if (!showEditModal) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-custom p-4 max-w-screen-2xl w-full mb-5 mt-5 mx-4 max-h-screen overflow-y-auto">
         <div className="mb-6 pb-4 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-800 text-center">Update Replenishment</h2>
+          <h2 className="text-2xl font-bold text-gray-800 text-center">Update Replenishment - <span className={getStatus(formData.status).color}>{toTitleCase(formData.status)}</span></h2>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -489,7 +496,8 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
               Cancel
             </button>
             <button
-              type="submit"
+              type="button"
+              onClick={() => handleSubmit("draft")}
               disabled={isSubmitting}
               className="px-3 py-1.5 bg-button text-white rounded-custom hover:bg-button-hover transition-colors text-sm flex items-center disabled:opacity-50"
             >
@@ -498,7 +506,7 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
                   <svg className="animate-spin h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
-                  Updating...
+                  Processing...
                 </>
               ) : (
                 <>
