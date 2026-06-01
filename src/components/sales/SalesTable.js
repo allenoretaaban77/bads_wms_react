@@ -5,13 +5,11 @@ import { APP_CONFIG } from '../../config/constants';
 import {
   getSalesList,
   createSalesTransaction,
+  updateSalesTransaction,
+  approveSalesTransaction,
   voidSalesTransaction,
-  deleteSalesTransaction
+  deleteSalesTransaction,
 } from '../../api/salesService';
-
-import { 
-  updateReplenishmentTransaction,
-} from '../../api/replenishmentService';
 
 import Alert from '../../utils/alert';
 import ViewSalesModal from './ViewSalesModal';
@@ -119,10 +117,13 @@ function SalesTable() {
     setShowViewModal(true);
   };
 
-  const handleEdit = (item) => {
-    // setAlert({ show: true, message: 'Edit functionality not implemented yet', type: 'warning' });
-    // setTimeout(() => { setAlert({ show: false, message: '', type: '' }); }, 1000);
+  const handleShowUpdateFromView = (item) => {
+    setShowViewModal(false);
+    setSelectedItem(item);
+    setShowEditModal(true);
+  } 
 
+  const handleEdit = (item) => {
     setSelectedItem(item);
     setShowEditModal(true);
   };
@@ -157,6 +158,8 @@ function SalesTable() {
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to DELETE this transaction?')) {
+      setShowViewModal(false);
+
       try {
         const result = await deleteSalesTransaction(id);
         if (result.success) {
@@ -180,6 +183,36 @@ function SalesTable() {
       } catch (err) {
         setError('Failed to void delete transaction.');
       }
+    }
+  };
+
+  const handleApproveSales = async (itemData) => {
+    try {
+      const result = await approveSalesTransaction(itemData);
+      if (result.success) {
+        setShowViewModal(false);
+        
+        setAlert({
+          show: true,
+          message: 'Sales transaction approved successfully!',
+          type: 'success'
+        });
+        setTimeout(() => {
+          setAlert({ show: false, message: '', type: '' });
+        }, 3000);
+
+        setCurrentPage(1);
+        setRefreshKey(prev => prev + 1); // Trigger data refresh
+      } else {      
+        return result;
+      }
+    } catch (err) {
+      setError('Failed to approve sales transaction.');
+
+      return {
+        success: false,
+        error: 'Failed to approve sales transaction.'
+      };
     }
   };
 
@@ -224,7 +257,7 @@ function SalesTable() {
 
   const handleEditSales = async (itemData) => {
     try {
-      const result = await updateReplenishmentTransaction(itemData);
+      const result = await updateSalesTransaction(itemData);
       if (result.success) {
         setShowEditModal(false);
         
@@ -276,6 +309,11 @@ function SalesTable() {
   const getRecordStatus = (status) => {
     if (status === 'inactive') return { text: 'Voided', color: 'text-red-600' };
     return { text: 'Active', color: 'text-green-600' };
+  };
+  
+  const getStatus = (status) => {
+    if (status === 'draft') return { text: 'Draft', color: 'text-red-600' };
+    return { text: 'Approved', color: 'text-green-600' };
   };
 
   return (
@@ -443,12 +481,12 @@ function SalesTable() {
                     </div>
                   </th>
                   <th 
-                    onClick={() => handleSort('remarks')}
+                    onClick={() => handleSort('status')}
                     className="border-r px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
                   >
                     <div className="flex items-center">
-                      Remarks
-                      {sortField === 'remarks' && (
+                      Status
+                      {sortField === 'status' && (
                         <span className="ml-1">
                           {sortOrder === 'asc' ? '↑' : '↓'}
                         </span>
@@ -456,12 +494,12 @@ function SalesTable() {
                     </div>
                   </th>
                   <th 
-                    onClick={() => handleSort('record_status')}
+                    onClick={() => handleSort('remarks')}
                     className="border-r px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
                   >
                     <div className="flex items-center">
-                      Status
-                      {sortField === 'record_status' && (
+                      Remarks
+                      {sortField === 'remarks' && (
                         <span className="ml-1">
                           {sortOrder === 'asc' ? '↑' : '↓'}
                         </span>
@@ -491,8 +529,8 @@ function SalesTable() {
                         {toTitleCase(item.payment_status)}
                       </span>
                     </td>
+                    <td className="px-3 py-2 border-r text-sm"><span className={getStatus(item.status).color}> {toTitleCase(getStatus(item.status).text)}</span></td>
                     <td className="px-3 py-2 border-r text-sm">{item.remarks}</td>
-                    <td className="px-3 py-2 border-r text-sm"><span className={getRecordStatus(item.record_status).color}> {toTitleCase(getRecordStatus(item.record_status).text)}</span></td>
                     <td className="px-3 py-2 border-0">
                       <div className="flex justify-center space-x-2">
                         <button
@@ -505,7 +543,7 @@ function SalesTable() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                           </svg>
                         </button>
-                        {item.payment_status == "draft" && (
+                        {item.status == "draft" && (
                           <button
                             onClick={() => handleEdit(item)}
                             className="text-green-600 hover:text-green-800 px-2 py-1 rounded hover:bg-green-50 transition-colors"
@@ -516,7 +554,7 @@ function SalesTable() {
                             </svg>
                           </button>
                         )}
-                        {item.payment_status != "draft" && (
+                        {item.status != "draft" && (
                           <button
                             onClick={() => handleVoid(item.id)}
                             className="text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
@@ -528,7 +566,7 @@ function SalesTable() {
                             </svg>
                           </button>
                         )}
-                        {item.payment_status == "draft" && (
+                        {item.status == "draft" && (
                           <button
                             onClick={() => handleDelete(item.id)}
                             className="text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
@@ -630,6 +668,9 @@ function SalesTable() {
         <ViewSalesModal
           show={showViewModal}
           onClose={() => setShowViewModal(false)}
+          onUpdate={handleShowUpdateFromView}
+          onDelete={handleDelete}
+          onApprove={handleApproveSales}
           id={selectedItem?.id}
         />
         

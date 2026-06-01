@@ -245,7 +245,7 @@ export const approveReplenishmentTransaction = async (itemData) => {
     } else {
       return {
         success: false,
-        error: 'An unexpected error occurred while creating replenishment transaction.',
+        error: 'An unexpected error occurred while approving replenishment transaction.',
       };
     }
   }

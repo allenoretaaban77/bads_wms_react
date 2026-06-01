@@ -298,7 +298,7 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Reference Number</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Sales Transaction Number</label>
               <input
                 name="reference_no"
                 value={formData.reference_no}
@@ -488,7 +488,7 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
             <button
               type="button"
               onClick={handleCancel}
-              className="px-3 py-1.5 border border-gray-300 text-gray-700 rounded-custom hover:bg-gray-50 transition-colors text-sm flex items-center"
+              className="px-3 py-1.5 border border-gray-300 hover:text-white hover:border-gray-500/50 rounded-custom hover:bg-gray-900/50 transition-colors text-sm flex items-center disabled:opacity-50"
             >
               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

@@ -131,6 +131,8 @@ function ReplenishmentTable() {
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to DELETE this transaction?')) {
+      setShowViewModal(false);
+
       try {
         const result = await deleteReplenishmentTransaction(id);
         if (result.success) {
@@ -605,6 +607,7 @@ function ReplenishmentTable() {
           show={showViewModal}
           onClose={() => setShowViewModal(false)}
           onUpdate={handleShowUpdateFromView}
+          onDelete={handleDelete}
           onApprove={handleApproveReplenishment}
           id={selectedItem?.id}
         />

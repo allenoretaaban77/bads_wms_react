@@ -1,17 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getInventoryList } from '../../api/inventoryService';
-import { formatCurrency, formatReplinishmentDate } from '../../utils/formatters';
-import { generateTransactionNumber, getReplenishmentView } from '../../api/replenishmentService';
+import { formatCurrency, formatDate, toTitleCase } from '../../utils/formatters';
+import { getSalesView } from '../../api/salesService';
 import useAppViewModel from '../../viewmodels/useAppViewModel';
+import { APP_CONFIG } from '../../config/constants';
 
-const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModal, onSave }) => {
+const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSave }) => {
   const userData = useAppViewModel((state) => state.userData);
   const [formData, setFormData] = useState({
-    supplier: '',
-    reference_no: '',
-    date_received: new Date().toISOString().split('T')[0],
+    id: '',
+    invoice_no: '',
+    date_sold: new Date().toISOString().split('T')[0],
+    payment_status: '',
+    amount: '',
     remarks: '',
-    added_by: userData.employee_id
+    updated_by: userData.employee_id,
+    status : '',
   });
   
   const [items, setItems] = useState([]);
@@ -26,26 +30,31 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
 
   useEffect(() => {
     if (showEditModal && selectedItem) {
+      console.log(showEditModal, selectedItem);
       setFormData({
         id: selectedItem.id || '',
-        reference_no: selectedItem.reference_no || '',
-        supplier: selectedItem.supplier || '',
-        remarks: selectedItem.remarks || '',
-        date_received: formatReplinishmentDate(selectedItem.date_received) || '',
-        updated_by: userData.employee_id
+        customer_name: selectedItem.customer_name || '',
+        invoice_no: selectedItem.invoice_no || '',
+        date_sold: formatDate(selectedItem.date_sold) || '',
+        payment_status: selectedItem.payment_status,
+        amount: 0,
+        remarks: selectedItem.remarks,
+        updated_by: userData.employee_id,
+        status : selectedItem.status,
       });
 
       const fetchData = async () => {
         setIsSubmitting(true);
         setErrors({});
         
-        const result = await getReplenishmentView(selectedItem.id);
+        const result = await getSalesView(selectedItem.id);
         if (result.success) {
           const formattedItems = result.data.items.map((inventory_item, index) => {
-            console.log(inventory_item);
+            console.log('getSalesView', inventory_item);
             const name = resolveSuggestionName(inventory_item);
+            const priceValue = resolveSuggestionPrice(inventory_item);
             const costValue = resolveSuggestionCost(inventory_item);      
-            const qty = Number(inventory_item.qty_added) || 0;
+            const qty = Number(inventory_item.qty_sold) || 0;
             const cost = Number(costValue) || 0;
 
             return {
@@ -53,10 +62,13 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
               id: nextItemId + index,
               inventory_id: inventory_item.inventory_id,
               item_name: name,
-              quantity: inventory_item.qty_added,
+              quantity: inventory_item.qty_sold,
               current_qty: inventory_item.current_qty,
+              payment_status: inventory_item.payment_status,
               reorder_level: inventory_item.reorder_level,
               sku: inventory_item.sku,
+              current_price: priceValue !== undefined ? priceValue.toString() : '',
+              price: priceValue !== undefined ? priceValue.toString() : '',
               cost: costValue !== undefined ? costValue.toString() : '',
               total: inventory_item.total
             };
@@ -90,15 +102,15 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
   }, [itemSearchTerm]);
 
   const fetchTransactionNumber = async () => {
-    try {
-      const trnxNumber = await generateTransactionNumber();
-      setFormData(prev => ({
-        ...prev,
-        reference_no: trnxNumber,
-      }));
-    } catch (error) {
-      console.error(error);
-    }
+    // try {
+    //   const trnxNumber = await generateTransactionNumber();
+    //   setFormData(prev => ({
+    //     ...prev,
+    //     reference_no: trnxNumber,
+    //   }));
+    // } catch (error) {
+    //   console.error(error);
+    // }
   };
 
   const updateItemField = (inventory_id, field, value) => {
@@ -106,8 +118,8 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
       if (item.inventory_id !== inventory_id) return item;
       const updated = { ...item, [field]: value };
       const qty = Number(updated.quantity) || 0;
-      const cost = Number(updated.cost) || 0;
-      updated.total = qty * cost;
+      const price = Number(updated.price) || 0;
+      updated.total = qty * price;
       return updated;
     }));
   };
@@ -121,7 +133,11 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
   };
 
   const resolveSuggestionCost = (suggestion) => {
-    return suggestion.cost_per_unit || suggestion.cost || suggestion.price_per_unit || suggestion.price || 0;
+    return suggestion.cost_per_unit || suggestion.cost || 0;
+  };
+
+  const resolveSuggestionPrice = (suggestion) => {
+    return suggestion.price_per_unit || suggestion.price || 0;
   };
 
   const fetchItemSuggestions = async (query) => {
@@ -153,6 +169,7 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
   const handleSelectSuggestion = (suggestion) => {
     const name = resolveSuggestionName(suggestion);
     const costValue = resolveSuggestionCost(suggestion);
+    const priceValue = resolveSuggestionPrice(suggestion);
     const newErrors = {};
 
     setItems(prev => {
@@ -173,8 +190,10 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
           item_name: name,
           current_qty: suggestion.current_qty,
           reorder_level: suggestion.reorder_level,
+          current_price: priceValue !== undefined ? priceValue.toString() : '',
           quantity: '',
           sku: suggestion.sku,
+          price: priceValue !== undefined ? priceValue.toString() : '',
           cost: costValue !== undefined ? costValue.toString() : '',
           total: 0,
         },
@@ -216,9 +235,9 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
     setShowEditModal(false);
     setErrors({});
     setFormData({
-      supplier: '',
-      reference_no: '',
-      date_received: new Date().toISOString().split('T')[0],
+      customer_name: '',
+      invoice_no: '',
+      date_sold: new Date().toISOString().split('T')[0],
       remarks: '',
       added_by: ''
     });
@@ -229,8 +248,8 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
     setShowSuggestions(false);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (action) => {
+    // e.preventDefault();
     // if (!validateForm()) return;
 
     // if (!onSave) return;
@@ -239,27 +258,30 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
     try {
       const result = await onSave({
         id: formData.id,
-        supplier: formData.supplier,
-        reference_no: formData.reference_no,
-        date_received: formData.date_received,
+        customer_name: formData.customer_name,
+        invoice_no: formData.invoice_no,
+        date_sold: formData.date_sold,
         amount: getItemsTotal(),
+        payment_status: formData.payment_status,
         remarks: formData.remarks,
         updated_by: formData.updated_by,
         items: items.map(item => ({
           inventory_id: item.inventory_id,
           item_name: item.item_name,
           quantity: Number(item.quantity) || 0,
+          price: Number(item.price) || 0,
           cost: Number(item.cost) || 0,
           total: Number(item.total) || 0,
         })),
+        status : action,
       });
 
       if (result && result.success) {
         setShowEditModal(false);
         setFormData({
-          supplier: '',
-          reference_no: '',
-          date_received: new Date().toISOString().split('T')[0],
+          customer_name: '',
+          invoice_no: '',
+          date_sold: new Date().toISOString().split('T')[0],
           remarks: '',
           added_by: '',
         });
@@ -272,10 +294,15 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
 
       setIsSubmitting(false);
     } catch (error) {
-      console.error("Error saving replenishment:", error);
+      console.error("Error saving sales transaction", error);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const getStatus = (current) => {
+    if (current == "draft") return { text: 'Draft', color: 'text-yellow-600' };
+    return { text: 'Approved', color: 'text-green-600' };
   };
 
   if (!showEditModal) return null;
@@ -284,25 +311,25 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-custom p-4 max-w-screen-2xl w-full mb-5 mt-5 mx-4 max-h-screen overflow-y-auto">
         <div className="mb-6 pb-4 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-800 text-center">Update Replenishment</h2>
+          <h2 className="text-2xl font-bold text-gray-800 text-center">Update Sales Transaction - <span className={getStatus(formData.status).color}>{toTitleCase(formData.status)}</span></h2>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Reference Number</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Sales Transaction Number</label>
               <input
-                name="reference_no"
-                value={formData.reference_no}
+                name="invoice_no"
+                value={formData.invoice_no}
                 onChange={handleChange}
-                placeholder="Enter reference number"
+                placeholder="Enter sales transaction number"
                 // readOnly
                 className={`w-full px-3 py-2 text-sm border rounded-custom bg-gray-50 focus:outline-none ${
-                  errors.reference_no ? 'border-red-300' : 'border-gray-300'
+                  errors.invoice_no ? 'border-red-300' : 'border-gray-300'
                 }`}
               />
-              {errors.reference_no && <p className="mt-1 text-xs text-red-600">{errors.reference_no}</p>}
+              {errors.invoice_no && <p className="mt-1 text-xs text-red-600">{errors.invoice_no}</p>}
             </div>
             {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Reference Number</label>
@@ -325,30 +352,54 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
               {errors.reference_no && <p className="mt-1 text-xs text-red-600">{errors.reference_no}</p>}
             </div> */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
               <input
-                name="supplier"
-                value={formData.supplier}
+                name="customer_name"
+                value={formData.customer_name}
                 onChange={handleChange}
-                placeholder="Enter supplier"
+                placeholder="Enter customer name"
                 className={`w-full px-3 py-2 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
-                  errors.supplier ? 'border-red-300' : 'border-gray-300'
+                  errors.customer_name ? 'border-red-300' : 'border-gray-300'
                 }`}
               />
-              {errors.supplier && <p className="mt-1 text-xs text-red-600">{errors.supplier}</p>}
+              {errors.customer_name && <p className="mt-1 text-xs text-red-600">{errors.customer_name}</p>}
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date Received</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Date Sold</label>
               <input
                 type="date"
-                name="date_received"
-                value={formData.date_received}
+                name="date_sold"
+                value={formData.date_sold}
                 onChange={handleChange}
                 className={`w-full px-3 py-2 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
-                  errors.date_received ? 'border-red-300' : 'border-gray-300'
+                  errors.date_sold ? 'border-red-300' : 'border-gray-300'
                 }`}
               />
-              {errors.date_received && <p className="mt-1 text-xs text-red-600">{errors.date_received}</p>}
+              {errors.date_sold && <p className="mt-1 text-xs text-red-600">{errors.date_sold}</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Payment Status</label>
+              <select
+                name="payment_status"
+                value={formData.payment_status}
+                onChange={handleChange}
+                className={`w-full px-3 py-2 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                  errors.payment_status ? 'border-red-300' : 'border-gray-300'
+                }`}
+              >
+                <option value="">Select Payment Status</option>
+                {Object.entries(APP_CONFIG.PAYMENT_STATUS).map(([key, value]) => (
+                  <option key={key} value={value}>
+                    {key.charAt(0) + key.slice(1).toLowerCase()}
+                  </option>
+                ))}
+              </select>
+              {errors.payment_status && (
+                <p className="mt-1 text-xs text-red-600">{errors.payment_status}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
@@ -386,7 +437,8 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
                 ) : itemSuggestions.length > 0 ? (
                   itemSuggestions.map((suggestion, index) => {
                     const name = suggestion.name || suggestion.product_name || suggestion.item_name || suggestion.sku || `Item ${index + 1}`;
-                    const costValue = suggestion.cost_per_unit || suggestion.cost || 0;
+                    const priceValue = suggestion.price_per_unit || suggestion.price || 0;
+                    const costValue = suggestion.cost_per_unit || suggestion.cost_per_unit || 0;
                     return (
                       <button
                         key={`${name}-${index}`}
@@ -395,7 +447,7 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
                         className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
                       >
                         <div className="font-medium">{name} [{suggestion.sku}]</div>
-                        <div className="text-xs text-gray-500">Cost: ₱{Number(costValue).toFixed(2)}</div>
+                        <div className="text-xs text-gray-500">Cost: ₱{Number(costValue).toFixed(2)} | Price: ₱{Number(priceValue).toFixed(2)}</div>
                       </button>
                     );
                   })
@@ -416,7 +468,7 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
                     <th className="px-3 py-2">SKU</th>
                     <th className="px-3 py-2">Item Name</th>
                     <th className="px-3 py-2 text-right pr-9">Quantity</th>
-                    <th className="px-3 py-2 text-right pr-9">Cost</th>
+                    <th className="px-3 py-2 text-right pr-9">Price</th>
                     <th className="px-3 py-2 text-right">Total</th>
                   </tr>
                 </thead>
@@ -435,7 +487,7 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
                         </button>
                       </td>
                       <td className="px-3 py-2 align-top">{item.sku}</td>
-                      <td className="px-3 py-2 align-top text-gray-700">{item.item_name} [{item.current_qty}/{item.reorder_level}]</td>
+                      <td className="px-3 py-2 align-top text-gray-700">{item.item_name} [{item.current_qty}/{item.reorder_level}] [{item.cost}/{item.current_price}]</td>
                       <td className="px-3 py-2 align-top">
                         <input
                           type="number"
@@ -454,16 +506,16 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
                         <input
                           type="number"
                           step="0.01"
-                          name="cost"
-                          value={item.cost}
-                          onChange={(e) => updateItemField(item.inventory_id, 'cost', e.target.value)}
+                          name="price"
+                          value={item.price}
+                          onChange={(e) => updateItemField(item.inventory_id, 'price', e.target.value)}
                           onFocus={(e) => e.target.select()}
                           placeholder="0.00"
                           className={`w-full px-2 py-1 text-right text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
-                            errors[`cost_${item.inventory_id}`] ? 'border-red-300' : 'border-gray-300'
+                            errors[`price_${item.inventory_id}`] ? 'border-red-300' : 'border-gray-300'
                           }`}
                         />
-                        {errors[`cost_${item.inventory_id}`] && <p className="mt-1 text-[11px] text-red-600">{errors[`cost_${item.inventory_id}`]}</p>}
+                        {errors[`price_${item.inventory_id}`] && <p className="mt-1 text-[11px] text-red-600">{errors[`price_${item.inventory_id}`]}</p>}
                       </td>
                       <td className="px-3 py-2 align-top text-right">{formatCurrency(item.total) || '₱ 0.00'}</td>
                     </tr>
@@ -481,7 +533,7 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
             <button
               type="button"
               onClick={handleCancel}
-              className="px-3 py-1.5 border border-gray-300 text-gray-700 rounded-custom hover:bg-gray-50 transition-colors text-sm flex items-center"
+              className="px-3 py-1.5 border border-gray-300 hover:text-white hover:border-gray-500/50 rounded-custom hover:bg-gray-900/50 transition-colors text-sm flex items-center disabled:opacity-50"
             >
               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -489,7 +541,8 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
               Cancel
             </button>
             <button
-              type="submit"
+              type="button"
+              onClick={() => handleSubmit("draft")}
               disabled={isSubmitting}
               className="px-3 py-1.5 bg-button text-white rounded-custom hover:bg-button-hover transition-colors text-sm flex items-center disabled:opacity-50"
             >
@@ -498,7 +551,7 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
                   <svg className="animate-spin h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
-                  Updating...
+                  Processing...
                 </>
               ) : (
                 <>
@@ -518,4 +571,4 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
   );
 };
 
-export default UpdateReplenishmentModal;
+export default UpdateSalesModal;

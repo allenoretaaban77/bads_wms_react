@@ -141,6 +141,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
           reorder_level: suggestion.reorder_level,
           quantity: '',
           sku: suggestion.sku,
+          current_price: priceValue !== undefined ? priceValue.toString() : '',
           price: priceValue !== undefined ? priceValue.toString() : '',
           cost: costValue !== undefined ? costValue.toString() : '',
           total: 0,
@@ -198,8 +199,8 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
     setShowSuggestions(false);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (action) => {
+    // e.preventDefault();
     // if (!validateForm()) return;
 
     // if (!onSave) return;
@@ -221,6 +222,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
           price: Number(item.price) || 0,
           total: Number(item.total) || 0,
         })),
+        status : action,
       });
 
       if (result && result.success) {
@@ -256,11 +258,11 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
           <h2 className="text-2xl font-bold text-gray-800 text-center">Create Sales Transaction</h2>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Transaction Number</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Sales Transaction Number</label>
               <div className={`flex gap-2 w-full px-3 py-2 text-sm border rounded-custom bg-gray-50 focus:outline-none ${
                     errors.invoice_no ? 'border-red-300' : 'border-gray-300'
                   }`}>
@@ -268,7 +270,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
                   name="invoice_no"
                   value={formData.invoice_no}
                   onChange={handleChange}
-                  placeholder="Enter reference number"
+                  placeholder="Enter sales transaction number"
                   className="flex-1 focus:outline-none"
                 />
                 <button id="refreshBtn" type="button" aria-label="Refresh value" title="Refresh" onClick={fetchTransactionNumber}>
@@ -285,7 +287,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
                 name="customer_name"
                 value={formData.customer_name}
                 onChange={handleChange}
-                placeholder="Enter customer_name"
+                placeholder="Enter customer name"
                 className={`w-full px-3 py-2 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                   errors.customer_name ? 'border-red-300' : 'border-gray-300'
                 }`}
@@ -293,6 +295,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
               {errors.customer_name && <p className="mt-1 text-xs text-red-600">{errors.customer_name}</p>}
             </div>
           </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Date Sold</label>
@@ -414,7 +417,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
                         </button>
                       </td>
                       <td className="px-3 py-2 align-top">{item.sku}</td>
-                      <td className="px-3 py-2 align-top text-gray-700">{item.item_name} [{item.current_qty}/{item.reorder_level}] [{item.cost}/{item.price}]</td>
+                      <td className="px-3 py-2 align-top text-gray-700">{item.item_name} [{item.current_qty}/{item.reorder_level}] [{item.cost}/{item.current_price}]</td>
                       <td className="px-3 py-2 align-top">
                         <input
                           type="number"
@@ -460,14 +463,14 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
             <button
               type="button"
               onClick={handleCancel}
-              className="px-3 py-1.5 border border-gray-300 text-gray-700 rounded-custom hover:bg-gray-50 transition-colors text-sm flex items-center"
+              className="px-3 py-1.5 border border-gray-300 hover:text-white hover:border-gray-500/50 rounded-custom hover:bg-gray-900/50 transition-colors text-sm flex items-center disabled:opacity-50"
             >
               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
               Cancel
             </button>
-            <button
+            {/* <button
               type="submit"
               disabled={isSubmitting}
               className="px-3 py-1.5 bg-button text-white rounded-custom hover:bg-button-hover transition-colors text-sm flex items-center disabled:opacity-50"
@@ -485,6 +488,29 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   Save
+                </>
+              )}
+            </button> */}
+            <button
+              type="button"
+              onClick={() => handleSubmit("draft")}
+              disabled={isSubmitting}
+              className="px-3 py-1.5 bg-gray-900/50 text-white rounded-custom hover:bg-gray-900 transition-colors text-sm flex items-center disabled:opacity-50"
+            >
+              {isSubmitting ? (
+                <>
+                  <svg className="animate-spin h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V5l-2-2zM7 3v4h10V3M12 12v4m0 0h4m-4 0H8"
+                    />
+                  </svg>
+                  Save as Draft
                 </>
               )}
             </button>

@@ -83,7 +83,7 @@ export const APP_CONFIG = {
   PAYMENT_STATUS: {
     PAID: 'paid',
     UNPAID: 'unpaid',
-    DRAFT: 'draft',
+    // DRAFT: 'draft',
   }
 };
 
