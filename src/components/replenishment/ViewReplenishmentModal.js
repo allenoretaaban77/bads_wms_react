@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { getReplenishmentView } from '../../api/replenishmentService';
 import { formatCurrency, toTitleCase } from '../../utils/formatters';
+import useAppViewModel from '../../viewmodels/useAppViewModel';
 
-function ViewReplenishmentModal({ show, onClose, onUpdate, id }) {
+function ViewReplenishmentModal({ show, onClose, onUpdate, onApprove, id }) {
+  const userData = useAppViewModel((state) => state.userData);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -29,11 +31,35 @@ function ViewReplenishmentModal({ show, onClose, onUpdate, id }) {
 
   const handleUpdate = (item) => {
     onUpdate(item);
-  }
+  };
 
-  const handleSubmit = async (action) => {
+  const handleSubmit = async (action, data) => {
+    console.log(action, data);
+    if (window.confirm('Are you sure you want to APPROVE this transaction?')) {
+      setIsSubmitting(true);
 
-  }
+      try {
+        const result = await onApprove({
+          id: data.id,
+          reference_no: data.reference_no,
+          updated_by: userData.employee_id,
+          status : action
+        });
+
+        if (result && result.success) {
+          // onClose(true);
+          setError(null);
+        } else {
+          console.log(result.error.error);
+          setError(result.error.error);
+        }
+      } catch (error) {
+        console.error("Error saving replenishment:", error);
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+  };
 
   const getStatus = (current) => {
     if (current == "draft") return { text: 'Draft', color: 'text-yellow-600' };
@@ -50,16 +76,20 @@ function ViewReplenishmentModal({ show, onClose, onUpdate, id }) {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-custom p-4 max-w-screen-xl w-full mx-2 max-h-screen overflow-y-auto">
   
-        <div className="mb-6 pb-4 border-b border-gray-200">
+        {loading && <div className='w-full text-center'><span className='text-green-700'>Loading...</span></div>}
+
+        <div className="mb-6 border-b border-gray-200 pb-4">
           {data && (
+            <>
             <h2 className="text-2xl font-bold text-gray-800 text-center">
               Replenishment Details - <span className={getStatus(data.status).color}>{getStatus(data.status).text}</span>
             </h2 >
+            {error && <div className='w-full text-center'><span className='text-red-500'>{error}</span></div>}
+            </>
           )}
         </div>
 
-        {loading && <p className="text-green-700 text-sm pb-7">Loading...</p>}
-        {error && <p className="text-red-500 pb-7">{error}</p>}
+        {/* {error && <p className="text-red-500 pb-7">{error}</p>} */}
         {data && (
           <div>
             <div className="grid grid-cols-4 gap-4 mb-4 text-sm">
@@ -116,7 +146,7 @@ function ViewReplenishmentModal({ show, onClose, onUpdate, id }) {
               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
-              Cancel
+              Close
             </button>
             {data && data.status == "draft" && (
               <>
@@ -132,7 +162,7 @@ function ViewReplenishmentModal({ show, onClose, onUpdate, id }) {
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleSubmit("approved")}
+                  onClick={() => handleSubmit("approved", data)}
                   disabled={isSubmitting}
                   className="px-3 py-1.5 bg-button text-white rounded-custom hover:bg-button-hover transition-colors text-sm flex items-center disabled:opacity-50"
                 >

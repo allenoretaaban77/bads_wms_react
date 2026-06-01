@@ -201,6 +201,56 @@ export const updateReplenishmentTransaction = async (itemData) => {
   }
 };
 
+export const approveReplenishmentTransaction = async (itemData) => {
+  try {
+    const formData = new URLSearchParams();
+    Object.keys(itemData).forEach(key => {
+      formData.append(key, itemData[key]);
+    });
+
+    const response = await fetch(`${API_BASE_URL}/api/replenishment/approve`, {
+      method: 'PUT',
+      headers: getApiHeaders(),
+      body: JSON.stringify(itemData),
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to update replenishment transaction.';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData;
+      } catch (e) {
+        errorMessage = response.statusText || errorMessage;
+      }
+      
+      return {
+        success: false,
+        error: errorMessage,
+        status: response.status,
+      };
+    }
+
+    const data = await response.json();
+    
+    return {
+      success: true,
+      data: data,
+    };
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      return {
+        success: false,
+        error: 'Network error. Please check if the server is running.',
+      };
+    } else {
+      return {
+        success: false,
+        error: 'An unexpected error occurred while creating replenishment transaction.',
+      };
+    }
+  }
+};
+
 export const deleteReplenishmentTransaction = async (id) => {
   try {
     const formData = new URLSearchParams();

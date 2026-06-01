@@ -121,7 +121,7 @@ function InventoryTable({ page_type }) {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this item?')) {
+    if (window.confirm('Are you sure you want to DELETE this item?')) {
       try {
         const result = await deleteInventoryItem(id, userData.employee_id);
         if (result.success) {

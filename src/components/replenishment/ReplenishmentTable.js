@@ -6,6 +6,7 @@ import {
   getReplenishmentList, 
   createReplenishmentTransaction,
   updateReplenishmentTransaction,
+  approveReplenishmentTransaction,
   deleteReplenishmentTransaction
 } from '../../api/replenishmentService';
 import Alert from '../../utils/alert';
@@ -129,7 +130,7 @@ function ReplenishmentTable() {
   } 
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this transaction?')) {
+    if (window.confirm('Are you sure you want to DELETE this transaction?')) {
       try {
         const result = await deleteReplenishmentTransaction(id);
         if (result.success) {
@@ -221,6 +222,36 @@ function ReplenishmentTable() {
       return {
         success: false,
         error: 'Failed to update replenishment transaction.'
+      };
+    }
+  };
+
+  const handleApproveReplenishment = async (itemData) => {
+    try {
+      const result = await approveReplenishmentTransaction(itemData);
+      if (result.success) {
+        setShowViewModal(false);
+        
+        setAlert({
+          show: true,
+          message: 'Replenishment transaction approved successfully!',
+          type: 'success'
+        });
+        setTimeout(() => {
+          setAlert({ show: false, message: '', type: '' });
+        }, 3000);
+
+        setCurrentPage(1);
+        setRefreshKey(prev => prev + 1); // Trigger data refresh
+      } else {      
+        return result;
+      }
+    } catch (err) {
+      setError('Failed to approve replenishment transaction.');
+
+      return {
+        success: false,
+        error: 'Failed to approve replenishment transaction.'
       };
     }
   };
@@ -471,6 +502,7 @@ function ReplenishmentTable() {
                             </svg>
                           </button> 
                         )}
+                        {item.status == "draft" && (
                         <button
                           onClick={() => handleDelete(item.id)}
                           className="text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
@@ -480,6 +512,7 @@ function ReplenishmentTable() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
                         </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -572,6 +605,7 @@ function ReplenishmentTable() {
           show={showViewModal}
           onClose={() => setShowViewModal(false)}
           onUpdate={handleShowUpdateFromView}
+          onApprove={handleApproveReplenishment}
           id={selectedItem?.id}
         />
         
