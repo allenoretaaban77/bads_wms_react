@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { formatCurrency } from '../../utils/formatters';
+import { formatCurrency, formatLongDate } from '../../utils/formatters';
 import { createInventoryItem, updateInventoryItem, deleteInventoryItem } from '../../api/inventoryService';
 import { APP_CONFIG } from '../../config/constants';
 import { 
@@ -476,7 +476,7 @@ function ReplenishmentTable() {
                   >
                     <td className="px-3 py-2 border-r text-sm font-semibold text-green-900">{item.id}</td>
                     <td className="px-3 py-2 border-r text-sm">{item.reference_no}</td>
-                    <td className="px-3 py-2 border-r text-sm">{item.date_received}</td>
+                    <td className="px-3 py-2 border-r text-sm">{formatLongDate(item.date_received)}</td>
                     <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.amount)}</td>
                     <td className="px-3 py-2 border-r text-sm">{item.supplier}</td>
                     <td className="px-3 py-2 border-r text-sm">{item.remarks}</td>

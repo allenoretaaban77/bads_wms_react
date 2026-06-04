@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { getSalesView } from '../../api/salesService';
-import { formatCurrency, toTitleCase } from '../../utils/formatters';
+import { formatCurrency, toTitleCase, formatLongDate } from '../../utils/formatters';
 import useAppViewModel from '../../viewmodels/useAppViewModel';
+import { generatePrintReceipt } from '../../utils/printUtils';
 
 function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, id }) {
   const userData = useAppViewModel((state) => state.userData);
@@ -36,6 +37,14 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, id }) {
   const handleDelete = (item) => {
     onDelete(item.id);
   };
+
+  const handlePrint = (item) => {  
+    const dataToPrint = {
+      ...item,
+      employee: userData.firstname + ' ' + userData.middlename + ' ' + userData.lastname 
+    };
+    generatePrintReceipt(dataToPrint);
+  }
 
   const handleSubmit = async (action, data) => {
     console.log(action, data);
@@ -77,7 +86,7 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, id }) {
   };
 
   const getStatus = (current) => {
-    if (current == "draft") return { text: 'Draft', color: 'text-yellow-600' };
+    if (current === "draft") return { text: 'Draft', color: 'text-yellow-600' };
     return { text: 'Approved', color: 'text-green-600' };
   };
 
@@ -114,7 +123,7 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, id }) {
           <div>
             <div className="grid grid-cols-4 gap-4 mb-4 text-sm">
               <div><strong>Transaction No:</strong> {data.invoice_no}</div>
-              <div><strong>Date Sold:</strong> {data.date_sold}</div>
+              <div><strong>Date Sold:</strong> {formatLongDate(data.date_sold)}</div>
               <div><strong>Customer Name:</strong> {data.customer_name}</div>
               <div><strong>Remarks:</strong> <span className={getRecordStatus(data.record_status).color}> {toTitleCase(getRecordStatus(data.record_status).text)}</span>{data.remarks}</div>
             </div>
@@ -127,7 +136,7 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, id }) {
                       <th className="border-r px-3 text-left cursor-pointer hover:bg-green-700 text-white">SKU</th>
                       <th className="border-r px-3 text-left cursor-pointer hover:bg-green-700 text-white">Product Name</th>
                       <th className="border-r p-2 text-right">Quantity</th>
-                      <th className="border-r p-2 text-right">Cost per Unit</th>
+                      <th className="border-r p-2 text-right">Price per Unit</th>
                       <th className="border-r p-2 text-right">Total</th>
                     </tr>
                   </thead>
@@ -169,7 +178,7 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, id }) {
                 Close
               </button>
             )}
-            {data && data.status == "draft" && (
+            {data && data.status === "draft" && (
               <>
                 <button
                   type="button"
@@ -214,6 +223,23 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, id }) {
                   )}
                 </button>
               </>
+            )}
+            {data && (
+              <button
+                type="button"
+                onClick={() => handlePrint(data)}
+                className="px-3 py-1.5 text-white border border-blue-600/50 bg-blue-500 hover:text-white hover:border-blue-800/50 rounded-custom hover:bg-blue-700 transition-colors text-sm flex items-center disabled:opacity-50"
+              >
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2m-10 0h10v4H6v-4z"
+                  />
+                </svg>
+                Print
+              </button>
             )}
           </div>
         </form>

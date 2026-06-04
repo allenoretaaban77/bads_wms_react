@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getReplenishmentView } from '../../api/replenishmentService';
-import { formatCurrency, toTitleCase } from '../../utils/formatters';
+import { formatCurrency, toTitleCase, formatLongDate } from '../../utils/formatters';
 import useAppViewModel from '../../viewmodels/useAppViewModel';
 
 function ViewReplenishmentModal({ show, onClose, onUpdate, onDelete, onApprove, id }) {
@@ -104,7 +104,7 @@ function ViewReplenishmentModal({ show, onClose, onUpdate, onDelete, onApprove, 
             <div className="grid grid-cols-4 gap-4 mb-4 text-sm">
             <div><strong>Reference No:</strong> {data.reference_no}</div>
               <div><strong>Supplier:</strong> {data.supplier}</div>
-              <div><strong>Date Received:</strong> {data.date_received}</div>
+              <div><strong>Date Received:</strong> {formatLongDate(data.date_received)}</div>
               <div><strong>Remarks:</strong> {data.remarks}</div>
             </div>
 

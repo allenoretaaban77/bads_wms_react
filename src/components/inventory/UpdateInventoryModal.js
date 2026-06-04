@@ -246,7 +246,7 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
                 )}
               </div>
               <div className="type">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
                 <select
                   name="type"
                   value={formData.type}

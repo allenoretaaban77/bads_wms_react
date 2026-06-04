@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { formatCurrency, toTitleCase } from '../../utils/formatters';
+import { formatCurrency, toTitleCase, formatLongDate } from '../../utils/formatters';
 import { createInventoryItem, updateInventoryItem, deleteInventoryItem } from '../../api/inventoryService';
 import { APP_CONFIG } from '../../config/constants';
 import {
@@ -240,6 +240,8 @@ function SalesTable() {
         setCurrentPage(1); // Go to first page to see the new item
         // Trigger data refresh by incrementing refresh key
         setRefreshKey(prev => prev + 1);
+
+        handleView(result.data);
       } else {
         return result;
       }
@@ -521,7 +523,7 @@ function SalesTable() {
                   >
                     <td className="px-3 py-2 border-r text-sm font-semibold text-green-900">{item.id}</td>
                     <td className="px-3 py-2 border-r text-sm">{item.invoice_no}</td>
-                    <td className="px-3 py-2 border-r text-sm">{item.date_sold}</td>
+                    <td className="px-3 py-2 border-r text-sm">{formatLongDate(item.date_sold)}</td>
                     <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.amount)}</td>
                     <td className="px-3 py-2 border-r text-sm">{item.customer_name}</td>
                     <td className="px-4 py-3 border-r text-sm text-right">

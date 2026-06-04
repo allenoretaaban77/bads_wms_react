@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import useAppViewModel from '../../viewmodels/useAppViewModel';
 import { APP_CONFIG } from '../../config/constants';
 
@@ -197,7 +197,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                 )}
               </div>
               <div className="type">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
                 <select
                   name="type"
                   value={formData.type}
@@ -359,7 +359,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
               </svg>
               Cancel
             </button>
-            {/* <button
+            <button
               type="button"
               onClick={handleSubmit}
               disabled={isLoading}
@@ -380,10 +380,10 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   Create
                 </>
               )}
-            </button> */}
-            <button
+            </button>
+            {/* <button
               type="button"
-              onClick={() => handleSubmit("draft")}
+              onClick={() => handleSubmit}
               disabled={isLoading}
               className="px-3 py-1.5 bg-gray-900/50 text-white rounded-custom hover:bg-gray-900 transition-colors text-sm flex items-center disabled:opacity-50"
             >
@@ -400,10 +400,10 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V5l-2-2zM7 3v4h10V3M12 12v4m0 0h4m-4 0H8"
                     />
                   </svg>
-                  Save as Draft
+                  Save
                 </>
               )}
-            </button>
+            </button> */}
           </div>
         </div>
       </div>
