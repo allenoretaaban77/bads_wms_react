@@ -4,9 +4,20 @@ export const formatCurrency = (amount) => {
 }
 
 export const formatReplinishmentDate = (dateString) => {
+  if (!dateString) return "";
+  
   const rawDate = dateString.split(" ")[0]; // "2026-05-26"
 
   return rawDate;
+}
+
+export const formatPostingDate = (dateString) => {
+  if (!dateString) return "";
+
+  const rawDate = dateString.split(" ")[0]; // "2026-05-26"
+  const [year, month, day] = rawDate.split("-");
+
+  return `${year}-${month}-${day}`;
 }
 
 export const formatDate = (dateString) => {

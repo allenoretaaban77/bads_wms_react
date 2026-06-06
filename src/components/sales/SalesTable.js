@@ -303,9 +303,9 @@ function SalesTable() {
   };
   
   const getQuantityStatus = (status) => {
-    if (status === 'unpaid') return { text: 'Paid', color: 'text-red-600' };
+    if (status === 'credit') return { text: 'Credit', color: 'text-red-600' };
     if (status === 'draft') return { text: 'Draft', color: 'text-yellow-600' };
-    return { text: 'Paid', color: 'text-green-600' };
+    return { text: 'Cash', color: 'text-green-600' };
   };
   
   const getRecordStatus = (status) => {
@@ -316,6 +316,11 @@ function SalesTable() {
   const getStatus = (status) => {
     if (status === 'draft') return { text: 'Draft', color: 'text-red-600' };
     return { text: 'Approved', color: 'text-green-600' };
+  };
+  
+  const getPaidStatus = (status) => {
+    if (status === 'no') return { text: 'No', color: 'text-red-600' };
+    return { text: 'Yes', color: 'text-green-600' };
   };
 
   return (
@@ -474,8 +479,21 @@ function SalesTable() {
                     className="border-r px-3 py-2 text-left text-white text-sm font-semibold cursor-pointer hover:bg-green-700"
                   >
                     <div className="flex items-center">
-                      Payment Status
+                      Payment Type
                       {sortField === 'payment_status' && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleSort('is_paid')}
+                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold cursor-pointer hover:bg-green-700"
+                  >
+                    <div className="flex items-center">
+                      Paid?
+                      {sortField === 'is_paid' && (
                         <span className="ml-1">
                           {sortOrder === 'asc' ? '↑' : '↓'}
                         </span>
@@ -526,11 +544,12 @@ function SalesTable() {
                     <td className="px-3 py-2 border-r text-sm">{formatLongDate(item.date_sold)}</td>
                     <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.amount)}</td>
                     <td className="px-3 py-2 border-r text-sm">{item.customer_name}</td>
-                    <td className="px-4 py-3 border-r text-sm text-right">
+                    <td className="px-4 py-3 border-r text-sm text-left">
                       <span className={`font-medium ${quantityStatus.color}`}>
                         {toTitleCase(item.payment_status)}
                       </span>
                     </td>
+                    <td className="px-3 py-2 border-r text-sm"><span className={getPaidStatus(item.is_paid).color}> {toTitleCase(getPaidStatus(item.is_paid).text)}</span></td>
                     <td className="px-3 py-2 border-r text-sm"><span className={getStatus(item.status).color}> {toTitleCase(getStatus(item.status).text)}</span></td>
                     <td className="px-3 py-2 border-r text-sm">{item.remarks}</td>
                     <td className="px-3 py-2 border-0">

@@ -129,7 +129,7 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
           sku: '',
           cost_per_unit: '',
           price_per_unit: '',
-          initial_qty: '',
+          initial_qty: 0,
           current_qty: '',
           reorder_level: '',
           type: '',
@@ -164,7 +164,7 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
       sku: '',
       cost_per_unit: '',
       price_per_unit: '',
-      initial_qty: '',
+      initial_qty: 0,
       current_qty: '',
       reorder_level: '',
       type: '',
@@ -301,7 +301,7 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
                   ))}
                 </select>
               </div>
-              <div className="initial_qty">
+              {/* <div className="initial_qty">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Initial Quantity *</label>
                 <input
                   type="number"
@@ -317,23 +317,7 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
                 {errors.initial_qty && (
                   <p className="mt-1 text-xs text-red-600">{errors.initial_qty}</p>
                 )}
-              </div>
-              <div className="shelf">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Shelf</label>
-                <select
-                  name="shelf"
-                  value={formData.shelf}
-                  onChange={handleChange}
-                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-                >
-                  <option value="">Select Shelf</option>
-                  {[...Array(10)].map((_, i) => (
-                    <option key={i + 1} value={i + 1}>
-                      Shelf {i + 1}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              </div> */}
               <div className="current_qty">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Current Quantity</label>
                 <input
@@ -350,18 +334,18 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
                   <p className="mt-1 text-xs text-red-600">{errors.current_qty}</p>
                 )}
               </div>
-              <div className="box">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Box</label>
+              <div className="shelf">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Shelf</label>
                 <select
-                  name="box"
-                  value={formData.box}
+                  name="shelf"
+                  value={formData.shelf}
                   onChange={handleChange}
                   className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
                 >
-                  <option value="">Select Box</option>
+                  <option value="">Select Shelf</option>
                   {[...Array(10)].map((_, i) => (
                     <option key={i + 1} value={i + 1}>
-                      Box {i + 1}
+                      Shelf {i + 1}
                     </option>
                   ))}
                 </select>
@@ -383,7 +367,23 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
                   <p className="mt-1 text-xs text-red-600">{errors.reorder_level}</p>
                 )}
               </div>
-              <div className="remarks col-span-2">
+              <div className="box">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Box</label>
+                <select
+                  name="box"
+                  value={formData.box}
+                  onChange={handleChange}
+                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+                >
+                  <option value="">Select Box</option>
+                  {[...Array(10)].map((_, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      Box {i + 1}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="remarks col-span-1">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
                 <textarea
                   name="remarks"

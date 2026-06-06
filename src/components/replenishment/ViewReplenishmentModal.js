@@ -86,26 +86,22 @@ function ViewReplenishmentModal({ show, onClose, onUpdate, onDelete, onApprove, 
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-custom p-4 max-w-screen-xl w-full mx-2 max-h-screen overflow-y-auto">
   
-        {loading && <div className='w-full text-center'><span className='text-green-700'>Loading...</span></div>}
 
-        <div className="mb-6 border-b border-gray-200 pb-4">
-          {data && (
-            <>
+        <div className="mb-2 border-b border-gray-200 pb-4">
             <h2 className="text-2xl font-bold text-gray-800 text-center">
-              Replenishment Details - <span className={getStatus(data.status).color}>{getStatus(data.status).text}</span>
+              Replenishment Details {data && (<>- <span className={getStatus(data.status).color}>{getStatus(data.status).text}</span></>)}
             </h2 >
             {error && <div className='w-full text-center'><span className='text-red-500'>{error}</span></div>}
-            </>
-          )}
+            {loading && <div className='w-full text-center'><span className='text-green-700'>Loading...</span></div>}
         </div>
 
         {data && (
           <div>
-            <div className="grid grid-cols-4 gap-4 mb-4 text-sm">
-            <div><strong>Reference No:</strong> {data.reference_no}</div>
-              <div><strong>Supplier:</strong> {data.supplier}</div>
-              <div><strong>Date Received:</strong> {formatLongDate(data.date_received)}</div>
-              <div><strong>Remarks:</strong> {data.remarks}</div>
+            <div className="grid grid-cols-2 gap-0 mb-2 text-sm">
+              <div><span>Reference No:</span> <span className="font-semibold text-red-400">{data.reference_no}</span></div>
+              <div><span>Supplier:</span> <span className="font-semibold text-red-400">{data.supplier}</span></div>
+              <div><span>Date Received:</span> <span className="font-semibold text-red-400">{formatLongDate(data.date_received)}</span></div>
+              <div><span>Remarks:</span> <span className="font-semibold text-red-400">{data.remarks || '-'}</span></div>
             </div>
 
             <div className="bg-white border border-gray-200 rounded-custom shadow-sm overflow-hidden">

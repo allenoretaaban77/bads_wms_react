@@ -81,8 +81,8 @@ export const APP_CONFIG = {
   },
 
   PAYMENT_STATUS: {
-    PAID: 'paid',
-    UNPAID: 'unpaid',
+    CASH: 'cash',
+    CREDIT: 'credit',
     // DRAFT: 'draft',
   }
 };

@@ -62,6 +62,11 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
     }
   };
 
+  const handleBlur = () => {
+    // setTimeout(() => setShowSuggestions(false), 200);
+    setTimeout(() => setItemSearchTerm(''), 200);
+  };
+
   const updateItemField = (inventory_id, field, value) => {
     setItems(prev => prev.map(item => {
       if (item.inventory_id !== inventory_id) return item;
@@ -252,20 +257,24 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
   if (!showCreateModal) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-custom p-4 max-w-screen-2xl w-full mb-5 mt-5 mx-4 max-h-screen overflow-y-auto">
-        <div className="mb-6 pb-4 border-b border-gray-200">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-custom p-4 max-w-screen-2xl w-full h-full flex flex-col">
+        
+        {/* Modal Header */}
+        <div className="mb-6 pb-4 border-b border-gray-200 flex-0">
           <h2 className="text-2xl font-bold text-gray-800 text-center">Create Sales Transaction</h2>
         </div>
 
-        <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
+        {/* Form Container */}
+        <form onSubmit={(e) => e.preventDefault()} className="space-y-4 flex-1 flex flex-col min-h-0">
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Inputs section - Fixed at top */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-0">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Sales Transaction Number</label>
               <div className={`flex gap-2 w-full px-3 py-2 text-sm border rounded-custom bg-gray-50 focus:outline-none ${
-                    errors.invoice_no ? 'border-red-300' : 'border-gray-300'
-                  }`}>
+                  errors.invoice_no ? 'border-red-300' : 'border-gray-300'
+                }`}>
                 <input
                   name="invoice_no"
                   value={formData.invoice_no}
@@ -281,6 +290,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
               </div>
               {errors.invoice_no && <p className="mt-1 text-xs text-red-600">{errors.invoice_no}</p>}
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
               <input
@@ -296,7 +306,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-0">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Date Sold</label>
               <input
@@ -310,6 +320,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
               />
               {errors.date_sold && <p className="mt-1 text-xs text-red-600">{errors.date_sold}</p>}
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Payment Status</label>
               <select
@@ -331,6 +342,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
                 <p className="mt-1 text-xs text-red-600">{errors.payment_status}</p>
               )}
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
               <textarea
@@ -344,15 +356,14 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          </div>
-
-          <div className="relative" style={{ marginTop: "0px" }}>
+          {/* Search Bar - Fixed */}
+          <div className="relative flex-0" style={{ marginTop: "0px" }}>
             <label className="block text-sm font-medium text-gray-700 mb-1">Search items</label>
             <input
               type="text"
               ref={searchInputRef}
               value={itemSearchTerm}
+              onBlur={handleBlur}
               onChange={(e) => {
                 setItemSearchTerm(e.target.value);
                 setShowSuggestions(true);
@@ -361,14 +372,14 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
               className="w-full px-3 py-2 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
             />
             {showSuggestions && itemSearchTerm.trim() && (
-              <div className="absolute z-20 mt-1 w-full rounded-custom border border-gray-200 bg-white shadow-lg max-h-60 overflow-auto">
+              <div className="absolute z-20 mt-1 w-full rounded-custom border border-gray-200 bg-white shadow-lg max-h-60 overflow-y-auto">
                 {isSearching ? (
                   <div className="px-3 py-2 text-sm text-gray-500">Searching...</div>
                 ) : itemSuggestions.length > 0 ? (
                   itemSuggestions.map((suggestion, index) => {
                     const name = suggestion.name || suggestion.product_name || suggestion.item_name || suggestion.sku || `Item ${index + 1}`;
                     const priceValue = suggestion.price_per_unit || suggestion.price || 0;
-                    const costValue = suggestion.cost_per_unit || suggestion.cost_per_unit || 0;
+                    const costValue = suggestion.cost_per_unit || suggestion.cost || 0;
                     return (
                       <button
                         key={`${name}-${index}`}
@@ -388,36 +399,44 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
             )}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Items {errors.items && <label className="mt-1 text-xs text-red-600">{errors.items}</label>}</label>
-            <div className="rounded-custom border border-gray-300 overflow-hidden">
-              <table className="min-w-full text-left text-sm">
-                <thead className="bg-header text-white">
+          {/* --- SCROLLABLE TABLE CONTAINER START --- */}
+          <div className="flex flex-col flex-1 min-h-0">
+            <label className="block text-sm font-medium text-gray-700 mb-1 flex-0">
+              Items ({items.length || 0}) {errors.items && <span className="mt-1 text-xs text-red-600">{errors.items}</span>}
+            </label>
+            
+            {/* This wrapper limits table height and manages scrolling */}
+            <div className="rounded-custom border border-gray-300 flex-1 overflow-y-auto min-h-0 max-h-[45vh]">
+              <table className="min-w-full text-left text-sm table-auto border-collapse">
+                {/* sticky top-0 ensures the table header stays at the top while scrolling items */}
+                <thead className="bg-header text-white sticky top-0 z-10">
                   <tr>
-                    <th className="py-2"> </th>
-                    <th className="px-3 py-2">SKU</th>
-                    <th className="px-3 py-2">Item Name</th>
-                    <th className="px-3 py-2 text-right pr-9">Quantity</th>
-                    <th className="px-3 py-2 text-right pr-9">Price</th>
-                    <th className="px-3 py-2 text-right">Total</th>
+                    <th className="py-2 pl-2 bg-header"> </th>
+                    <th className="py-2 bg-header">#</th>
+                    <th className="px-3 py-2 bg-header">Item</th>
+                    <th className="px-3 py-2 text-right pr-9 bg-header">Quantity</th>
+                    <th className="px-3 py-2 text-right pr-9 bg-header">Price</th>
+                    <th className="px-3 py-2 text-right pr-3 bg-header">Total</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {items.map(item => (
-                    <tr key={item.inventory_id} className="border-t border-gray-200">
+                  {items.map((item, index) => (
+                    <tr key={item.inventory_id} className="border-t border-gray-200 hover:bg-gray-50">
                       <td className="px-1 py-2 align-top text-center">
                         <button
                           type="button"
                           onClick={() => removeItemRow(item.inventory_id)}
-                          className="text-sm text-red-600 hover:text-red-800 pt-1 pr-1"
+                          className="text-sm text-red-600 hover:text-red-800 pt-1 pr-2"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
                         </button>
                       </td>
-                      <td className="px-3 py-2 align-top">{item.sku}</td>
-                      <td className="px-3 py-2 align-top text-gray-700">{item.item_name} [{item.current_qty}/{item.reorder_level}] [{item.cost}/{item.current_price}]</td>
+                      <td className="py-2 align-top text-left">{index + 1}</td>
+                      <td className="px-3 py-2 align-top text-gray-700">
+                        {item.item_name} [{item.sku}] [{item.current_qty}/{item.reorder_level}] [{item.cost}/{item.current_price}]
+                      </td>
                       <td className="px-3 py-2 align-top">
                         <input
                           type="number"
@@ -447,19 +466,22 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
                         />
                         {errors[`price_${item.inventory_id}`] && <p className="mt-1 text-[11px] text-red-600">{errors[`price_${item.inventory_id}`]}</p>}
                       </td>
-                      <td className="px-3 py-2 align-top text-right">{formatCurrency(item.total) || '₱ 0.00'}</td>
+                      <td className="px-3 py-2 align-top text-right pr-3">{formatCurrency(item.total) || '₱ 0.00'}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           </div>
+          {/* --- SCROLLABLE TABLE CONTAINER END --- */}
 
-          <div className="rounded-custom border border-gray-300 pr-3 py-1 bg-gray-50 text-right text-md font-semibold text-green-900" style={{ marginTop: "5px" }}>
+          {/* Total Summary Row - Fixed */}
+          <div className="flex-0 rounded-custom border border-gray-300 pr-3 py-1 bg-gray-50 text-right text-md font-semibold text-green-900" style={{ marginTop: "5px" }}>
             Total: {formatCurrency(getItemsTotal()) || '₱ 0.00'}
           </div>
 
-          <div className="flex justify-end space-x-3">
+          {/* Actions Row - Fixed */}
+          <div className="justify-end space-x-3 flex flex-0">
             <button
               type="button"
               onClick={handleCancel}
@@ -470,27 +492,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
               </svg>
               Cancel
             </button>
-            {/* <button
-              type="submit"
-              disabled={isSubmitting}
-              className="px-3 py-1.5 bg-button text-white rounded-custom hover:bg-button-hover transition-colors text-sm flex items-center disabled:opacity-50"
-            >
-              {isSubmitting ? (
-                <>
-                  <svg className="animate-spin h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Save
-                </>
-              )}
-            </button> */}
+            
             <button
               type="button"
               onClick={() => handleSubmit("draft")}
@@ -507,8 +509,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
               ) : (
                 <>
                   <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V5l-2-2zM7 3v4h10V3M12 12v4m0 0h4m-4 0H8"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V5l-2-2zM7 3v4h10V3M12 12v4m0 0h4m-4 0H8" />
                   </svg>
                   Save as Draft
                 </>
@@ -517,7 +518,6 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
           </div>
 
         </form>
-        
       </div>
     </div>
   );

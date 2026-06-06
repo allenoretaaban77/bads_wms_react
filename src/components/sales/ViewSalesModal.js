@@ -75,9 +75,9 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, id }) {
   };
   
   const getQuantityStatus = (status) => {
-    if (status === 'unpaid') return { text: 'Paid', color: 'text-red-600' };
+    if (status === 'credit') return { text: 'Credit', color: 'text-red-600' };
     if (status === 'draft') return { text: 'Draft', color: 'text-yellow-600' };
-    return { text: 'Paid', color: 'text-green-600' };
+    return { text: 'Cash', color: 'text-green-600' };
   };
   
   const getRecordStatus = (status) => {
@@ -88,6 +88,11 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, id }) {
   const getStatus = (current) => {
     if (current === "draft") return { text: 'Draft', color: 'text-yellow-600' };
     return { text: 'Approved', color: 'text-green-600' };
+  };
+  
+  const getPaidStatus = (status) => {
+    if (status === 'no') return { text: 'Not Paid', color: 'text-red-600' };
+    return { text: 'Paid', color: 'text-green-600' };
   };
 
   const handleClose = () => {
@@ -112,7 +117,7 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, id }) {
           {data && (
             <>
             <h2 className="text-2xl font-bold text-gray-800 text-center">
-              Sales Transaction Details - <span className={getQuantityStatus(data.payment_status).color}> {toTitleCase(data.payment_status)}</span> - <span className={getStatus(data.status).color}>{getStatus(data.status).text}</span>
+              Sales Transaction Details - <span className={getQuantityStatus(data.payment_status).color}> {toTitleCase(data.payment_status)}</span> - <span className={getStatus(data.status).color}>{getStatus(data.status).text}</span> - <span className={getPaidStatus(data.is_paid).color}>{getPaidStatus(data.is_paid).text}</span>
             </h2 >
             {error && <div className='w-full text-center'><span className='text-red-500'>{error}</span></div>}
             </>
