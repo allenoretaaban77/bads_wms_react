@@ -19,6 +19,7 @@ function ViewReplenishmentModal({ show, onClose, onUpdate, onDelete, onApprove, 
         setError(null);
         const result = await getReplenishmentView(id);
         if (result.success) {
+          console.log('datax', result.data);
           setData(result.data);
         } else {
           setError(result.error);
@@ -143,18 +144,16 @@ function ViewReplenishmentModal({ show, onClose, onUpdate, onDelete, onApprove, 
 
         <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
           <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-            {data && (
-              <button
-                type="button"
-                onClick={handleClose}
-                className="px-3 py-1.5 border border-gray-300 hover:text-white hover:border-gray-500/50 rounded-custom hover:bg-gray-900/50 transition-colors text-sm flex items-center disabled:opacity-50"
-              >
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                Close
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={handleClose}
+              className="px-3 py-1.5 border border-gray-300 hover:text-white hover:border-gray-500/50 rounded-custom hover:bg-gray-900/50 transition-colors text-sm flex items-center disabled:opacity-50"
+            >
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Close
+            </button>
             {data && data.status == "draft" && (
               <>
                 <button

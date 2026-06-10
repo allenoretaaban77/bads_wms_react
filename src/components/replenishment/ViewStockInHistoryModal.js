@@ -8,7 +8,6 @@ function ViewStockInHistoryModal({ show, onClose, id }) {
   const [error, setError] = useState(null);
   
   useEffect(() => {
-    console.log('show', id);
     if (show && id) {
       setData(null);
 

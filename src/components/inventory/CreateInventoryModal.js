@@ -23,8 +23,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
     sku: '',
     cost_per_unit: '',
     price_per_unit: '',
-    initial_qty: 0,
-    current_qty: '',
+    // current_qty: '',
     reorder_level: '',
     type: '',
     rack: '',
@@ -80,8 +79,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
           sku: '',
           cost_per_unit: '',
           price_per_unit: '',
-          initial_qty: 0,
-          current_qty: '',
+          // current_qty: '',
           reorder_level: '',
           type: '',
           rack: '',
@@ -115,8 +113,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
       sku: '',
       cost_per_unit: '',
       price_per_unit: '',
-      initial_qty: 0,
-      current_qty: '',
+      // current_qty: '',
       reorder_level: '',
       type: '',
       rack: '',
@@ -161,6 +158,10 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   <p className="mt-1 text-xs text-red-600">{errors.product_name}</p>
                 )}
               </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              
               <div className="sku">
                 <label className="block text-sm font-medium text-gray-700 mb-1">SKU *</label>
                 <input
@@ -176,24 +177,6 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                 />
                 {errors.sku && (
                   <p className="mt-1 text-xs text-red-600">{errors.sku}</p>
-                )}
-              </div>
-              <div className="cost_per_unit">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Cost per Unit *</label>
-                <input
-                  type="number"
-                  name="cost_per_unit"
-                  step="0.01"
-                  value={formData.cost_per_unit}
-                  onChange={handleChange}
-                  placeholder="0.00"
-                  className={`w-full px-2 py-1.5 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
-                    errors.cost_per_unit ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
-                  }`}
-                  required
-                />
-                {errors.cost_per_unit && (
-                  <p className="mt-1 text-xs text-red-600">{errors.cost_per_unit}</p>
                 )}
               </div>
               <div className="type">
@@ -218,22 +201,22 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   <p className="mt-1 text-xs text-red-600">{errors.type}</p>
                 )}
               </div>
-              <div className="price_per_unit">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Price per Unit *</label>
+              <div className="cost_per_unit">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Cost per Unit *</label>
                 <input
                   type="number"
-                  name="price_per_unit"
+                  name="cost_per_unit"
                   step="0.01"
-                  value={formData.price_per_unit}
+                  value={formData.cost_per_unit}
                   onChange={handleChange}
                   placeholder="0.00"
                   className={`w-full px-2 py-1.5 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
-                    errors.price_per_unit ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
+                    errors.cost_per_unit ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                   }`}
                   required
                 />
-                {errors.price_per_unit && (
-                  <p className="mt-1 text-xs text-red-600">{errors.price_per_unit}</p>
+                {errors.cost_per_unit && (
+                  <p className="mt-1 text-xs text-red-600">{errors.cost_per_unit}</p>
                 )}
               </div>
               <div className="rack">
@@ -252,38 +235,22 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   ))}
                 </select>
               </div>
-              {/* <div className="initial_qty">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Initial Quantity *</label>
+              <div className="price_per_unit">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Price per Unit *</label>
                 <input
-                  min={0}
                   type="number"
-                  name="initial_qty"
-                  value={formData.initial_qty}
+                  name="price_per_unit"
+                  step="0.01"
+                  value={formData.price_per_unit}
                   onChange={handleChange}
-                  placeholder="0"
+                  placeholder="0.00"
                   className={`w-full px-2 py-1.5 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
-                    errors.initial_qty ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
+                    errors.price_per_unit ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                   }`}
                   required
                 />
-                {errors.initial_qty && (
-                  <p className="mt-1 text-xs text-red-600">{errors.initial_qty}</p>
-                )}
-              </div> */}
-              <div className="current_qty">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Current Quantity</label>
-                <input
-                  type="number"
-                  name="current_qty"
-                  value={formData.current_qty}
-                  onChange={handleChange}
-                  placeholder="0"
-                  className={`w-full px-2 py-1.5 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
-                    errors.current_qty ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
-                  }`}
-                />
-                {errors.current_qty && (
-                  <p className="mt-1 text-xs text-red-600">{errors.current_qty}</p>
+                {errors.price_per_unit && (
+                  <p className="mt-1 text-xs text-red-600">{errors.price_per_unit}</p>
                 )}
               </div>
               <div className="shelf">
@@ -335,17 +302,33 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   ))}
                 </select>
               </div>
-              <div className="remarks col-span-1">
+              <div className="remarks col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
                 <textarea
                   name="remarks"
                   value={formData.remarks}
                   onChange={handleChange}
                   placeholder="Enter any additional notes..."
-                  rows="3"
+                  rows="2"
                   className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
                 />
               </div>
+              {/* <div className="current_qty">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Current Quantity</label>
+                <input
+                  type="number"
+                  name="current_qty"
+                  value={formData.current_qty}
+                  onChange={handleChange}
+                  placeholder="0"
+                  className={`w-full px-2 py-1.5 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                    errors.current_qty ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
+                  }`}
+                />
+                {errors.current_qty && (
+                  <p className="mt-1 text-xs text-red-600">{errors.current_qty}</p>
+                )}
+              </div> */}
             </div>
           </form>
           <div className="mt-2 flex justify-end space-x-3">

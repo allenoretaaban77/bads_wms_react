@@ -37,10 +37,6 @@ const ViewInventoryModal = ({ selectedItem, showViewModal, setShowViewModal }) =
             <p className="font-medium">{selectedItem.reorder_level}</p>
           </div>
           <div>
-            <span className="text-sm text-gray-500">Initial Quantity</span>
-            <p className="font-medium">{selectedItem.initial_qty}</p>
-          </div>
-          <div>
             <span className="text-sm text-gray-500">Cost per Unit</span>
             <p className="font-medium">₱ {Number(selectedItem.cost_per_unit).toFixed(2)}</p>
           </div>

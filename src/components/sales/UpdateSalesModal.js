@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getInventoryList } from '../../api/inventoryService';
+import { getInventoryBatchesListSearch } from '../../api/inventoryService';
 import { formatCurrency, formatDate, toTitleCase } from '../../utils/formatters';
-import { getSalesView } from '../../api/salesService';
+import { getSalesViewUpdate } from '../../api/salesService';
 import useAppViewModel from '../../viewmodels/useAppViewModel';
 import { APP_CONFIG } from '../../config/constants';
 
@@ -19,7 +19,7 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
   });
   
   const [items, setItems] = useState([]);
-  const [nextItemId, setNextItemId] = useState(2);
+  const [nextItemId, setNextItemId] = useState(1);
   const [itemSearchTerm, setItemSearchTerm] = useState('');
   const [itemSuggestions, setItemSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -47,15 +47,19 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
         setIsSubmitting(true);
         setErrors({});
         
-        const result = await getSalesView(selectedItem.id);
+        const result = await getSalesViewUpdate(selectedItem.id);
         if (result.success) {
+          let lastItemId = 0;
+
           const formattedItems = result.data.items.map((inventory_item, index) => {
-            console.log('getSalesView', inventory_item);
+            console.log('inventory_item', inventory_item);
             const name = resolveSuggestionName(inventory_item);
             const priceValue = resolveSuggestionPrice(inventory_item);
             const costValue = resolveSuggestionCost(inventory_item);      
             const qty = Number(inventory_item.qty_sold) || 0;
             const cost = Number(costValue) || 0;
+            
+            lastItemId = nextItemId + index;
 
             return {
               ...inventory_item,
@@ -74,6 +78,7 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
             };
           });
           
+          setNextItemId(prev => prev + 1);
           setItems(formattedItems);
         } else {
           setErrors(result.error);
@@ -101,6 +106,10 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
     return () => clearTimeout(timer);
   }, [itemSearchTerm]);
 
+  useEffect(() => {
+    console.log(items);
+  }, [items]);
+
   const fetchTransactionNumber = async () => {
     // try {
     //   const trnxNumber = await generateTransactionNumber();
@@ -113,19 +122,25 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
     // }
   };
 
-  const updateItemField = (inventory_id, field, value) => {
+  const updateItemField = (id, field, value) => {
     setItems(prev => prev.map(item => {
-      if (item.inventory_id !== inventory_id) return item;
+      const itemId = item.id || item.inventory_id;
+      
+      if (itemId !== id) {
+        return item; // Not the item we are looking for, return it unchanged
+      }
+
       const updated = { ...item, [field]: value };
       const qty = Number(updated.quantity) || 0;
       const price = Number(updated.price) || 0;
       updated.total = qty * price;
+
       return updated;
     }));
   };
 
   const removeItemRow = (id) => {
-    setItems(prev => prev.filter(item => item.inventory_id !== id));
+    setItems(prev => prev.filter(item => item.id !== id));
   };
 
   const resolveSuggestionName = (suggestion) => {
@@ -149,7 +164,7 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
 
     setIsSearching(true);
     try {
-      const result = await getInventoryList({ search: query, page: 1, pageSize: 30 });
+      const result = await getInventoryBatchesListSearch({ search: query, page: 1, pageSize: 30 });
       if (!result.success || !result.data) {
         setItemSuggestions([]);
         setShowSuggestions(false);
@@ -168,14 +183,18 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
 
   const handleSelectSuggestion = (suggestion) => {
     const name = resolveSuggestionName(suggestion);
-    const costValue = resolveSuggestionCost(suggestion);
     const priceValue = resolveSuggestionPrice(suggestion);
+    const costValue = resolveSuggestionCost(suggestion);
     const newErrors = {};
 
     setItems(prev => {
-      const exists = prev.some(item => item.inventory_id === suggestion.id);
+      const exists = prev.some(item => {
+        return (
+          item.inventory_id === suggestion.inventory_id && Number(item.cost) === Number(suggestion.cost_per_unit)
+        );
+      });
       if (exists) {
-        newErrors['items'] = `Item with inventory id ${suggestion.product_name} already selected`;
+        newErrors['items'] = `Item with inventory id ${suggestion.product_name} and cost ${suggestion.cost_per_unit} already selected.`;
         setErrors(newErrors);
         return prev; // return unchanged
       } else {
@@ -186,13 +205,14 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
         ...prev,
         {
           id: nextItemId,
-          inventory_id: suggestion.id,
+          batch_id: suggestion.batch_id,
+          inventory_id: suggestion.inventory_id,
           item_name: name,
           current_qty: suggestion.current_qty,
           reorder_level: suggestion.reorder_level,
-          current_price: priceValue !== undefined ? priceValue.toString() : '',
           quantity: '',
           sku: suggestion.sku,
+          current_price: priceValue !== undefined ? priceValue.toString() : '',
           price: priceValue !== undefined ? priceValue.toString() : '',
           cost: costValue !== undefined ? costValue.toString() : '',
           total: 0,
@@ -248,9 +268,30 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
     setShowSuggestions(false);
   };
 
+  const validateFormForEmpty = () => {
+    const newErrors = {};
+
+    // Loop through items to check ONLY for blank/empty inputs
+    items.forEach((item) => {
+      
+      // Validate Quantity: triggers only if the field is wiped clean
+      if (item.quantity === "" || item.quantity === null || item.quantity === undefined || isNaN(item.quantity) || Number(item.quantity) === 0) {
+        newErrors[`quantity_${item.id}`] = "Invalid quantity.";
+      }
+
+      // Validate Cost: triggers only if the field is wiped clean
+      if (item.price === "" || item.price === null || item.price === undefined || isNaN(item.price) || Number(item.price) === 0) {
+        newErrors[`price_${item.id}`] = "Invalid price.";
+      }
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (action) => {
     // e.preventDefault();
-    // if (!validateForm()) return;
+    if (!validateFormForEmpty()) return;
 
     // if (!onSave) return;
     setIsSubmitting(true);
@@ -266,6 +307,7 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
         remarks: formData.remarks,
         updated_by: formData.updated_by,
         items: items.map(item => ({
+          batch_id: item.batch_id,
           inventory_id: item.inventory_id,
           item_name: item.item_name,
           quantity: Number(item.quantity) || 0,
@@ -316,7 +358,8 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
 
         <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Sales Transaction Number</label>
               <input
@@ -331,42 +374,7 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
               />
               {errors.invoice_no && <p className="mt-1 text-xs text-red-600">{errors.invoice_no}</p>}
             </div>
-            {/* <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Reference Number</label>
-              <div className={`flex gap-2 w-full px-3 py-2 text-sm border rounded-custom bg-gray-50 focus:outline-none ${
-                    errors.reference_no ? 'border-red-300' : 'border-gray-300'
-                  }`}>
-                <input
-                  name="reference_no"
-                  value={formData.reference_no}
-                  onChange={handleChange}
-                  placeholder="Enter reference number"
-                  className="flex-1 focus:outline-none"
-                />
-                <button id="refreshBtn" type="button" aria-label="Refresh value" title="Refresh" onClick={fetchTransactionNumber}>
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                </button>
-              </div>
-              {errors.reference_no && <p className="mt-1 text-xs text-red-600">{errors.reference_no}</p>}
-            </div> */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
-              <input
-                name="customer_name"
-                value={formData.customer_name}
-                onChange={handleChange}
-                placeholder="Enter customer name"
-                className={`w-full px-3 py-2 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
-                  errors.customer_name ? 'border-red-300' : 'border-gray-300'
-                }`}
-              />
-              {errors.customer_name && <p className="mt-1 text-xs text-red-600">{errors.customer_name}</p>}
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Date Sold</label>
               <input
@@ -380,7 +388,80 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
               />
               {errors.date_sold && <p className="mt-1 text-xs text-red-600">{errors.date_sold}</p>}
             </div>
+            
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
+              <input
+                name="customer_name"
+                value={formData.customer_name}
+                onChange={handleChange}
+                placeholder="Enter customer name"
+                className={`w-full px-3 py-2 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                  errors.customer_name ? 'border-red-300' : 'border-gray-300'
+                }`}
+              />
+              {errors.customer_name && <p className="mt-1 text-xs text-red-600">{errors.customer_name}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
+              <textarea
+                name="remarks"
+                value={formData.remarks}
+                onChange={handleChange}
+                rows={1}
+                placeholder="Add any remarks or notes"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+              />
+            </div>
+
+          </div>
+
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-2 flex-0">
+
+            <div className="md:col-span-3" style={{ marginTop: "0px" }}>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Search items</label>
+              <input
+                type="text"
+                ref={searchInputRef}
+                value={itemSearchTerm}
+                onChange={(e) => {
+                  setItemSearchTerm(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                placeholder="Search items to add..."
+                className="w-full px-3 py-2 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+              />
+              {showSuggestions && itemSearchTerm.trim() && (
+                <div className="absolute z-20 mt-1 w-full rounded-custom border border-gray-200 bg-white shadow-lg max-h-60 overflow-auto">
+                  {isSearching ? (
+                    <div className="px-3 py-2 text-sm text-gray-500">Searching...</div>
+                  ) : itemSuggestions.length > 0 ? (
+                    itemSuggestions.map((suggestion, index) => {
+                      const name = suggestion.name || suggestion.product_name || suggestion.item_name || suggestion.sku || `Item ${index + 1}`;
+                      const priceValue = suggestion.price_per_unit || suggestion.price || 0;
+                      const costValue = suggestion.cost_per_unit || suggestion.cost_per_unit || 0;
+                      return (
+                        <button
+                          key={`${name}-${index}`}
+                          type="button"
+                          onClick={() => handleSelectSuggestion(suggestion)}
+                          className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          <div className="font-medium">{name} [{suggestion.sku}]</div>
+                          <div className="text-xs text-gray-500">Cost: ₱{Number(costValue).toFixed(2)} | Price: ₱{Number(priceValue).toFixed(2)}</div>
+                        </button>
+                      );
+                    })
+                  ) : (
+                    <div className="px-3 py-2 text-sm text-gray-500">No items found</div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="md:col-span-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">Payment Status</label>
               <select
                 name="payment_status"
@@ -401,61 +482,7 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
                 <p className="mt-1 text-xs text-red-600">{errors.payment_status}</p>
               )}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
-              <textarea
-                name="remarks"
-                value={formData.remarks}
-                onChange={handleChange}
-                rows={1}
-                placeholder="Add any remarks or notes"
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-              />
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          </div>
-
-          <div className="relative" style={{ marginTop: "0px" }}>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Search items</label>
-            <input
-              type="text"
-              ref={searchInputRef}
-              value={itemSearchTerm}
-              onChange={(e) => {
-                setItemSearchTerm(e.target.value);
-                setShowSuggestions(true);
-              }}
-              placeholder="Search items to add..."
-              className="w-full px-3 py-2 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-            />
-            {showSuggestions && itemSearchTerm.trim() && (
-              <div className="absolute z-20 mt-1 w-full rounded-custom border border-gray-200 bg-white shadow-lg max-h-60 overflow-auto">
-                {isSearching ? (
-                  <div className="px-3 py-2 text-sm text-gray-500">Searching...</div>
-                ) : itemSuggestions.length > 0 ? (
-                  itemSuggestions.map((suggestion, index) => {
-                    const name = suggestion.name || suggestion.product_name || suggestion.item_name || suggestion.sku || `Item ${index + 1}`;
-                    const priceValue = suggestion.price_per_unit || suggestion.price || 0;
-                    const costValue = suggestion.cost_per_unit || suggestion.cost_per_unit || 0;
-                    return (
-                      <button
-                        key={`${name}-${index}`}
-                        type="button"
-                        onClick={() => handleSelectSuggestion(suggestion)}
-                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        <div className="font-medium">{name} [{suggestion.sku}]</div>
-                        <div className="text-xs text-gray-500">Cost: ₱{Number(costValue).toFixed(2)} | Price: ₱{Number(priceValue).toFixed(2)}</div>
-                      </button>
-                    );
-                  })
-                ) : (
-                  <div className="px-3 py-2 text-sm text-gray-500">No items found</div>
-                )}
-              </div>
-            )}
           </div>
 
           <div>
@@ -474,11 +501,11 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
                 </thead>
                 <tbody>
                   {items.map(item => (
-                    <tr key={item.inventory_id} className="border-t border-gray-200">
+                    <tr key={item.id} className="border-t border-gray-200">
                       <td className="px-1 py-2 align-top text-center">
                         <button
                           type="button"
-                          onClick={() => removeItemRow(item.inventory_id)}
+                          onClick={() => removeItemRow(item.id)}
                           className="text-sm text-red-600 hover:text-red-800 pt-1"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -493,14 +520,14 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
                           type="number"
                           name="quantity"
                           value={item.quantity}
-                          onChange={(e) => updateItemField(item.inventory_id, 'quantity', e.target.value)}
+                          onChange={(e) => updateItemField(item.id, 'quantity', e.target.value)}
                           onFocus={(e) => e.target.select()}
                           placeholder="0"
                           className={`w-full px-1 py-1 text-right text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
-                            errors[`quantity_${item.inventory_id}`] ? 'border-red-300' : 'border-gray-300'
+                            errors[`quantity_${item.id}`] ? 'border-red-300' : 'border-gray-300'
                           }`}
                         />
-                        {errors[`quantity_${item.inventory_id}`] && <p className="mt-1 text-[11px] text-red-600">{errors[`quantity_${item.inventory_id}`]}</p>}
+                        {errors[`quantity_${item.id}`] && <p className="mt-1 text-[11px] text-red-600">{errors[`quantity_${item.id}`]}</p>}
                       </td>
                       <td className="px-3 py-2 align-top">
                         <input
@@ -508,14 +535,14 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
                           step="0.01"
                           name="price"
                           value={item.price}
-                          onChange={(e) => updateItemField(item.inventory_id, 'price', e.target.value)}
+                          onChange={(e) => updateItemField(item.id, 'price', e.target.value)}
                           onFocus={(e) => e.target.select()}
                           placeholder="0.00"
                           className={`w-full px-2 py-1 text-right text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
-                            errors[`price_${item.inventory_id}`] ? 'border-red-300' : 'border-gray-300'
+                            errors[`price_${item.id}`] ? 'border-red-300' : 'border-gray-300'
                           }`}
                         />
-                        {errors[`price_${item.inventory_id}`] && <p className="mt-1 text-[11px] text-red-600">{errors[`price_${item.inventory_id}`]}</p>}
+                        {errors[`price_${item.id}`] && <p className="mt-1 text-[11px] text-red-600">{errors[`price_${item.id}`]}</p>}
                       </td>
                       <td className="px-3 py-2 align-top text-right">{formatCurrency(item.total) || '₱ 0.00'}</td>
                     </tr>

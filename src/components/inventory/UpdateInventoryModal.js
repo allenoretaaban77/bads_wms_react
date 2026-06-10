@@ -26,8 +26,7 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
     sku: '',
     cost_per_unit: '',
     price_per_unit: '',
-    initial_qty: '',
-    current_qty: '',
+    // current_qty: '',
     reorder_level: '',
     type: '',
     rack: '',
@@ -48,8 +47,7 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
         sku: selectedItem.sku || '',
         cost_per_unit: selectedItem.cost_per_unit,
         price_per_unit: selectedItem.price_per_unit,
-        initial_qty: selectedItem.initial_qty,
-        current_qty: selectedItem.current_qty,
+        // current_qty: selectedItem.current_qty,
         reorder_level: selectedItem.reorder_level,
         type: selectedItem.type || '',
         rack: selectedItem.rack || '',
@@ -107,7 +105,6 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
     //   sku: formData.sku,
     //   cost_per_unit: Number(formData.cost_per_unit),
     //   price_per_unit: Number(formData.price_per_unit),
-    //   initial_qty: Number(formData.initial_qty),
     //   current_qty: Number(formData.current_qty),
     //   reorder_level: Number(formData.reorder_level),
     //   type: formData.type,
@@ -129,8 +126,7 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
           sku: '',
           cost_per_unit: '',
           price_per_unit: '',
-          initial_qty: 0,
-          current_qty: '',
+          // current_qty: '',
           reorder_level: '',
           type: '',
           rack: '',
@@ -164,8 +160,7 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
       sku: '',
       cost_per_unit: '',
       price_per_unit: '',
-      initial_qty: 0,
-      current_qty: '',
+      // current_qty: '',
       reorder_level: '',
       type: '',
       rack: '',
@@ -227,24 +222,6 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
                   <p className="mt-1 text-xs text-red-600">{errors.sku}</p>
                 )}
               </div>
-              <div className="cost_per_unit">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Cost per Unit *</label>
-                <input
-                  type="number"
-                  name="cost_per_unit"
-                  step="0.01"
-                  value={formData.cost_per_unit}
-                  onChange={handleChange}
-                  placeholder="0.00"
-                  className={`w-full px-2 py-1.5 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
-                    errors.cost_per_unit ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
-                  }`}
-                  required
-                />
-                {errors.cost_per_unit && (
-                  <p className="mt-1 text-xs text-red-600">{errors.cost_per_unit}</p>
-                )}
-              </div>
               <div className="type">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
                 <select
@@ -267,22 +244,22 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
                   <p className="mt-1 text-xs text-red-600">{errors.type}</p>
                 )}
               </div>
-              <div className="price_per_unit">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Price per Unit *</label>
+              <div className="cost_per_unit">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Cost per Unit *</label>
                 <input
                   type="number"
-                  name="price_per_unit"
+                  name="cost_per_unit"
                   step="0.01"
-                  value={formData.price_per_unit}
+                  value={formData.cost_per_unit}
                   onChange={handleChange}
                   placeholder="0.00"
                   className={`w-full px-2 py-1.5 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
-                    errors.price_per_unit ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
+                    errors.cost_per_unit ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                   }`}
                   required
                 />
-                {errors.price_per_unit && (
-                  <p className="mt-1 text-xs text-red-600">{errors.price_per_unit}</p>
+                {errors.cost_per_unit && (
+                  <p className="mt-1 text-xs text-red-600">{errors.cost_per_unit}</p>
                 )}
               </div>
               <div className="rack">
@@ -301,37 +278,22 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
                   ))}
                 </select>
               </div>
-              {/* <div className="initial_qty">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Initial Quantity *</label>
+              <div className="price_per_unit">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Price per Unit *</label>
                 <input
                   type="number"
-                  name="initial_qty"
-                  value={formData.initial_qty}
+                  name="price_per_unit"
+                  step="0.01"
+                  value={formData.price_per_unit}
                   onChange={handleChange}
-                  placeholder="0"
+                  placeholder="0.00"
                   className={`w-full px-2 py-1.5 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
-                    errors.initial_qty ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
+                    errors.price_per_unit ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                   }`}
                   required
                 />
-                {errors.initial_qty && (
-                  <p className="mt-1 text-xs text-red-600">{errors.initial_qty}</p>
-                )}
-              </div> */}
-              <div className="current_qty">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Current Quantity</label>
-                <input
-                  type="number"
-                  name="current_qty"
-                  value={formData.current_qty}
-                  onChange={handleChange}
-                  placeholder="0"
-                  className={`w-full px-2 py-1.5 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
-                    errors.current_qty ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
-                  }`}
-                />
-                {errors.current_qty && (
-                  <p className="mt-1 text-xs text-red-600">{errors.current_qty}</p>
+                {errors.price_per_unit && (
+                  <p className="mt-1 text-xs text-red-600">{errors.price_per_unit}</p>
                 )}
               </div>
               <div className="shelf">
@@ -383,17 +345,33 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
                   ))}
                 </select>
               </div>
-              <div className="remarks col-span-1">
+              <div className="remarks col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
                 <textarea
                   name="remarks"
                   value={formData.remarks}
                   onChange={handleChange}
                   placeholder="Enter any additional notes..."
-                  rows="3"
+                  rows="2"
                   className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
                 />
               </div>
+              {/* <div className="current_qty">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Current Quantity</label>
+                <input
+                  type="number"
+                  name="current_qty"
+                  value={formData.current_qty}
+                  onChange={handleChange}
+                  placeholder="0"
+                  className={`w-full px-2 py-1.5 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                    errors.current_qty ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
+                  }`}
+                />
+                {errors.current_qty && (
+                  <p className="mt-1 text-xs text-red-600">{errors.current_qty}</p>
+                )}
+              </div> */}
             </div>
           </form>
           <div className="mt-2 flex justify-end space-x-3">

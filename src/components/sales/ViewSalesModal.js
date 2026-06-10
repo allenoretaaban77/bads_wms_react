@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getSalesView } from '../../api/salesService';
+import { getSalesViewSales } from '../../api/salesService';
 import { formatCurrency, toTitleCase, formatLongDate } from '../../utils/formatters';
 import useAppViewModel from '../../viewmodels/useAppViewModel';
 import { generatePrintReceipt } from '../../utils/printUtils';
@@ -18,7 +18,7 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, id }) {
       const fetchData = async () => {
         setLoading(true);
         setError(null);
-        const result = await getSalesView(id);
+        const result = await getSalesViewSales(id);
         if (result.success) {
           setData(result.data);
         } else {
@@ -29,6 +29,10 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, id }) {
       fetchData();
     }
   }, [show, id]);
+
+  const handlePaidUnpaid = (data) => {
+
+  }
 
   const handleUpdate = (item) => {
     onUpdate(item);
@@ -171,18 +175,16 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, id }) {
 
         <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
           <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-            {data && (
-              <button
-                type="button"
-                onClick={handleClose}
-                className="px-3 py-1.5 border border-gray-300 hover:text-white hover:border-gray-500/50 rounded-custom hover:bg-gray-900/50 transition-colors text-sm flex items-center disabled:opacity-50"
-              >
-                <svg className="w-4 h-4 mr-1" fill="red" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                Close
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={handleClose}
+              className="px-3 py-1.5 border border-gray-300 hover:text-white hover:border-gray-500/50 rounded-custom hover:bg-gray-900/50 transition-colors text-sm flex items-center disabled:opacity-50"
+            >
+              <svg className="w-4 h-4 mr-1" fill="red" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Close
+            </button>
             {data && data.status === "draft" && (
               <>
                 <button
@@ -244,6 +246,20 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, id }) {
                   />
                 </svg>
                 Print
+              </button>
+            )}
+            {data && (
+              <button
+                type="button"
+                onClick={() => handlePaidUnpaid(data)}
+                className="px-3 py-1.5 text-white border border-yellow-600/50 bg-yellow-500 hover:text-white hover:border-yellow-800/50 rounded-custom hover:bg-yellow-700 transition-colors text-sm flex items-center disabled:opacity-50"
+              >
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {data.is_paid === "yes" && ('Set Unpaid')}
+                {data.is_paid === "no" && ('Set Paid')}
+                
               </button>
             )}
           </div>
