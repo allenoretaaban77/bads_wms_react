@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import useAppViewModel from '../../viewmodels/useAppViewModel';
+import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 import { APP_CONFIG } from '../../config/constants';
 
 // Add CSS for loading circle animation

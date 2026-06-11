@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getSalesViewSales } from '../../api/salesService';
 import { formatCurrency, toTitleCase, formatLongDate } from '../../utils/formatters';
-import useAppViewModel from '../../viewmodels/useAppViewModel';
+import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 import { generatePrintReceipt } from '../../utils/printUtils';
 
 function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, id }) {

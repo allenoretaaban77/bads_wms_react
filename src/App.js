@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from 'react';
-import useAppViewModel from './viewmodels/useAppViewModel';
+import useAppViewModel from './viewmodels/useAppViewModel.tsx';
 import LoadingSpinner from './components/LoadingSpinner';
 import './App.css';
 

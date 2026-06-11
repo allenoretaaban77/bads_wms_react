@@ -7,7 +7,7 @@ import UpdateInventoryModal from './UpdateInventoryModal';
 import CreateInventoryModal from './CreateInventoryModal';
 import { formatCurrency } from '../../utils/formatters';
 import Alert from '../../utils/alert';
-import useAppViewModel from '../../viewmodels/useAppViewModel';
+import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 
 function InventoryTable({ page_type }) {
   const userData = useAppViewModel((state) => state.userData);

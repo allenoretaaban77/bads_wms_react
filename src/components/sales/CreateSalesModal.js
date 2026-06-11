@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { getInventoryBatchesListSearch } from '../../api/inventoryService';
 import { formatCurrency } from '../../utils/formatters';
 import { generateTransactionNumber } from '../../api/salesService';
-import useAppViewModel from '../../viewmodels/useAppViewModel';
+import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 import { APP_CONFIG } from '../../config/constants';
 import ViewStockBatchesModal from './ViewStockBatchesModal';
 

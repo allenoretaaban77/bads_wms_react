@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getReplenishmentView } from '../../api/replenishmentService';
 import { formatCurrency, toTitleCase, formatLongDate } from '../../utils/formatters';
-import useAppViewModel from '../../viewmodels/useAppViewModel';
+import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 
 function ViewReplenishmentModal({ show, onClose, onUpdate, onDelete, onApprove, id }) {
   const userData = useAppViewModel((state) => state.userData);

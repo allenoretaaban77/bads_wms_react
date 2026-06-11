@@ -1,7 +1,7 @@
 import React from 'react';
 import SidebarMenu from './SidebarMenu';
 import HomeContent from './HomeContent';
-import useAppViewModel from '../viewmodels/useAppViewModel';
+import useAppViewModel from '../viewmodels/useAppViewModel.tsx';
 
 function HomeView() {
   const userData = useAppViewModel((state) => state.userData);

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { getInventoryReplenishmentListsearch } from '../../api/inventoryService';
 import { formatCurrency, formatPostingDate } from '../../utils/formatters';
 import { generateTransactionNumber } from '../../api/replenishmentService';
-import useAppViewModel from '../../viewmodels/useAppViewModel';
+import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 import ViewStockInHistoryModal from './ViewStockInHistoryModal';
 
 const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave }) => {

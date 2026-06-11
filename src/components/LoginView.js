@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import useAppViewModel from '../viewmodels/useAppViewModel';
+import useAppViewModel from '../viewmodels/useAppViewModel.tsx';
 import '../App.css';
 
 function LoginView() {

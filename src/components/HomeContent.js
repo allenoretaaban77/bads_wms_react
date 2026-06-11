@@ -1,5 +1,5 @@
 import React from 'react';
-import useAppViewModel from '../viewmodels/useAppViewModel';
+import useAppViewModel from '../viewmodels/useAppViewModel.tsx';
 import InventoryTable from './inventory/InventoryTable';
 import ReplenishmentTable from './replenishment/ReplenishmentTable';
 import SalesTable from './sales/SalesTable';
