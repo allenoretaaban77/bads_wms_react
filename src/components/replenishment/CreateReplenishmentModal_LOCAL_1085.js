@@ -85,6 +85,11 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
       updated.total = qty * cost;
       return updated;
     }));
+    
+    // Clear dynamic subfield row errors on user modification
+    if (errors[`${field}_${id}`]) {
+      setErrors(prev => ({ ...prev, [`${field}_${id}`]: '' }));
+    }
   };
 
   const removeItemRow = (id) => {
@@ -123,18 +128,20 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
   const handleSelectSuggestion = (suggestion) => {
     const name = resolveSuggestionName(suggestion);
     const costValue = resolveSuggestionCost(suggestion);
-    const newErrors = {};
+    const newErrors = { ...errors };
 
-    setItems(prev => {
-      // const exists = prev.some(item => item.inventory_id === suggestion.id);
-      // if (exists) {
-      //   newErrors['items'] = `Item "${name}" is already listed.`;
-      //   setErrors(newErrors);
-      //   return prev;
-      // } else {
-      //   setErrors(newErrors);
-      // }
+    // Active Item Duplication Prevention Filter Block
+    const isDuplicate = items.some(item => item.inventory_id === suggestion.id);
+    if (isDuplicate) {
+      newErrors['items'] = `Item "${name}" is already included in this batch.`;
       setErrors(newErrors);
+      setItemSearchTerm('');
+      return;
+    }
+
+    // Reset standard top level error collections on success ingestion
+    delete newErrors['items'];
+    setErrors(newErrors);
 
     setItems(prev => [
       ...prev,
@@ -267,18 +274,27 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-custom p-4 max-w-screen-2xl w-full h-full flex flex-col">
+      <div className="bg-white rounded-custom border border-gray-200 shadow-xl max-w-7xl w-full flex flex-col">
         
-        {/* Modal Header */}
-        <div className="mb-6 pb-4 border-b border-gray-200 flex-0">
-          <h2 className="text-2xl font-bold text-gray-800 text-center">Create Replenishment</h2>
+        {/* Unified Application Layout Header Component */}
+        <div className="px-4 py-3 bg-header text-white flex justify-between items-center rounded-t-custom flex-shrink-0">
+          <h2 className="text-base font-semibold">Create Inventory Replenishment</h2>
+          <button 
+            type="button"
+            onClick={handleCancel} 
+            className="text-white hover:text-gray-200 focus:outline-none"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
-        {/* Form Container */}
-        <form onSubmit={(e) => e.preventDefault()} className="space-y-4 flex-1 flex flex-col min-h-0">
+        {/* Core Content View Area Body Form */}
+        <form onSubmit={(e) => e.preventDefault()} className="p-5 flex-1 flex flex-col min-h-0 space-y-4">
 
-          {/* Inputs section - Fixed at top */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-2 flex-0">
+          {/* Primary Transaction Fields Metadata Container Box */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 flex-shrink-0 text-xs">
             <div>
               <label className="block font-semibold text-gray-600 mb-1">Reference Number</label>
               <div className={`flex items-center gap-2 px-3 py-1.5 border rounded bg-gray-50 focus-within:ring-1 focus-within:ring-button focus-within:border-transparent ${
@@ -321,7 +337,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
+              <label className="block font-semibold text-gray-600 mb-1">Supplier Entity</label>
               <input
                 name="supplier"
                 value={formData.supplier}
@@ -335,7 +351,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
+              <label className="block font-semibold text-gray-600 mb-1">Internal Remarks / Context</label>
               <textarea
                 name="remarks"
                 value={formData.remarks}
@@ -347,10 +363,10 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
             </div>
           </div>
 
-          {/* Search Bar Container */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-2 flex-0 relative">
-            <div className="md:col-span-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Search items</label>
+          {/* Autocomplete Real-time Search Processing Container Block */}
+          <div className="flex-shrink-0 relative text-xs">
+            <label className="block font-semibold text-gray-600 mb-1">Search Database Items</label>
+            <div className="relative">
               <input
                 type="text"
                 ref={searchInputRef}
@@ -363,30 +379,59 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                 placeholder="Type item name, descriptor, SKU lookup metrics..."
                 className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-button focus:border-transparent"
               />
-              {showSuggestions && itemSearchTerm.trim() && (
-                <div className="absolute left-0 right-0 z-20 mt-1 rounded-custom border border-gray-200 bg-white shadow-lg max-h-60 overflow-y-auto">
-                  {isSearching ? (
-                    <div className="px-3 py-2 text-sm text-gray-500">Searching...</div>
-                  ) : itemSuggestions.length > 0 ? (
-                    itemSuggestions.map((suggestion, index) => {
-                      const name = resolveSuggestionName(suggestion);
-                      const costValue = resolveSuggestionCost(suggestion);
-                      return (
-                        <button
-                          key={`${suggestion.id || index}-${index}`}
-                          type="button"
-                          onMouseDown={() => handleSelectSuggestion(suggestion)}
-                          className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 block border-b border-gray-50 last:border-b-0"
-                        >
-                          <div className="font-medium">{name} {suggestion.sku ? `[${suggestion.sku}]` : ''}</div>
-                          <div className="text-xs text-gray-500">Cost: ₱{Number(costValue).toFixed(2)}</div>
-                        </button>
-                      );
-                    })
-                  ) : (
-                    <div className="px-3 py-2 text-sm text-gray-500">No items found</div>
-                  )}
-                </div>
+              <div className="absolute left-2.5 top-2.5 text-gray-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Float Menu Dropdown Matrix Elements Wrapper */}
+            {showSuggestions && itemSearchTerm.trim() && (
+              <div className="absolute left-0 right-0 z-30 mt-1 rounded border border-gray-200 bg-white shadow-xl max-h-56 overflow-y-auto">
+                {isSearching ? (
+                  <div className="px-4 py-3 text-gray-500 italic flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-button animate-ping"></span>
+                    Querying warehouse endpoints...
+                  </div>
+                ) : itemSuggestions.length > 0 ? (
+                  itemSuggestions.map((suggestion, index) => {
+                    const name = resolveSuggestionName(suggestion);
+                    const costValue = resolveSuggestionCost(suggestion);
+                    return (
+                      <button
+                        key={`${suggestion.id || index}-${index}`}
+                        type="button"
+                        onMouseDown={() => handleSelectSuggestion(suggestion)}
+                        className="w-full px-4 py-2.5 text-left text-gray-700 hover:bg-gray-50 block border-b border-gray-100 last:border-b-0 transition-colors"
+                      >
+                        <div className="font-semibold text-gray-800">
+                          {name} {suggestion.sku ? <span className="text-gray-400 font-normal ml-1">[{suggestion.sku}]</span> : ''}
+                        </div>
+                        <div className="text-[11px] text-gray-500 mt-0.5 flex gap-4">
+                          <span>Stock: <strong className="text-gray-700">{suggestion.current_qty ?? 0}</strong></span>
+                          <span>Base Cost: <strong className="text-gray-700">₱{Number(costValue).toFixed(2)}</strong></span>
+                        </div>
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="px-4 py-3 text-gray-500 italic">No inventory products match criteria.</div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Dynamic Manifest Interactive Table Section Container */}
+          <div className="flex-1 flex flex-col min-h-0">
+            <div className="flex justify-between items-center mb-1 flex-shrink-0">
+              <label className="block text-xs font-semibold text-gray-600">
+                Replenishment Item Lines Row ({items.length || 0})
+              </label>
+              {errors.items && (
+                <span className="text-xs text-red-600 font-medium bg-red-50 border border-red-200 rounded px-2 py-0.5 animate-pulse">
+                  {errors.items}
+                </span>
               )}
             </div>
             
@@ -496,23 +541,24 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
             <span className="text-base font-black">{formatCurrency(getItemsTotal()) || '₱ 0.00'}</span>
           </div>
 
-          {/* Actions Footer row */}
-          <div className="justify-end space-x-3 flex flex-0">
+          {/* Operations Core Control Buttons Panel */}
+          <div className="justify-end space-x-2 flex flex-shrink-0 pt-2 text-xs">
             <button
               type="button"
               onClick={handleCancel}
-              className="px-4 py-2 border border-gray-300 hover:text-white hover:border-gray-500/50 rounded-custom hover:bg-gray-900/50 transition-colors text-sm flex items-center disabled:opacity-50"
+              className="px-4 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded shadow-sm transition-colors flex items-center font-medium"
             >
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3.5 h-3.5 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
               Cancel Transaction
             </button>
+            
             <button
               type="button"
               onClick={() => handleSubmit("draft")}
-              disabled={isSubmitting}
-              className="px-4 py-2 bg-gray-900/50 text-white rounded-custom hover:bg-gray-900 transition-colors text-sm flex items-center disabled:opacity-50 font-medium"
+              disabled={isSubmitting || items.length === 0}
+              className="px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded shadow-sm transition-colors flex items-center font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <>
@@ -523,10 +569,10 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                 </>
               ) : (
                 <>
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3.5 h-3.5 mr-1.5 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V5l-2-2zM7 3v4h10V3M12 12v4m0 0h4m-4 0H8" />
                   </svg>
-                  Save as Draft
+                  Save Batch Draft
                 </>
               )}
             </button>
@@ -534,6 +580,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
 
         </form>        
         
+        {/* Child Sub-Ledger Overlay Modal */}
         <ViewStockInHistoryModal
           show={showStockInHistoryModal}
           onClose={() => setShowStockInHistoryModal(false)}
