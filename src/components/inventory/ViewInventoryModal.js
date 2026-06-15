@@ -4,108 +4,156 @@ import { getStatusTextColor } from '../../utils/statusColors';
 const ViewInventoryModal = ({ selectedItem, showViewModal, setShowViewModal }) => {
   if (!showViewModal || !selectedItem) return null;
 
+  // Safe fallback utility for numeric presentation values
+  const formatCurrency = (value) => {
+    const num = Number(value);
+    return isNaN(num) ? '₱ 0.00' : `₱ ${num.toFixed(2)}`;
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-custom p-6 max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
-        {/* Product Name at Top */}
-        <div className="mb-6 pb-4 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-800 text-center">
-            {selectedItem.product_name}
-          </h2>
-        </div>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-custom shadow-xl border border-gray-200 w-full max-w-2xl flex flex-col max-h-[90vh]">
         
-        {/* Item Details */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div>
-            <span className="text-sm text-gray-500">SKU</span>
-            <p className="font-medium">{selectedItem.sku}</p>
-          </div>
-          <div>
-            <span className="text-sm text-gray-500">Status</span>
-            <p className={`font-medium ${getStatusTextColor(selectedItem.status)}`}>{selectedItem.status}</p>
-          </div>
-          <div>
-            <span className="text-sm text-gray-500">Type</span>
-            <p className="font-medium">{selectedItem.type}</p>
-          </div>
-          <div>
-            <span className="text-sm text-gray-500">Current Quantity</span>
-            <p className="font-medium">{selectedItem.current_qty}</p>
-          </div>
-          <div>
-            <span className="text-sm text-gray-500">Reorder Level</span>
-            <p className="font-medium">{selectedItem.reorder_level}</p>
-          </div>
-          <div>
-            <span className="text-sm text-gray-500">Cost per Unit</span>
-            <p className="font-medium">₱ {Number(selectedItem.cost_per_unit).toFixed(2)}</p>
-          </div>
-          <div>
-            <span className="text-sm text-gray-500">Total Cost</span>
-            <p className="font-medium">₱ {Number(selectedItem.total_inventory_cost).toFixed(2)}</p>
-          </div>
-          <div>
-            <span className="text-sm text-gray-500"></span>
-            <p className="font-medium"></p>
-          </div>
-          <div>
-            <span className="text-sm text-gray-500">Price per Unit</span>
-            <p className="font-medium">₱ {Number(selectedItem.price_per_unit).toFixed(2)}</p>
-          </div>
-          <div>
-            <span className="text-sm text-gray-500">Total Cost</span>
-            <p className="font-medium">₱ {Number(selectedItem.total_inventory_value).toFixed(2)}</p>
-          </div>
-          <div>
-            <span className="text-sm text-gray-500"></span>
-            <p className="font-medium"></p>
-          </div>
-          <div>
-            <span className="text-sm text-gray-500">Rack</span>
-            <p className="font-medium">{selectedItem.rack && selectedItem.rack.trim() !== "" ? selectedItem.rack : "-"}
-</p>
-          </div>
-          <div>
-            <span className="text-sm text-gray-500">Shelf</span>
-            <p className="font-medium">{selectedItem.shelf && selectedItem.rack.trim() !== "" ? selectedItem.shelf : "-"}
-</p>
-          </div>
-          <div>
-            <span className="text-sm text-gray-500">Box</span>
-            <p className="font-medium">{selectedItem.box && selectedItem.box.trim() !== "" ? selectedItem.box : "-"}
-</p>
-          </div>
-          <div>
-            <span className="text-sm text-gray-500">Date Created</span>
-            <p className="font-medium">{selectedItem.date_created}</p>
-          </div>
-          <div>
-            <span className="text-sm text-gray-500">Date Updated</span>
-            <p className="font-medium">{selectedItem.date_updated}</p>
-          </div>
-          <div>
-            <span className="text-sm text-gray-500"></span>
-            <p className="font-medium"></p>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
-          <div>
-            <span className="text-sm text-gray-500">Remarks</span>
-            <p className="font-medium">{selectedItem.remarks}</p>
-          </div>
-        </div>
-        
-        <div className="flex justify-end">
-          <button
-            onClick={() => setShowViewModal(false)}
-              className="px-3 py-1.5 border border-gray-300 hover:text-white hover:border-gray-500/50 rounded-custom hover:bg-gray-900/50 transition-colors text-sm flex items-center disabled:opacity-50"
+        {/* Header Section - Matches styling with application system headers */}
+        <div className="px-4 py-3 bg-header text-white flex justify-between items-center rounded-t-custom">
+          <h2 className="text-base font-semibold">Inventory Item Information</h2>
+          <button 
+            onClick={() => setShowViewModal(false)} 
+            className="text-white hover:text-gray-200 focus:outline-none"
           >
-            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Modal Main View Data Content Area */}
+        <div className="p-5 overflow-y-auto flex-1 space-y-5">
+          
+          {/* Primary Item Identity Header Display */}
+          <div className="border-b border-gray-100 pb-3">
+            <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400 block mb-0.5">Product Name</span>
+            <h1 className="text-xl font-bold text-gray-800">{selectedItem.product_name}</h1>
+          </div>
+
+          {/* Core Configuration & Metrics Data Grid Layout */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-6 text-xs">
+            
+            <div>
+              <span className="block font-semibold text-gray-500 mb-0.5">SKU Code</span>
+              <p className="text-gray-900 font-medium break-all">{selectedItem.sku}</p>
+            </div>
+
+            <div>
+              <span className="block font-semibold text-gray-500 mb-0.5">Availability Status</span>
+              <p className={`font-bold ${getStatusTextColor(selectedItem.status)}`}>
+                {selectedItem.status || 'Unknown'}
+              </p>
+            </div>
+
+            <div>
+              <span className="block font-semibold text-gray-500 mb-0.5">Category</span>
+              <p className="text-gray-900 font-medium">{selectedItem.type || '-'}</p>
+            </div>
+
+            <div className="border-t border-gray-100 pt-2">
+              <span className="block font-semibold text-gray-500 mb-0.5">Current Stock Qty</span>
+              <p className="text-gray-900 font-bold text-sm">{selectedItem.current_qty ?? 0}</p>
+            </div>
+
+            <div className="border-t border-gray-100 pt-2">
+              <span className="block font-semibold text-gray-500 mb-0.5">Reorder Threshold</span>
+              <p className="text-gray-900 font-medium">{selectedItem.reorder_level ?? 0}</p>
+            </div>
+
+            <div className="border-t border-gray-100 pt-2">
+              <span className="block font-semibold text-gray-500 mb-0.5">Tracking Method</span>
+              <p className="text-gray-900 font-medium">{selectedItem.tracking_method || '-'}</p>
+            </div>
+
+            <div className="border-t border-gray-100 pt-2">
+              <span className="block font-semibold text-gray-500 mb-0.5">Cost per Unit</span>
+              <p className="text-gray-900 font-medium">{formatCurrency(selectedItem.cost_per_unit)}</p>
+            </div>
+
+            <div className="border-t border-gray-100 pt-2">
+              <span className="block font-semibold text-gray-500 mb-0.5">Total Inventory Cost</span>
+              <p className="text-gray-700 font-medium">{formatCurrency(selectedItem.total_inventory_cost)}</p>
+            </div>
+
+            <div className="hidden md:block border-t border-gray-100 pt-2"></div>
+
+            <div className="border-t border-gray-100 pt-2">
+              <span className="block font-semibold text-gray-500 mb-0.5">Price per Unit</span>
+              <p className="text-gray-900 font-medium">{formatCurrency(selectedItem.price_per_unit)}</p>
+            </div>
+
+            <div className="border-t border-gray-100 pt-2">
+              <span className="block font-semibold text-gray-500 mb-0.5">Total Retail Asset Value</span>
+              <p className="text-gray-700 font-medium">{formatCurrency(selectedItem.total_inventory_value)}</p>
+            </div>
+
+            <div className="hidden md:block border-t border-gray-100 pt-2"></div>
+          </div>
+
+          {/* Structured location tracking segment element card container */}
+          <div className="bg-gray-50 border border-gray-200 rounded p-3 grid grid-cols-3 gap-4 text-xs">
+            <div>
+              <span className="block font-semibold text-gray-500 mb-0.5">Rack Space</span>
+              <p className="text-gray-900 font-medium">
+                {selectedItem.rack && selectedItem.rack.toString().trim() !== "" ? `Rack ${selectedItem.rack}` : "-"}
+              </p>
+            </div>
+            <div>
+              <span className="block font-semibold text-gray-500 mb-0.5">Shelf Tier</span>
+              <p className="text-gray-900 font-medium">
+                {selectedItem.shelf && selectedItem.shelf.toString().trim() !== "" ? `Shelf ${selectedItem.shelf}` : "-"}
+              </p>
+            </div>
+            <div>
+              <span className="block font-semibold text-gray-500 mb-0.5">Box Container</span>
+              <p className="text-gray-900 font-medium">
+                {selectedItem.box && selectedItem.box.toString().trim() !== "" ? `Box ${selectedItem.box}` : "-"}
+              </p>
+            </div>
+          </div>
+
+          {/* Item Logs Context Sizing Wrapper */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-gray-100 pt-3 text-[11px] text-gray-500">
+            <div>
+              <span className="font-semibold text-gray-400">System Log Ingestion:</span> {selectedItem.date_created || '-'}
+            </div>
+            <div className="md:text-right">
+              <span className="font-semibold text-gray-400">Last Database Mutation:</span> {selectedItem.date_updated || '-'}
+            </div>
+          </div>
+
+          {/* Remarks Entry Line display content block */}
+          {selectedItem.remarks && selectedItem.remarks.trim() !== "" && (
+            <div className="border-t border-gray-100 pt-3">
+              <span className="block text-xs font-semibold text-gray-500 mb-1">Internal Remarks / Notes</span>
+              <div className="bg-amber-50/50 border border-amber-200/60 text-xs text-gray-700 p-2.5 rounded-custom whitespace-pre-wrap leading-relaxed">
+                {selectedItem.remarks}
+              </div>
+            </div>
+          )}
+
+        </div>
+
+        {/* Action Panel Footer Segment */}
+        <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-end rounded-b-custom">
+          <button
+            type="button"
+            onClick={() => setShowViewModal(false)}
+            className="px-4 py-1.5 border border-gray-300 bg-white text-gray-700 text-xs rounded-custom hover:bg-gray-50 transition-colors shadow-sm flex items-center hover:text-white hover:border-gray-500/50 hover:bg-gray-900/50"
+          >
+            <svg className="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
             Close
           </button>
         </div>
+
       </div>
     </div>
   );

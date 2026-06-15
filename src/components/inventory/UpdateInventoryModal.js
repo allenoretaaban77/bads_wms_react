@@ -26,7 +26,6 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
     sku: '',
     cost_per_unit: '',
     price_per_unit: '',
-    // current_qty: '',
     reorder_level: '',
     type: '',
     rack: '',
@@ -34,40 +33,38 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
     box: '',
     status: 'In Stock',
     remarks: '',
-    updated_by: userData.employee_id,
+    updated_by: userData?.employee_id || '',
     tracking_method: ''
   });
 
-
   // Populate form with selected item data when modal opens
   useEffect(() => {
-    if (selectedItem) {
+    if (selectedItem && showEditModal) {
       setFormData({
         id: selectedItem.id || '',
         product_name: selectedItem.product_name || '',
         sku: selectedItem.sku || '',
-        cost_per_unit: selectedItem.cost_per_unit,
-        price_per_unit: selectedItem.price_per_unit,
-        // current_qty: selectedItem.current_qty,
-        reorder_level: selectedItem.reorder_level,
+        cost_per_unit: selectedItem.cost_per_unit ?? '',
+        price_per_unit: selectedItem.price_per_unit ?? '',
+        reorder_level: selectedItem.reorder_level ?? '',
         type: selectedItem.type || '',
         rack: selectedItem.rack || '',
         shelf: selectedItem.shelf || '',
         box: selectedItem.box || '',
         status: selectedItem.status || 'In Stock',
         remarks: selectedItem.remarks || '',
-        updated_by: userData.employee_id,
-        tracking_method: selectedItem.tracking_method
+        updated_by: userData?.employee_id || '',
+        tracking_method: selectedItem.tracking_method || ''
       });
     }
-  }, [selectedItem, showEditModal]);
+  }, [selectedItem, showEditModal, userData?.employee_id]);
 
   const validateForm = (result) => {
     const newErrors = {};
-
     setErrors(newErrors);
+    
     if (result && !result.success) {
-      setErrors(result.error.errors);
+      setErrors(result.error.errors || {});
     }
     
     return Object.keys(newErrors).length === 0;
@@ -80,7 +77,6 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
       [name]: value
     }));
     
-    // Clear error for this field when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -90,149 +86,99 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
+    if (!validateForm()) return;
     
-    // Validate form before submission
-    if (!validateForm()) {
-      return;
-    }
-    
-    // Set loading state
     setIsLoading(true);
-    
-    // Convert numeric fields to numbers
-    // const submitData = {
-    //   id: formData.id,
-    //   product_name: formData.product_name,
-    //   sku: formData.sku,
-    //   cost_per_unit: Number(formData.cost_per_unit),
-    //   price_per_unit: Number(formData.price_per_unit),
-    //   current_qty: Number(formData.current_qty),
-    //   reorder_level: Number(formData.reorder_level),
-    //   type: formData.type,
-    //   rack: formData.rack,
-    //   shelf: formData.shelf,
-    //   box: formData.box,
-    //   status: formData.status,
-    //   remarks: formData.remarks,
-    //   updated_by: formData.updated_by
-    // };
     
     try {
       const result = await onSave(formData);
       
       if (result.success) {
-        // Reset form and loading state
-        setFormData({
-          product_name: '',
-          sku: '',
-          cost_per_unit: '',
-          price_per_unit: '',
-          // current_qty: '',
-          reorder_level: '',
-          type: '',
-          rack: '',
-          shelf: '',
-          box: '',
-          status: 'In Stock',
-          remarks: '',
-          updated_by: '',
-          tracking_method: ''
-        });
-        
-        // Clear errors
         setErrors({});
+        setShowEditModal(false);
       } else {
         validateForm(result);
       }
-      // Reset loading state
-      setIsLoading(false);
     } catch (error) {
-      // Reset loading state
+      console.error(error);
+    } finally {
       setIsLoading(false);
     }
   };
 
   const handleCancel = () => {
     setErrors({});
-
     setShowEditModal(false);
-    // Reset form
-    setFormData({
-      product_name: '',
-      sku: '',
-      cost_per_unit: '',
-      price_per_unit: '',
-      // current_qty: '',
-      reorder_level: '',
-      type: '',
-      rack: '',
-      shelf: '',
-      box: '',
-      status: 'In Stock',
-      remarks: '',
-      updated_by: '',
-      tracking_method: ''
-    });
   };
 
   if (!showEditModal) return null;
 
   return (
-    <>
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-custom p-4 max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
-          {/* Product Name at Top */}
-          <div className="mb-6 pb-4 border-b border-gray-200">
-            <h2 className="text-2xl font-bold text-gray-800 text-center">
-              Update Inventory Item
-            </h2>
-          </div>
-          
-          <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-custom shadow-xl border border-gray-200 w-full max-w-2xl flex flex-col max-h-[90vh]">
+        
+        {/* Header Section - Matches top brand system definitions */}
+        <div className="px-4 py-3 bg-header text-white flex justify-between items-center rounded-t-custom">
+          <h2 className="text-base font-semibold">Modify Inventory Item</h2>
+          <button onClick={handleCancel} className="text-white hover:text-gray-200 focus:outline-none">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        {/* Modal Form Context Area */}
+        <div className="p-4 overflow-y-auto flex-1">
+          <form id="update-inventory-form" onSubmit={handleSubmit} className="space-y-4">
+            
             {/* Product Name - Full Width */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="product_name col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
-                <input
-                  type="text"
-                  name="product_name"
-                  value={formData.product_name}
-                  onChange={handleChange}
-                  placeholder="Enter product name"
-                  className={`w-full px-2 py-1.5 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
-                    errors.product_name ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
-                  }`}
-                  required
-                />
-                {errors.product_name && (
-                  <p className="mt-1 text-xs text-red-600">{errors.product_name}</p>
-                )}
-              </div>
-              <div className="sku">
-                <label className="block text-sm font-medium text-gray-700 mb-1">SKU *</label>
+            <div className="flex flex-col space-y-1">
+              <label className="text-xs font-semibold text-gray-700">Product Name *</label>
+              <input
+                type="text"
+                name="product_name"
+                value={formData.product_name}
+                onChange={handleChange}
+                placeholder="Enter item descriptive title"
+                className={`w-full px-3 py-1.5 text-xs border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                  errors.product_name ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
+                }`}
+                required
+              />
+              {errors.product_name && (
+                <p className="text-xs text-red-600 mt-0.5">{errors.product_name}</p>
+              )}
+            </div>
+            
+            {/* Split Sizing Fields Setup */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              
+              <div className="flex flex-col space-y-1">
+                <label className="text-xs font-semibold text-gray-700">SKU Code</label>
                 <input
                   type="text"
                   name="sku"
                   value={formData.sku}
                   onChange={handleChange}
-                  placeholder="Enter SKU"
-                  className={`w-full px-2 py-1.5 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                  placeholder="Enter Stock Identifier"
+                  className={`w-full px-3 py-1.5 text-xs border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                     errors.sku ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                   }`}
                   required
                 />
                 {errors.sku && (
-                  <p className="mt-1 text-xs text-red-600">{errors.sku}</p>
+                  <p className="text-xs text-red-600 mt-0.5">{errors.sku}</p>
                 )}
               </div>
-              <div className="type">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+
+              <div className="flex flex-col space-y-1">
+                <label className="text-xs font-semibold text-gray-700">Category *</label>
                 <select
                   name="type"
                   value={formData.type}
                   onChange={handleChange}
-                  className={`w-full px-2 py-1.5 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                  className={`w-full px-3 py-1.5 text-xs border bg-white rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                     errors.type ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                   }`}
                   required
@@ -245,11 +191,12 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
                   ))}
                 </select>
                 {errors.type && (
-                  <p className="mt-1 text-xs text-red-600">{errors.type}</p>
+                  <p className="text-xs text-red-600 mt-0.5">{errors.type}</p>
                 )}
               </div>
-              <div className="cost_per_unit">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Cost per Unit *</label>
+
+              <div className="flex flex-col space-y-1">
+                <label className="text-xs font-semibold text-gray-700">Cost per Unit *</label>
                 <input
                   type="number"
                   name="cost_per_unit"
@@ -257,33 +204,18 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
                   value={formData.cost_per_unit}
                   onChange={handleChange}
                   placeholder="0.00"
-                  className={`w-full px-2 py-1.5 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                  className={`w-full px-3 py-1.5 text-xs border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                     errors.cost_per_unit ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                   }`}
                   required
                 />
                 {errors.cost_per_unit && (
-                  <p className="mt-1 text-xs text-red-600">{errors.cost_per_unit}</p>
+                  <p className="text-xs text-red-600 mt-0.5">{errors.cost_per_unit}</p>
                 )}
               </div>
-              <div className="rack">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Rack</label>
-                <select
-                  name="rack"
-                  value={formData.rack}
-                  onChange={handleChange}
-                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-                >
-                  <option value="">Select Rack</option>
-                  {[...Array(10)].map((_, i) => (
-                    <option key={i + 1} value={i + 1}>
-                      Rack {i + 1}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="price_per_unit">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Price per Unit *</label>
+
+              <div className="flex flex-col space-y-1">
+                <label className="text-xs font-semibold text-gray-700">Price per Unit *</label>
                 <input
                   type="number"
                   name="price_per_unit"
@@ -291,71 +223,41 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
                   value={formData.price_per_unit}
                   onChange={handleChange}
                   placeholder="0.00"
-                  className={`w-full px-2 py-1.5 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                  className={`w-full px-3 py-1.5 text-xs border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                     errors.price_per_unit ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                   }`}
                   required
                 />
                 {errors.price_per_unit && (
-                  <p className="mt-1 text-xs text-red-600">{errors.price_per_unit}</p>
+                  <p className="text-xs text-red-600 mt-0.5">{errors.price_per_unit}</p>
                 )}
               </div>
-              <div className="shelf">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Shelf</label>
-                <select
-                  name="shelf"
-                  value={formData.shelf}
-                  onChange={handleChange}
-                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-                >
-                  <option value="">Select Shelf</option>
-                  {[...Array(10)].map((_, i) => (
-                    <option key={i + 1} value={i + 1}>
-                      Shelf {i + 1}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="reorder_level">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Reorder Level *</label>
+
+              <div className="flex flex-col space-y-1">
+                <label className="text-xs font-semibold text-gray-700">Reorder Threshold *</label>
                 <input
                   type="number"
                   name="reorder_level"
                   value={formData.reorder_level}
                   onChange={handleChange}
                   placeholder="0"
-                  className={`w-full px-2 py-1.5 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                  className={`w-full px-3 py-1.5 text-xs border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                     errors.reorder_level ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                   }`}
                   required
                 />
                 {errors.reorder_level && (
-                  <p className="mt-1 text-xs text-red-600">{errors.reorder_level}</p>
+                  <p className="text-xs text-red-600 mt-0.5">{errors.reorder_level}</p>
                 )}
               </div>
-              <div className="box">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Box</label>
-                <select
-                  name="box"
-                  value={formData.box}
-                  onChange={handleChange}
-                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-                >
-                  <option value="">Select Box</option>
-                  {[...Array(10)].map((_, i) => (
-                    <option key={i + 1} value={i + 1}>
-                      Box {i + 1}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="tracking_method">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tracking Method</label>
+
+              <div className="flex flex-col space-y-1">
+                <label className="text-xs font-semibold text-gray-700">Tracking Pipeline Method *</label>
                 <select
                   name="tracking_method"
                   value={formData.tracking_method}
                   onChange={handleChange}
-                  className={`w-full px-2 py-1.5 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                  className={`w-full px-3 py-1.5 text-xs border bg-white rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                     errors.tracking_method ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                   }`}
                   required
@@ -368,77 +270,115 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
                   ))}
                 </select>
                 {errors.tracking_method && (
-                  <p className="mt-1 text-xs text-red-600">{errors.tracking_method}</p>
+                  <p className="text-xs text-red-600 mt-0.5">{errors.tracking_method}</p>
                 )}
               </div>
-              <div className="remarks">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
-                <textarea
-                  name="remarks"
-                  value={formData.remarks}
-                  onChange={handleChange}
-                  placeholder="Enter any additional notes..."
-                  rows="2"
-                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
-                />
-              </div>
-              {/* <div className="current_qty">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Current Quantity</label>
-                <input
-                  type="number"
-                  name="current_qty"
-                  value={formData.current_qty}
-                  onChange={handleChange}
-                  placeholder="0"
-                  className={`w-full px-2 py-1.5 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
-                    errors.current_qty ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
-                  }`}
-                />
-                {errors.current_qty && (
-                  <p className="mt-1 text-xs text-red-600">{errors.current_qty}</p>
-                )}
-              </div> */}
+
             </div>
+
+            {/* Structured gray warehouse cell card container */}
+            <div className="bg-gray-50 border border-gray-200 rounded p-3 grid grid-cols-3 gap-3">
+              <div className="flex flex-col space-y-1">
+                <label className="text-xs font-semibold text-gray-600">Rack Space</label>
+                <select
+                  name="rack"
+                  value={formData.rack}
+                  onChange={handleChange}
+                  className="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-white focus:outline-none focus:ring-1 focus:ring-button"
+                >
+                  <option value="">Select</option>
+                  {[...Array(10)].map((_, i) => (
+                    <option key={i + 1} value={i + 1}>Rack {i + 1}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex flex-col space-y-1">
+                <label className="text-xs font-semibold text-gray-600">Shelf Tier</label>
+                <select
+                  name="shelf"
+                  value={formData.shelf}
+                  onChange={handleChange}
+                  className="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-white focus:outline-none focus:ring-1 focus:ring-button"
+                >
+                  <option value="">Select</option>
+                  {[...Array(10)].map((_, i) => (
+                    <option key={i + 1} value={i + 1}>Shelf {i + 1}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex flex-col space-y-1">
+                <label className="text-xs font-semibold text-gray-600">Box Container</label>
+                <select
+                  name="box"
+                  value={formData.box}
+                  onChange={handleChange}
+                  className="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-white focus:outline-none focus:ring-1 focus:ring-button"
+                >
+                  <option value="">Select</option>
+                  {[...Array(10)].map((_, i) => (
+                    <option key={i + 1} value={i + 1}>Box {i + 1}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Remarks Entry Line */}
+            <div className="flex flex-col space-y-1">
+              <label className="text-xs font-semibold text-gray-700">Remarks / Inventory Notes</label>
+              <textarea
+                name="remarks"
+                value={formData.remarks}
+                onChange={handleChange}
+                placeholder="Log tracking modification updates..."
+                rows="2"
+                className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+              />
+            </div>
+
           </form>
-          <div className="mt-2 flex justify-end space-x-3">
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="px-3 py-1.5 border border-gray-300 hover:text-white hover:border-gray-500/50 rounded-custom hover:bg-gray-900/50 transition-colors text-sm flex items-center disabled:opacity-50"
-            >
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={isLoading}
-              className="px-3 py-1.5 bg-button text-white rounded-custom hover:bg-button-hover transition-colors text-sm flex items-center disabled:opacity-50"
-            >
-              {isLoading ? (
-                <>
-                  <svg className="animate-spin h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Update
-                </>
-              )}
-            </button>
-          </div>
         </div>
+
+        {/* Action Panel Footer Segment */}
+        <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-end space-x-2 rounded-b-custom">
+          <button
+            type="button"
+            onClick={handleCancel}
+            disabled={isLoading}
+            className="px-4 py-1.5 border border-gray-300 text-gray-700 text-xs rounded-custom hover:bg-gray-100 disabled:opacity-50 transition-colors flex items-center hover:text-white hover:border-gray-500/50 hover:bg-gray-900/50"
+          >
+            <svg className="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Cancel
+          </button>
+          <button
+            type="submit"
+            form="update-inventory-form"
+            disabled={isLoading}
+            className="px-4 py-1.5 bg-button text-white text-xs rounded-custom hover:bg-button-hover disabled:opacity-50 transition-colors shadow-sm flex items-center"
+          >
+            {isLoading ? (
+              <>
+                <svg className="animate-spin h-3.5 w-3.5 mr-1.5 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Processing...
+              </>
+            ) : (
+              <>
+                <svg className="h-3.5 w-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                Update
+              </>
+            )}
+          </button>
+        </div>
+
       </div>
-  
-    </>
+    </div>
   );
-}
+};
 
 export default UpdateInventoryModal;

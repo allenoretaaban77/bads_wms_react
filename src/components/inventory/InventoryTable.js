@@ -289,19 +289,19 @@ function InventoryTable({ page_type }) {
             <div className="flex space-x-2 pb-2">
               <button
                 onClick={handleRefresh}
-                className="mt-3 px-3 py-1.5 bg-gray-500 text-white rounded-custom hover:bg-green-600 transition-colors duration-200 flex items-center text-sm"
+                className="mt-3 px-3 py-1.5 bg-gray-500 text-white rounded-custom hover:bg-gray-600 transition-colors duration-200 flex items-center text-xs"
                 title="Refresh table"
               >
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-3.5 w-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
                 Refresh
               </button>
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="mt-3 px-3 py-1.5 bg-button text-white rounded-custom hover:bg-button-hover transition-colors duration-200 flex items-center text-sm"
+                className="mt-3 px-3 py-1.5 bg-button text-white text-xs rounded-custom hover:bg-button-hover transition-colors duration-200 flex items-center"
               >
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-3.5 w-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
                 Create

@@ -4,7 +4,7 @@ import { formatCurrency, toTitleCase, formatLongDate } from '../../utils/formatt
 import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 import { generatePrintReceipt } from '../../utils/printUtils';
 
-function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, id }) {
+function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onReturn, id }) {
   const userData = useAppViewModel((state) => state.userData);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -31,8 +31,8 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, id }) {
   }, [show, id]);
 
   const handlePaidUnpaid = (data) => {
-
-  }
+    // Implement your payment status toggler here
+  };
 
   const handleUpdate = (item) => {
     onUpdate(item);
@@ -48,7 +48,59 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, id }) {
       employee: userData.firstname + ' ' + userData.middlename + ' ' + userData.lastname 
     };
     generatePrintReceipt(dataToPrint);
-  }
+  };
+
+  const handleInitiateSingleReturn = async (item) => {
+    const qtyToReturn = window.prompt(`How many units of "${item.product_name}" are being returned?`, "1");
+    
+    if (qtyToReturn === null) return; // User cancelled prompt
+    
+    const parsedQty = parseInt(qtyToReturn, 10);
+    if (isNaN(parsedQty) || parsedQty <= 0) {
+      window.alert("Please enter a valid positive quantity.");
+      return;
+    }
+
+    if (parsedQty > item.qty_sold) {
+      window.alert(`Maximum allowed return quantity is ${item.qty_sold}.`);
+      return;
+    }
+
+    const isDefective = window.confirm("Is this item defective or structurally damaged?\n\n[OK] Yes, set as Defective\n[Cancel] No, restock as Sellable");
+
+    if (window.confirm(`Confirm processing return for ${parsedQty} unit(s) of "${item.product_name}"?`)) {
+      setIsSubmitting(true);
+      try {
+        const returnPayload = {
+          invoice_no: data.invoice_no,
+          updated_by: userData.employee_id,
+          items: [
+            {
+              inventory_id: item.inventory_id || item.id, // Fallback depending on your structural item key
+              batch_id: item.batch_id,
+              quantity: parsedQty,
+              is_defective: isDefective
+            }
+          ]
+        };
+
+        const result = await onReturn(returnPayload);
+        if (result && result.success) {
+          // Refresh item details view to showcase changes
+          const updatedDetails = await getSalesViewSales(id);
+          if (updatedDetails.success) setData(updatedDetails.data);
+          setError(null);
+        } else {
+          setError(result?.error || "Failed to complete processing return sequence.");
+        }
+      } catch (err) {
+        console.error("Error running return operation execution:", err);
+        setError("An unhandled exception occurred during transaction rollback handling.");
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+  };
 
   const handleSubmit = async (action, data) => {
     console.log(action, data);
@@ -64,7 +116,6 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, id }) {
         });
 
         if (result && result.success) {
-          // onClose(true);
           setError(null);
         } else {
           console.log(result.error.error);
@@ -103,11 +154,7 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, id }) {
     setData(null);
     setError(null);
     onClose();
-  }
-
-  // const calculateGrandTotal = (items) => {
-  //   return items.reduce((sum, item) => sum + parseFloat(item.total || 0), 0);
-  // };
+  };
 
   if (!show) return null;
 
@@ -142,21 +189,42 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, id }) {
                 <table className="w-full text-sm border-collapse">
                   <thead className="bg-header text-white">
                     <tr className="border-0">
-                      <th className="border-r px-3 text-left cursor-pointer hover:bg-green-700 text-white">SKU</th>
-                      <th className="border-r px-3 text-left cursor-pointer hover:bg-green-700 text-white">Product Name</th>
+                      <th className="border-r px-3 py-2 text-left text-white">SKU</th>
+                      <th className="border-r px-3 py-2 text-left text-white">Product Name</th>
                       <th className="border-r p-2 text-right">Quantity</th>
                       <th className="border-r p-2 text-right">Price per Unit</th>
                       <th className="border-r p-2 text-right">Total</th>
+                      {data.status === "approved" && <th className="p-2 text-center">Actions</th>}
                     </tr>
                   </thead>
                   <tbody>
                     {data.items.map((item) => (
-                      <tr key={item.id}>
+                      <tr key={item.id} className="hover:bg-gray-50 transition-colors">
                         <td className="border-r border-b border-l p-2">{item.sku}</td>
                         <td className="border-r border-b p-2">{item.product_name}</td>
                         <td className="border-r border-b p-2 text-right">{item.qty_sold}</td>
                         <td className="border-r border-b p-2 text-right">{formatCurrency(item.price_per_unit)}</td>
                         <td className="border-r border-b p-2 text-right">{formatCurrency(item.total)}</td>
+                        {data.status === "approved" && (
+                          <td className="border-r border-b p-2 text-center">
+                            {item.qty_sold > 0 ? (
+                              <button
+                                type="button"
+                                disabled={isSubmitting}
+                                onClick={() => handleInitiateSingleReturn(item)}
+                                className="px-2 py-1 bg-orange-500 text-white rounded text-xs hover:bg-orange-600 transition-colors disabled:opacity-50 flex items-center mx-auto"
+                                title="Process single line item item exchange/return"
+                              >
+                                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                </svg>
+                                Return
+                              </button>
+                            ) : (
+                              <span className="text-xs text-gray-400 italic">Fully Returned</span>
+                            )}
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -164,7 +232,7 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, id }) {
                     <tr className="font-bold bg-gray-50">
                       <td colSpan="4" className="border-r border-b border-l p-2 text-right">Grand Total</td>
                       <td className="border-r p-2 text-right">{formatCurrency(data.amount)}</td>
-                      {/* <td className="border-r p-2 text-right">{formatCurrency(calculateGrandTotal(data.items))}</td> */}
+                      {data.status === "approved" && <td className="border-r border-b p-2"></td>}
                     </tr>
                   </tfoot>
                 </table>
@@ -259,7 +327,6 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, id }) {
                 </svg>
                 {data.is_paid === "yes" && ('Set Unpaid')}
                 {data.is_paid === "no" && ('Set Paid')}
-                
               </button>
             )}
           </div>

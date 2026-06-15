@@ -55,9 +55,9 @@ const menuItems = [
   },
   { key: 'stocks', label: 'Replenishment' },
   { key: 'sales', label: 'Sales' },
-  { key: 'suppliers', label: 'Suppliers' },
+  { key: 'returns', label: 'Returns' },
   { key: 'users', label: 'Users' },
-  { key: 'profile', label: 'Profile' },
+  // { key: 'profile', label: 'Profile' },
   { key: 'logout', label: 'Logout' },
 ];
 

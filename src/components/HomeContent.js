@@ -3,6 +3,7 @@ import useAppViewModel from '../viewmodels/useAppViewModel.tsx';
 import InventoryTable from './inventory/InventoryTable';
 import ReplenishmentTable from './replenishment/ReplenishmentTable';
 import SalesTable from './sales/SalesTable';
+import ReturnsTable from './returns/ReturnsTable.js';
 
 const descriptions = {
   profile: 'View your account details, role, and recent activity.',
@@ -29,6 +30,9 @@ function HomeContent() {
       break;
     case 'sales':
       return <SalesTable />;
+      break;
+    case 'returns':
+      return <ReturnsTable />;
       break;
     case 'inventory':
       return <InventoryTable page_type={menuChild}/>;
