@@ -320,10 +320,10 @@ export const generateTransactionNumber = async () => {
   }
 };
 
-export const getStockInTransactions = async (id) => {
+export const getStockInTransactions = async (id, cost) => {
   try {
     const headers = getApiHeaders();
-    const response = await fetch(`${API_BASE_URL}/api/replenishment/stockintrnxs?id=${id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/replenishment/stockintrnxs?id=${id}&cost=${cost}`, {
       method: 'GET',
       headers: headers,
     });

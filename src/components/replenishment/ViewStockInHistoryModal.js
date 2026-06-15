@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getStockInTransactions } from '../../api/replenishmentService';
 import { formatCurrency, formatLongDate } from '../../utils/formatters';
 
-function ViewStockInHistoryModal({ show, onClose, id }) {
+function ViewStockInHistoryModal({ show, onClose, id, item }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -14,7 +14,7 @@ function ViewStockInHistoryModal({ show, onClose, id }) {
       const fetchData = async () => {
         setLoading(true);
         setError(null);
-        const result = await getStockInTransactions(id);
+        const result = await getStockInTransactions(item.inventory_id, item.cost);
         if (result.success) {
           console.log('getStockInTransactions', result.data);
           setData(result.data);
@@ -25,7 +25,7 @@ function ViewStockInHistoryModal({ show, onClose, id }) {
       };
       fetchData();
     }
-  }, [show, id]);
+  }, [show, id, item]);
 
   const handleClose = () => {
     setData(null);

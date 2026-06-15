@@ -7,14 +7,15 @@ import ViewStockInHistoryModal from './ViewStockInHistoryModal';
 
 const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
   const userData = useAppViewModel((state) => state.userData);
+  
   const [formData, setFormData] = useState({
     supplier: '',
     reference_no: '',
     date_received: new Date().toISOString().split('T')[0],
     remarks: '',
-    added_by: userData.employee_id
+    added_by: userData?.employee_id || ''
   });
-  
+
   const [items, setItems] = useState([]);
   const [nextItemId, setNextItemId] = useState(1);
   const [itemSearchTerm, setItemSearchTerm] = useState('');
@@ -50,14 +51,10 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
       fetchTransactionNumber();
     }
   }, [showCreateModal]);
-  
-  useEffect(() => {
-    console.log(items);
-  }, [items]);
 
-  const handleBlur = () => {
-    // setTimeout(() => setShowSuggestions(false), 200);
-    setTimeout(() => setItemSearchTerm(''), 200);
+  const showAvailableStocks = (item) => {
+    setSelectedStockItem(item);
+    setShowStockInHistoryModal(true);
   };
 
   const fetchTransactionNumber = async () => {
@@ -69,23 +66,24 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
         reference_no: trnxNumber,
       }));
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching transaction number:", error);
     }
+  };
+
+  const handleBlur = () => {
+    // Delay closure slightly to allow item selection clicks to register safely
+    setTimeout(() => {
+      setShowSuggestions(false);
+    }, 200);
   };
 
   const updateItemField = (id, field, value) => {
     setItems(prev => prev.map(item => {
-      const itemId = item.id || item.inventory_id;
-      
-      if (itemId !== id) {
-        return item; // Not the item we are looking for, return it unchanged
-      }
-
+      if (item.id !== id) return item;
       const updated = { ...item, [field]: value };
       const qty = Number(updated.quantity) || 0;
       const cost = Number(updated.cost) || 0;
       updated.total = qty * cost;
-
       return updated;
     }));
   };
@@ -93,11 +91,6 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
   const removeItemRow = (id) => {
     setItems(prev => prev.filter(item => item.id !== id));
   };
-
-  const showStockInHistory = (item) => {
-    setSelectedStockItem(item);
-    setShowStockInHistoryModal(true);
-  }
 
   const resolveSuggestionName = (suggestion) => {
     return suggestion.name || suggestion.product_name || suggestion.item_name || suggestion.description || `Item ${nextItemId}`;
@@ -108,16 +101,10 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
   };
 
   const fetchItemSuggestions = async (query) => {
-    if (!query.trim()) {
-      setItemSuggestions([]);
-      setShowSuggestions(false);
-      return;
-    }
-
     setIsSearching(true);
     try {
       const result = await getInventoryReplenishmentListsearch({ search: query, page: 1, pageSize: 30 });
-      if (!result.success || !result.data) {
+      if (!result || !result.success || !result.data) {
         setItemSuggestions([]);
         setShowSuggestions(false);
       } else {
@@ -126,6 +113,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
         setShowSuggestions(true);
       }
     } catch (err) {
+      console.error("Error looking up item suggestion:", err);
       setItemSuggestions([]);
       setShowSuggestions(false);
     } finally {
@@ -139,16 +127,15 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
     const newErrors = {};
 
     setItems(prev => {
-      const exists = prev.some(item => item.id === suggestion.id);
-      if (exists) {
-        // uncommented because we can add same items with different costs
-        // newErrors['items'] = `Item with inventory id ${suggestion.product_name} already selected`;
-        // setErrors(newErrors);
-        // return prev; 
-        // setErrors(null);
-      } else {
-        setErrors(newErrors);
-      }
+      // const exists = prev.some(item => item.inventory_id === suggestion.id);
+      // if (exists) {
+      //   newErrors['items'] = `Item "${name}" is already listed.`;
+      //   setErrors(newErrors);
+      //   return prev;
+      // } else {
+      //   setErrors(newErrors);
+      // }
+      setErrors(newErrors);
 
       return [
         ...prev,
@@ -162,9 +149,11 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
           sku: suggestion.sku,
           cost: costValue !== undefined ? costValue.toString() : '',
           total: 0,
+          history: suggestion.history || []
         },
       ];
     });
+
     setNextItemId(prev => prev + 1);
     setItemSearchTerm('');
     setItemSuggestions([]);
@@ -173,12 +162,10 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
 
   const validateForm = (result) => {
     const newErrors = {};
-
     setErrors(newErrors);
-    if (result && !result.success) {
+    if (result && !result.success && result.error?.errors) {
       setErrors(result.error.errors);
     } 
-
     return Object.keys(newErrors).length === 0;
   };
 
@@ -199,14 +186,13 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
 
   const handleCancel = () => {
     setErrors({});
-
     setShowCreateModal(false);
     setFormData({
       supplier: '',
       reference_no: '',
       date_received: new Date().toISOString().split('T')[0],
       remarks: '',
-      added_by: userData.employee_id
+      added_by: userData?.employee_id || '',
     });
     setItems([]);
     setNextItemId(1);
@@ -218,16 +204,15 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
   const validateFormForEmpty = () => {
     const newErrors = {};
 
-    // Loop through items to check ONLY for blank/empty inputs
+    if (items.length === 0) {
+      newErrors['items'] = "Please add at least one item to save the transaction.";
+    }
+
     items.forEach((item) => {
-      
-      // Validate Quantity: triggers only if the field is wiped clean
-      if (item.quantity === "" || item.quantity === null || item.quantity === undefined || isNaN(item.quantity) || Number(item.quantity) === 0) {
+      if (item.quantity === "" || item.quantity === null || item.quantity === undefined || isNaN(item.quantity) || Number(item.quantity) <= 0) {
         newErrors[`quantity_${item.id}`] = "Invalid quantity.";
       }
-
-      // Validate Cost: triggers only if the field is wiped clean
-      if (item.cost === "" || item.cost === null || item.cost === undefined || isNaN(item.cost) || Number(item.cost) === 0) {
+      if (item.cost === "" || item.cost === null || item.cost === undefined || isNaN(item.cost) || Number(item.cost) <= 0) {
         newErrors[`cost_${item.id}`] = "Invalid cost.";
       }
     });
@@ -237,10 +222,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
   };
 
   const handleSubmit = async (action) => {
-    // e.preventDefault();
     if (!validateFormForEmpty()) return;
-
-    // if (!onSave) return;
     setIsSubmitting(true);
 
     try {
@@ -250,7 +232,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
         date_received: formatPostingDate(formData.date_received),
         amount: getItemsTotal(),
         remarks: formData.remarks,
-        added_by: userData.employee_id,
+        added_by: userData?.employee_id || '',
         items: items.map(item => ({
           inventory_id: item.inventory_id,
           item_name: item.item_name,
@@ -258,7 +240,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
           cost: Number(item.cost) || 0,
           total: Number(item.total) || 0,
         })),
-        status : action,
+        status: action,
       });
 
       if (result && result.success) {
@@ -268,7 +250,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
           reference_no: '',
           date_received: new Date().toISOString().split('T')[0],
           remarks: '',
-          added_by: userData.employee_id,
+          added_by: userData?.employee_id || '',
         });
         setItems([]);
         setNextItemId(1);
@@ -276,10 +258,8 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
       } else {
         validateForm(result);
       }
-
-      setIsSubmitting(false);
     } catch (error) {
-      console.error("Error saving replenishment:", error);
+      console.error("Error saving replenishment transaction:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -311,9 +291,9 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                   value={formData.reference_no}
                   onChange={handleChange}
                   placeholder="Enter reference number"
-                  className="flex-1 focus:outline-none"
+                  className="flex-1 focus:outline-none bg-transparent"
                 />
-                <button id="refreshBtn" type="button" aria-label="Refresh value" title="Refresh" onClick={fetchTransactionNumber}>
+                <button type="button" aria-label="Refresh value" title="Refresh" onClick={fetchTransactionNumber}>
                   <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
@@ -363,38 +343,38 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
             </div>
           </div>
 
-          {/* Search Bar - Fixed */}
-          <div className="grid grid-cols-1 md:grid-cols-1 gap-2 flex-0">
-            <div className="relative flex-0" style={{ marginTop: "0px" }}>
+          {/* Search Bar Container */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-2 flex-0 relative">
+            <div className="md:col-span-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">Search items</label>
               <input
                 type="text"
                 ref={searchInputRef}
                 value={itemSearchTerm}
+                onBlur={handleBlur}
                 onChange={(e) => {
                   setItemSearchTerm(e.target.value);
                   setShowSuggestions(true);
                 }}
-                onBlur={handleBlur}
                 placeholder="Search items to add..."
                 className="w-full px-3 py-2 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
               />
               {showSuggestions && itemSearchTerm.trim() && (
-                <div className="absolute z-20 mt-1 w-full rounded-custom border border-gray-200 bg-white shadow-lg max-h-60 overflow-y-auto">
+                <div className="absolute left-0 right-0 z-20 mt-1 rounded-custom border border-gray-200 bg-white shadow-lg max-h-60 overflow-y-auto">
                   {isSearching ? (
                     <div className="px-3 py-2 text-sm text-gray-500">Searching...</div>
                   ) : itemSuggestions.length > 0 ? (
                     itemSuggestions.map((suggestion, index) => {
-                      const name = suggestion.name || suggestion.product_name || suggestion.item_name || suggestion.sku || `Item ${index + 1}`;
-                      const costValue = suggestion.cost_per_unit || suggestion.cost || 0;
+                      const name = resolveSuggestionName(suggestion);
+                      const costValue = resolveSuggestionCost(suggestion);
                       return (
                         <button
-                          key={`${name}-${index}`}
+                          key={`${suggestion.id || index}-${index}`}
                           type="button"
-                          onClick={() => handleSelectSuggestion(suggestion)}
-                          className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                          onMouseDown={() => handleSelectSuggestion(suggestion)}
+                          className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 block border-b border-gray-50 last:border-b-0"
                         >
-                          <div className="font-medium">{name} [{suggestion.sku}]</div>
+                          <div className="font-medium">{name} {suggestion.sku ? `[${suggestion.sku}]` : ''}</div>
                           <div className="text-xs text-gray-500">Cost: ₱{Number(costValue).toFixed(2)}</div>
                         </button>
                       );
@@ -407,24 +387,22 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
             </div>
           </div>
 
-          {/* --- SCROLLABLE TABLE CONTAINER START --- */}
+          {/* Scrollable Table Section */}
           <div className="flex flex-col flex-1 min-h-0">
             <label className="block text-sm font-medium text-gray-700 mb-1 flex-0">
-              Items ({items.length || 0}) {errors.items && <span className="mt-1 text-xs text-red-600">{errors.items}</span>}
+              Items ({items.length || 0}) {errors.items && <span className="ml-2 text-xs text-red-600 font-normal">{errors.items}</span>}
             </label>
             
-            {/* This wrapper limits table height and manages scrolling */}
             <div className="rounded-custom border border-gray-300 flex-1 overflow-y-auto min-h-0">
               <table className="min-w-full text-left text-sm table-auto border-collapse">
-                {/* sticky top-0 ensures the table header stays at the top while scrolling items */}
                 <thead className="bg-header text-white sticky top-0 z-10">
                   <tr>
-                    <th className="py-2 pl-2 bg-header"> </th>
-                    <th className="py-2 bg-header">#</th>
+                    <th className="py-2 pl-2 bg-header w-10"></th>
+                    <th className="py-2 bg-header w-12">#</th>
                     <th className="px-3 py-2 bg-header">Item</th>
-                    <th className="px-3 py-2 text-right pr-9 bg-header">Quantity</th>
-                    <th className="px-3 py-2 text-right pr-9 bg-header">Cost</th>
-                    <th className="px-3 py-2 text-right pr-3 bg-header">Total</th>
+                    <th className="px-3 py-2 text-right pr-9 bg-header w-44">Quantity</th>
+                    <th className="px-3 py-2 text-right pr-9 bg-header w-44">Cost</th>
+                    <th className="px-3 py-2 text-right pr-3 bg-header w-40">Total</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -434,37 +412,44 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                         <button
                           type="button"
                           onClick={() => removeItemRow(item.id)}
-                          className="text-sm text-red-600 hover:text-red-800 pt-1 pr-2"
+                          className="text-sm text-red-600 hover:text-red-800 pt-1 block mx-auto"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
                         </button>
                       </td>
-                      <td className="py-2 align-top text-left">{index + 1}</td>
-                      <td className="px-3 py-2 align-top text-gray-700">{item.item_name} [{item.sku}] [{item.current_qty}/{item.reorder_level}]</td>
-                      <td className="px-3 py-2 align-top">
-                        <input
-                          type="number"
-                          name="quantity"
-                          value={item.quantity}
-                          onChange={(e) => updateItemField(item.id, 'quantity', e.target.value)}
-                          onFocus={(e) => e.target.select()}
-                          placeholder="0"
-                          className={`w-full flex px-2 py-1 text-right text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
-                              errors[`quantity_${item.id}`] ? 'border-red-300' : 'border-gray-300'
-                          }`}
-                        />
-                        {errors[`quantity_${item.id}`] && <p className="mt-1 text-[11px] text-red-600">{errors[`quantity_${item.id}`]}</p>}
+                      <td className="py-3 align-top text-left">{index + 1}</td>
+                      <td className="px-3 py-3 align-top text-gray-700">
+                        <span className="font-medium">{item.item_name}</span> {item.sku ? `[${item.sku}]` : ''} 
+                        <span className="pl-2 text-xs text-gray-400 mt-0.5">Stock: {item.current_qty || 0} / Reorder: {item.reorder_level || 0}</span>
                       </td>
                       <td className="px-3 py-2 align-top">
-                        <div className={`w-full flex px-2 py-1 text-left text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
-                              errors[`cost_${item.id}`] ? 'border-red-300' : 'border-gray-300'
+                        <div className={`w-full flex items-center px-2 py-1 border rounded-custom bg-white ${
+                            errors[`quantity_${item.id}`] ? 'border-red-300' : 'border-gray-300'
                           }`}
                         >
-                          <button id="refreshBtn" type="button" aria-label="Refresh value" title="Refresh" onClick={() => showStockInHistory(item)}
-                            className="text-blue-600 hover:text-red-800">
-                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <input
+                            type="number"
+                            name="quantity"
+                            value={item.quantity}
+                            onChange={(e) => updateItemField(item.id, 'quantity', e.target.value)}
+                            onFocus={(e) => e.target.select()}
+                            placeholder="0"
+                            className="flex-1 focus:outline-none text-right bg-transparent w-full"
+                          />
+                        </div>
+                        {errors[`quantity_${item.id}`] && <p className="mt-1 text-[11px] text-red-600 text-right">{errors[`quantity_${item.id}`]}</p>}
+                      </td>
+                      <td className="px-3 py-2 align-top">
+                        <div className={`w-full flex items-center px-2 py-1 border rounded-custom bg-white ${
+                            errors[`cost_${item.id}`] ? 'border-red-300' : 'border-gray-300'
+                          }`}
+                        >
+                          <button type="button" aria-label="View history" title="View History" onClick={() => showAvailableStocks(item)}
+                            className="text-blue-600 hover:text-blue-800 mr-1 flex-shrink-0"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
                           </button>
@@ -476,31 +461,30 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                             onChange={(e) => updateItemField(item.id, 'cost', e.target.value)}
                             onFocus={(e) => e.target.select()}
                             placeholder="0.00"
-                            className="flex-1 focus:outline-none text-right"
+                            className="flex-1 focus:outline-none text-right bg-transparent w-full"
                           />
                         </div>
-                        {errors[`cost_${item.id}`] && <p className="mt-1 text-[11px] text-red-600">{errors[`cost_${item.id}`]}</p>}
+                        {errors[`cost_${item.id}`] && <p className="mt-1 text-[11px] text-red-600 text-right">{errors[`cost_${item.id}`]}</p>}
                       </td>
-                      <td className="px-3 py-2 align-top text-right pr-3">{formatCurrency(item.total) || '₱ 0.00'}</td>
+                      <td className="px-3 py-3 align-top text-right pr-3 font-medium text-gray-900">{formatCurrency(item.total) || '₱ 0.00'}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           </div>
-          {/* --- SCROLLABLE TABLE CONTAINER END --- */}
 
-          {/* Total Summary Row - Fixed */}
-          <div className="flex-0 rounded-custom border border-gray-300 pr-3 py-1 bg-gray-50 text-right text-md font-semibold text-green-900" style={{ marginTop: "5px" }}>
+          {/* Total Summary Row */}
+          <div className="flex-0 rounded-custom border border-gray-300 pr-3 py-2 bg-gray-50 text-right text-md font-semibold text-green-900" style={{ marginTop: "5px" }}>
             Total: {formatCurrency(getItemsTotal()) || '₱ 0.00'}
           </div>
 
-          {/* Actions Row - Fixed */}
+          {/* Actions Footer row */}
           <div className="justify-end space-x-3 flex flex-0">
             <button
               type="button"
               onClick={handleCancel}
-              className="px-3 py-1.5 border border-gray-300 hover:text-white hover:border-gray-500/50 rounded-custom hover:bg-gray-900/50 transition-colors text-sm flex items-center disabled:opacity-50"
+              className="px-4 py-2 border border-gray-300 hover:text-white hover:border-gray-500/50 rounded-custom hover:bg-gray-900/50 transition-colors text-sm flex items-center disabled:opacity-50"
             >
               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -512,7 +496,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
               type="button"
               onClick={() => handleSubmit("draft")}
               disabled={isSubmitting}
-              className="px-3 py-1.5 bg-gray-900/50 text-white rounded-custom hover:bg-gray-900 transition-colors text-sm flex items-center disabled:opacity-50"
+              className="px-4 py-2 bg-gray-900/50 text-white rounded-custom hover:bg-gray-900 transition-colors text-sm flex items-center disabled:opacity-50 font-medium"
             >
               {isSubmitting ? (
                 <>
@@ -532,14 +516,15 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
             </button>
           </div>
 
-        </form>
-
+        </form>        
+        
         <ViewStockInHistoryModal
           show={showStockInHistoryModal}
           onClose={() => setShowStockInHistoryModal(false)}
           id={selectedStockItem?.inventory_id}
+          item={selectedStockItem}
         />
-        
+
       </div>
     </div>
   );

@@ -31,7 +31,8 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
     box: '',
     status: 'In Stock',
     remarks: '',
-    added_by: userData.employee_id
+    added_by: userData.employee_id,
+    tracking_method: ''
   });
 
   const [errors, setErrors] = useState({});
@@ -87,7 +88,8 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
           box: '',
           status: 'In Stock',
           remarks: '',
-          added_by: ''
+          added_by: '',
+          tracking_method: ''
         });
         
         // Clear errors
@@ -121,7 +123,8 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
       box: '',
       status: 'In Stock',
       remarks: '',
-      added_by: ''
+      added_by: '',
+      tracking_method: ''
     });
   };
 
@@ -302,7 +305,29 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   ))}
                 </select>
               </div>
-              <div className="remarks col-span-2">
+              <div className="tracking_method">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tracking Method</label>
+                <select
+                  name="tracking_method"
+                  value={formData.tracking_method}
+                  onChange={handleChange}
+                  className={`w-full px-2 py-1.5 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                    errors.tracking_method ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
+                  }`}
+                  required
+                >
+                  <option value="">Select Tracking Method</option>
+                  {Object.entries(APP_CONFIG.TRACKING_METHOD).map(([key, value]) => (
+                    <option key={key} value={value}>
+                      {key.charAt(0) + key.slice(1).toLowerCase()}
+                    </option>
+                  ))}
+                </select>
+                {errors.tracking_method && (
+                  <p className="mt-1 text-xs text-red-600">{errors.tracking_method}</p>
+                )}
+              </div>
+              <div className="remarks">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
                 <textarea
                   name="remarks"

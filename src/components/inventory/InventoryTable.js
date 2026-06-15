@@ -527,7 +527,23 @@ function InventoryTable({ page_type }) {
                   >
                     <td className="px-3 py-2 border-r text-sm font-semibold text-green-900">{item.product_name}</td>
                     <td className="px-3 py-2 border-r text-sm">{item.sku}</td>
-                    <td className="px-4 py-3 border-r text-sm text-right">{formatCurrency(item.cost_per_unit)}</td>
+                    {item && item.tracking_method === APP_CONFIG.TRACKING_METHOD.BATCH && (
+                      <td className="px-4 border-r text-sm text-center">
+                        <button
+                          onClick={() => handleView(item)}
+                          className="text-yellow-600 hover:text-yellow-800 px-2 py-1 rounded hover:bg-yellow-50 transition-colors"
+                          title="View"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        </button>
+                      </td>
+                    )}
+                    {item && item.tracking_method === APP_CONFIG.TRACKING_METHOD.STANDARD && (
+                      <td className="px-4 py-3 border-r text-sm text-right">{formatCurrency(item.cost_per_unit)}</td>
+                    )}
                     <td className="px-4 py-3 border-r text-sm text-right">{formatCurrency(item.price_per_unit)}</td>
                     <td className="px-4 py-3 border-r text-sm text-right">
                       <span className={`font-medium ${quantityStatus.color}`}>

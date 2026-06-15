@@ -84,7 +84,12 @@ export const APP_CONFIG = {
     CASH: 'cash',
     CREDIT: 'credit',
     // DRAFT: 'draft',
-  }
+  },
+
+  TRACKING_METHOD: {
+    BATCH: 'batch_monitored',
+    STANDARD: 'standard',
+  },
 };
 
 export default APP_CONFIG;

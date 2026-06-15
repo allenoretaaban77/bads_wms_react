@@ -4,18 +4,20 @@ import { formatCurrency, formatDate, toTitleCase } from '../../utils/formatters'
 import { getSalesViewUpdate } from '../../api/salesService';
 import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 import { APP_CONFIG } from '../../config/constants';
+import ViewStockBatchesModal from './ViewStockBatchesModal';
 
 const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSave }) => {
   const userData = useAppViewModel((state) => state.userData);
   const [formData, setFormData] = useState({
     id: '',
+    customer_name: '',
     invoice_no: '',
     date_sold: new Date().toISOString().split('T')[0],
     payment_status: '',
     amount: '',
     remarks: '',
-    updated_by: userData.employee_id,
-    status : '',
+    updated_by: userData?.employee_id || '',
+    status: '',
   });
   
   const [items, setItems] = useState([]);
@@ -27,71 +29,70 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
   const [isSubmitting, setIsSubmitting] = useState(false);
   const searchInputRef = useRef(null);
   const [errors, setErrors] = useState({});
+    
+  const [showStockBatchesModal, setShowStockBatchesModal] = useState(false);
+  const [selectedStockItem, setSelectedStockItem] = useState(null);
+
+  useEffect(() => {
+    console.log('UpdateSalesModal', items);
+  }, [items]);
 
   useEffect(() => {
     if (showEditModal && selectedItem) {
-      console.log(showEditModal, selectedItem);
       setFormData({
         id: selectedItem.id || '',
         customer_name: selectedItem.customer_name || '',
         invoice_no: selectedItem.invoice_no || '',
         date_sold: formatDate(selectedItem.date_sold) || '',
-        payment_status: selectedItem.payment_status,
+        payment_status: selectedItem.payment_status || '',
         amount: 0,
-        remarks: selectedItem.remarks,
-        updated_by: userData.employee_id,
-        status : selectedItem.status,
+        remarks: selectedItem.remarks || '',
+        updated_by: userData?.employee_id || '',
+        status: selectedItem.status || '',
       });
 
       const fetchData = async () => {
         setIsSubmitting(true);
         setErrors({});
-        
-        const result = await getSalesViewUpdate(selectedItem.id);
-        if (result.success) {
-          let lastItemId = 0;
+        try {
+          const result = await getSalesViewUpdate(selectedItem.id);
+          if (result && result.success && result.data?.items) {
+            const formattedItems = result.data.items.map((inventory_item, index) => {
+              const name = resolveSuggestionName(inventory_item);
+              const priceValue = resolveSuggestionPrice(inventory_item);
+              const costValue = resolveSuggestionCost(inventory_item);  
 
-          const formattedItems = result.data.items.map((inventory_item, index) => {
-            console.log('inventory_item', inventory_item);
-            const name = resolveSuggestionName(inventory_item);
-            const priceValue = resolveSuggestionPrice(inventory_item);
-            const costValue = resolveSuggestionCost(inventory_item);      
-            const qty = Number(inventory_item.qty_sold) || 0;
-            const cost = Number(costValue) || 0;
+              return {
+                ...inventory_item,
+                id: nextItemId + index,
+                inventory_id: inventory_item.inventory_id,
+                item_name: name,
+                quantity: inventory_item.qty_sold || '',
+                current_qty: inventory_item.current_qty || 0,
+                payment_status: inventory_item.payment_status,
+                reorder_level: inventory_item.reorder_level || 0,
+                sku: inventory_item.sku,
+                current_price: priceValue !== undefined ? priceValue.toString() : '',
+                price: priceValue !== undefined ? priceValue.toString() : '',
+                cost: costValue !== undefined ? costValue.toString() : '',
+                total: Number(inventory_item.total) || 0
+              };
+            });
             
-            lastItemId = nextItemId + index;
-
-            return {
-              ...inventory_item,
-              id: nextItemId + index,
-              inventory_id: inventory_item.inventory_id,
-              item_name: name,
-              quantity: inventory_item.qty_sold,
-              current_qty: inventory_item.current_qty,
-              payment_status: inventory_item.payment_status,
-              reorder_level: inventory_item.reorder_level,
-              sku: inventory_item.sku,
-              current_price: priceValue !== undefined ? priceValue.toString() : '',
-              price: priceValue !== undefined ? priceValue.toString() : '',
-              cost: costValue !== undefined ? costValue.toString() : '',
-              total: inventory_item.total
-            };
-          });
-          
-          setNextItemId(prev => prev + 1);
-          setItems(formattedItems);
-        } else {
-          setErrors(result.error);
+            setNextItemId(prev => prev + formattedItems.length);
+            setItems(formattedItems);
+          } else {
+            setErrors(result?.error || {});
+          }
+        } catch (err) {
+          console.error("Error setting sales edit data:", err);
+        } finally {
+          setIsSubmitting(false);
         }
-        setIsSubmitting(false);
       };
       fetchData();
     }
   }, [selectedItem, showEditModal]);
-
-  const getItemsTotal = () => {
-    return items.reduce((sum, item) => sum + (Number(item.total) || 0), 0);
-  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -106,35 +107,63 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
     return () => clearTimeout(timer);
   }, [itemSearchTerm]);
 
-  useEffect(() => {
-    console.log(items);
-  }, [items]);
+  const handleApplyStockAllocation = (allocationData) => {
+    // allocationData structure: { inventory_id, total_allocated, batches }
+    setItems(prev => prev.map(item => {
+      // Identify the item matching the active modal stock item look-up
+      if (item.inventory_id !== allocationData.inventory_id) return item;
 
-  const fetchTransactionNumber = async () => {
-    // try {
-    //   const trnxNumber = await generateTransactionNumber();
-    //   setFormData(prev => ({
-    //     ...prev,
-    //     reference_no: trnxNumber,
-    //   }));
-    // } catch (error) {
-    //   console.error(error);
-    // }
+      const updatedQty = allocationData.total_allocated;
+      const price = Number(item.price) || 0;
+
+      return {
+        ...item,
+        quantity: updatedQty > 0 ? updatedQty.toString() : '',
+        total: updatedQty * price,
+        // Save the selected sub-batch distribution data 
+        // so your handleSubmit payload can utilize it if needed
+        allocated_batches: allocationData.batches.map(b => ({
+          batch_id: b.batch_id || b.id,
+          inventory_id: b.inventory_id,
+          cost_per_unit: Number(b.cost_per_unit) || 0,
+          quantity_out: Number(b.quantity_out) || 0,
+          price_per_unit: Number(b.price_per_unit) || 0,
+        }))
+      };
+    }));
+
+    // Clear any structural quantity errors on this row since it's now populated
+    if (selectedStockItem) {
+      setErrors(prev => ({
+        ...prev,
+        [`quantity_${selectedStockItem.id}`]: ''
+      }));
+    }
+  };
+
+  const getItemsTotal = () => {
+    return items.reduce((sum, item) => sum + (Number(item.total) || 0), 0);
+  };
+
+  const showAvailableStocks = (item) => {
+    setSelectedStockItem(item);
+    setShowStockBatchesModal(true);
+  };
+
+  const handleBlur = () => {
+    setTimeout(() => {
+      setShowSuggestions(false);
+    }, 200);
   };
 
   const updateItemField = (id, field, value) => {
     setItems(prev => prev.map(item => {
-      const itemId = item.id || item.inventory_id;
-      
-      if (itemId !== id) {
-        return item; // Not the item we are looking for, return it unchanged
-      }
+      if (item.id !== id) return item;
 
       const updated = { ...item, [field]: value };
       const qty = Number(updated.quantity) || 0;
       const price = Number(updated.price) || 0;
       updated.total = qty * price;
-
       return updated;
     }));
   };
@@ -144,7 +173,7 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
   };
 
   const resolveSuggestionName = (suggestion) => {
-    return suggestion.product_name || suggestion.item_name || suggestion.description || `Item ${nextItemId}`;
+    return suggestion.name || suggestion.product_name || suggestion.item_name || suggestion.description || `Item ${nextItemId}`;
   };
 
   const resolveSuggestionCost = (suggestion) => {
@@ -156,16 +185,10 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
   };
 
   const fetchItemSuggestions = async (query) => {
-    if (!query.trim()) {
-      setItemSuggestions([]);
-      setShowSuggestions(false);
-      return;
-    }
-
     setIsSearching(true);
     try {
       const result = await getInventoryBatchesListSearch({ search: query, page: 1, pageSize: 30 });
-      if (!result.success || !result.data) {
+      if (!result || !result.success || !result.data) {
         setItemSuggestions([]);
         setShowSuggestions(false);
       } else {
@@ -174,6 +197,7 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
         setShowSuggestions(true);
       }
     } catch (err) {
+      console.error("Error looking up item suggestion:", err);
       setItemSuggestions([]);
       setShowSuggestions(false);
     } finally {
@@ -194,9 +218,9 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
         );
       });
       if (exists) {
-        newErrors['items'] = `Item with inventory id ${suggestion.product_name} and cost ${suggestion.cost_per_unit} already selected.`;
+        newErrors['items'] = `Item "${name}" with this specific unit cost is already listed.`;
         setErrors(newErrors);
-        return prev; // return unchanged
+        return prev;
       } else {
         setErrors(newErrors);
       }
@@ -219,6 +243,7 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
         },
       ];
     });
+
     setNextItemId(prev => prev + 1);
     setItemSearchTerm('');
     setItemSuggestions([]);
@@ -227,12 +252,10 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
 
   const validateForm = (result) => {
     const newErrors = {};
-
     setErrors(newErrors);
-    if (result && !result.success) {
+    if (result && !result.success && result.error?.errors) {
       setErrors(result.error.errors);
     } 
-
     return Object.keys(newErrors).length === 0;
   };
 
@@ -252,14 +275,17 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
   };
 
   const handleCancel = () => {
-    setShowEditModal(false);
     setErrors({});
+    setShowEditModal(false);
     setFormData({
+      id: '',
       customer_name: '',
       invoice_no: '',
       date_sold: new Date().toISOString().split('T')[0],
       remarks: '',
-      added_by: ''
+      payment_status: '',
+      updated_by: userData?.employee_id || '',
+      status: '',
     });
     setItems([]);
     setNextItemId(1);
@@ -271,16 +297,15 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
   const validateFormForEmpty = () => {
     const newErrors = {};
 
-    // Loop through items to check ONLY for blank/empty inputs
+    if (items.length === 0) {
+      newErrors['items'] = "Please add at least one item to save the transaction.";
+    }
+
     items.forEach((item) => {
-      
-      // Validate Quantity: triggers only if the field is wiped clean
-      if (item.quantity === "" || item.quantity === null || item.quantity === undefined || isNaN(item.quantity) || Number(item.quantity) === 0) {
+      if (item.quantity === "" || item.quantity === null || item.quantity === undefined || isNaN(item.quantity) || Number(item.quantity) <= 0) {
         newErrors[`quantity_${item.id}`] = "Invalid quantity.";
       }
-
-      // Validate Cost: triggers only if the field is wiped clean
-      if (item.price === "" || item.price === null || item.price === undefined || isNaN(item.price) || Number(item.price) === 0) {
+      if (item.price === "" || item.price === null || item.price === undefined || isNaN(item.price) || Number(item.price) <= 0) {
         newErrors[`price_${item.id}`] = "Invalid price.";
       }
     });
@@ -290,10 +315,7 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
   };
 
   const handleSubmit = async (action) => {
-    // e.preventDefault();
     if (!validateFormForEmpty()) return;
-
-    // if (!onSave) return;
     setIsSubmitting(true);
 
     try {
@@ -314,18 +336,24 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
           price: Number(item.price) || 0,
           cost: Number(item.cost) || 0,
           total: Number(item.total) || 0,
+          allocated_batches: (item.allocated_batches || []).map(batch => ({
+            ...batch
+          }))
         })),
-        status : action,
+        status: action,
       });
 
       if (result && result.success) {
         setShowEditModal(false);
         setFormData({
+          id: '',
           customer_name: '',
           invoice_no: '',
           date_sold: new Date().toISOString().split('T')[0],
           remarks: '',
-          added_by: '',
+          payment_status: '',
+          updated_by: userData?.employee_id || '',
+          status: '',
         });
         setItems([]);
         setNextItemId(1);
@@ -333,33 +361,36 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
       } else {
         validateForm(result);
       }
-
-      setIsSubmitting(false);
     } catch (error) {
-      console.error("Error saving sales transaction", error);
+      console.error("Error saving sales transaction:", error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const getStatus = (current) => {
-    if (current == "draft") return { text: 'Draft', color: 'text-yellow-600' };
+  const getStatusRow = (current) => {
+    if (current === "draft") return { text: 'Draft', color: 'text-yellow-600' };
     return { text: 'Approved', color: 'text-green-600' };
   };
 
   if (!showEditModal) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-custom p-4 max-w-screen-2xl w-full mb-5 mt-5 mx-4 max-h-screen overflow-y-auto">
-        <div className="mb-6 pb-4 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-800 text-center">Update Sales Transaction - <span className={getStatus(formData.status).color}>{toTitleCase(formData.status)}</span></h2>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-custom p-4 max-w-screen-2xl w-full h-full flex flex-col">
+        
+        {/* Modal Header */}
+        <div className="mb-6 pb-4 border-b border-gray-200 flex-0">
+          <h2 className="text-2xl font-bold text-gray-800 text-center">
+            Update Sales Transaction - <span className={getStatusRow(formData.status).color}>{toTitleCase(formData.status || '')}</span>
+          </h2>
         </div>
 
-        <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
+        {/* Form Container */}
+        <form onSubmit={(e) => e.preventDefault()} className="space-y-4 flex-1 flex flex-col min-h-0">
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
-
+          {/* Inputs Section */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-2 flex-0">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Sales Transaction Number</label>
               <input
@@ -367,7 +398,6 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
                 value={formData.invoice_no}
                 onChange={handleChange}
                 placeholder="Enter sales transaction number"
-                // readOnly
                 className={`w-full px-3 py-2 text-sm border rounded-custom bg-gray-50 focus:outline-none ${
                   errors.invoice_no ? 'border-red-300' : 'border-gray-300'
                 }`}
@@ -388,7 +418,7 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
               />
               {errors.date_sold && <p className="mt-1 text-xs text-red-600">{errors.date_sold}</p>}
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
               <input
@@ -414,18 +444,17 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
               />
             </div>
-
           </div>
 
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-2 flex-0">
-
-            <div className="md:col-span-3" style={{ marginTop: "0px" }}>
+          {/* Search Bar Container */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-2 flex-0 relative">
+            <div className="md:col-span-3">
               <label className="block text-sm font-medium text-gray-700 mb-1">Search items</label>
               <input
                 type="text"
                 ref={searchInputRef}
                 value={itemSearchTerm}
+                onBlur={handleBlur}
                 onChange={(e) => {
                   setItemSearchTerm(e.target.value);
                   setShowSuggestions(true);
@@ -434,22 +463,22 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
                 className="w-full px-3 py-2 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
               />
               {showSuggestions && itemSearchTerm.trim() && (
-                <div className="absolute z-20 mt-1 w-full rounded-custom border border-gray-200 bg-white shadow-lg max-h-60 overflow-auto">
+                <div className="absolute left-0 right-0 z-20 mt-1 rounded-custom border border-gray-200 bg-white shadow-lg max-h-60 overflow-y-auto">
                   {isSearching ? (
                     <div className="px-3 py-2 text-sm text-gray-500">Searching...</div>
                   ) : itemSuggestions.length > 0 ? (
                     itemSuggestions.map((suggestion, index) => {
-                      const name = suggestion.name || suggestion.product_name || suggestion.item_name || suggestion.sku || `Item ${index + 1}`;
-                      const priceValue = suggestion.price_per_unit || suggestion.price || 0;
-                      const costValue = suggestion.cost_per_unit || suggestion.cost_per_unit || 0;
+                      const name = resolveSuggestionName(suggestion);
+                      const priceValue = resolveSuggestionPrice(suggestion);
+                      const costValue = resolveSuggestionCost(suggestion);
                       return (
                         <button
-                          key={`${name}-${index}`}
+                          key={`${suggestion.inventory_id || index}-${index}`}
                           type="button"
-                          onClick={() => handleSelectSuggestion(suggestion)}
-                          className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                          onMouseDown={() => handleSelectSuggestion(suggestion)}
+                          className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 block border-b border-gray-50 last:border-b-0"
                         >
-                          <div className="font-medium">{name} [{suggestion.sku}]</div>
+                          <div className="font-medium">{name} {suggestion.sku ? `[${suggestion.sku}]` : ''}</div>
                           <div className="text-xs text-gray-500">Cost: ₱{Number(costValue).toFixed(2)} | Price: ₱{Number(priceValue).toFixed(2)}</div>
                         </button>
                       );
@@ -472,7 +501,7 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
                 }`}
               >
                 <option value="">Select Payment Status</option>
-                {Object.entries(APP_CONFIG.PAYMENT_STATUS).map(([key, value]) => (
+                {APP_CONFIG?.PAYMENT_STATUS && Object.entries(APP_CONFIG.PAYMENT_STATUS).map(([key, value]) => (
                   <option key={key} value={value}>
                     {key.charAt(0) + key.slice(1).toLowerCase()}
                   </option>
@@ -482,52 +511,71 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
                 <p className="mt-1 text-xs text-red-600">{errors.payment_status}</p>
               )}
             </div>
-
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Items {errors.items && <label className="mt-1 text-xs text-red-600">{errors.items}</label>}</label>
-            <div className="rounded-custom border border-gray-300 overflow-hidden">
-              <table className="min-w-full text-left text-sm">
-                <thead className="bg-header text-white">
+          {/* Scrollable Table Section */}
+          <div className="flex flex-col flex-1 min-h-0">
+            <label className="block text-sm font-medium text-gray-700 mb-1 flex-0">
+              Items ({items.length || 0}) {errors.items && <span className="ml-2 text-xs text-red-600 font-normal">{errors.items}</span>}
+            </label>
+            
+            <div className="rounded-custom border border-gray-300 flex-1 overflow-y-auto min-h-0">
+              <table className="min-w-full text-left text-sm table-auto border-collapse">
+                <thead className="bg-header text-white sticky top-0 z-10">
                   <tr>
-                    <th className="py-2"> </th>
-                    <th className="px-3 py-2">SKU</th>
-                    <th className="px-3 py-2">Item Name</th>
-                    <th className="px-3 py-2 text-right pr-9">Quantity</th>
-                    <th className="px-3 py-2 text-right pr-9">Price</th>
-                    <th className="px-3 py-2 text-right">Total</th>
+                    <th className="py-2 pl-2 bg-header w-10"></th>
+                    <th className="px-3 py-2 bg-header w-32">SKU</th>
+                    <th className="px-3 py-2 bg-header">Item Name</th>
+                    <th className="px-3 py-2 text-right pr-9 bg-header w-44">Quantity</th>
+                    <th className="px-3 py-2 text-right pr-9 bg-header w-44">Price</th>
+                    <th className="px-3 py-2 text-right pr-3 bg-header w-40">Total</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {items.map(item => (
-                    <tr key={item.id} className="border-t border-gray-200">
+                  {items.map((item, index) => (
+                    <tr key={item.id} className="border-t border-gray-200 hover:bg-gray-50" id={item.id}>
                       <td className="px-1 py-2 align-top text-center">
                         <button
                           type="button"
                           onClick={() => removeItemRow(item.id)}
-                          className="text-sm text-red-600 hover:text-red-800 pt-1"
+                          className="text-sm text-red-600 hover:text-red-800 pt-1 block mx-auto"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
                         </button>
                       </td>
-                      <td className="px-3 py-2 align-top">{item.sku}</td>
-                      <td className="px-3 py-2 align-top text-gray-700">{item.item_name} [{item.current_qty}/{item.reorder_level}] [{item.cost}/{item.current_price}]</td>
+                      <td className="px-3 py-3 align-top font-medium text-gray-800">{item.sku}</td>
+                      <td className="px-3 py-3 align-top text-gray-700">
+                        <span className="font-medium">{item.item_name}</span>
+                        <span className="pl-2 text-xs text-gray-400 mt-0.5">Stock: {item.current_qty || 0} / Reorder: {item.reorder_level || 0}</span>
+                      </td>
                       <td className="px-3 py-2 align-top">
-                        <input
-                          type="number"
-                          name="quantity"
-                          value={item.quantity}
-                          onChange={(e) => updateItemField(item.id, 'quantity', e.target.value)}
-                          onFocus={(e) => e.target.select()}
-                          placeholder="0"
-                          className={`w-full px-1 py-1 text-right text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                        <div className={`w-full flex items-center px-2 py-1 border rounded-custom bg-white ${
                             errors[`quantity_${item.id}`] ? 'border-red-300' : 'border-gray-300'
                           }`}
-                        />
-                        {errors[`quantity_${item.id}`] && <p className="mt-1 text-[11px] text-red-600">{errors[`quantity_${item.id}`]}</p>}
+                        >
+                          {item && item.tracking_method === APP_CONFIG.TRACKING_METHOD.BATCH && (
+                            <button type="button" aria-label="View batches" title="Available Batches" onClick={() => showAvailableStocks(item)}
+                              className="text-blue-600 hover:text-blue-800 mr-1 flex-shrink-0"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            </button>
+                          )}
+                          <input
+                            readOnly={(item.tracking_method === APP_CONFIG.TRACKING_METHOD.BATCH) ? 1 : 0}
+                            type="number"
+                            name="quantity"
+                            value={item.quantity}
+                            onChange={(e) => updateItemField(item.id, 'quantity', e.target.value)}
+                            onFocus={(e) => e.target.select()}
+                            placeholder="0"
+                            className="flex-1 focus:outline-none text-right bg-transparent w-full"
+                          />
+                        </div>
+                        {errors[`quantity_${item.id}`] && <p className="mt-1 text-[11px] text-red-600 text-right">{errors[`quantity_${item.id}`]}</p>}
                       </td>
                       <td className="px-3 py-2 align-top">
                         <input
@@ -538,13 +586,13 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
                           onChange={(e) => updateItemField(item.id, 'price', e.target.value)}
                           onFocus={(e) => e.target.select()}
                           placeholder="0.00"
-                          className={`w-full px-2 py-1 text-right text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                          className={`w-full px-2 py-1 text-right text-sm border rounded-custom focus:outline-none ${
                             errors[`price_${item.id}`] ? 'border-red-300' : 'border-gray-300'
                           }`}
                         />
-                        {errors[`price_${item.id}`] && <p className="mt-1 text-[11px] text-red-600">{errors[`price_${item.id}`]}</p>}
+                        {errors[`price_${item.id}`] && <p className="mt-1 text-[11px] text-red-600 text-right">{errors[`price_${item.id}`]}</p>}
                       </td>
-                      <td className="px-3 py-2 align-top text-right">{formatCurrency(item.total) || '₱ 0.00'}</td>
+                      <td className="px-3 py-3 align-top text-right pr-3 font-medium text-gray-900">{formatCurrency(item.total) || '₱ 0.00'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -552,26 +600,29 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
             </div>
           </div>
 
-          <div className="rounded-custom border border-gray-300 pr-3 py-1 bg-gray-50 text-right text-md font-semibold text-green-900" style={{ marginTop: "5px" }}>
+          {/* Total Summary Row */}
+          <div className="flex-0 rounded-custom border border-gray-300 pr-3 py-2 bg-gray-50 text-right text-md font-semibold text-green-900" style={{ marginTop: "5px" }}>
             Total: {formatCurrency(getItemsTotal()) || '₱ 0.00'}
           </div>
 
-          <div className="flex justify-end space-x-3">
+          {/* Actions Footer Row */}
+          <div className="justify-end space-x-3 flex flex-0">
             <button
               type="button"
               onClick={handleCancel}
-              className="px-3 py-1.5 border border-gray-300 hover:text-white hover:border-gray-500/50 rounded-custom hover:bg-gray-900/50 transition-colors text-sm flex items-center disabled:opacity-50"
+              className="px-4 py-2 border border-gray-300 hover:text-white hover:border-gray-500/50 rounded-custom hover:bg-gray-900/50 transition-colors text-sm flex items-center disabled:opacity-50"
             >
               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
               Cancel
             </button>
+            
             <button
               type="button"
-              onClick={() => handleSubmit("draft")}
+              onClick={() => handleSubmit(formData.status || "draft")}
               disabled={isSubmitting}
-              className="px-3 py-1.5 bg-button text-white rounded-custom hover:bg-button-hover transition-colors text-sm flex items-center disabled:opacity-50"
+              className="px-4 py-2 bg-gray-900/50 text-white rounded-custom hover:bg-gray-900 transition-colors text-sm flex items-center disabled:opacity-50 font-medium"
             >
               {isSubmitting ? (
                 <>
@@ -589,10 +640,17 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
                 </>
               )}
             </button>
-          </div>
-          
-        </form>
+          </div> 
+        
+          <ViewStockBatchesModal
+            show={showStockBatchesModal}
+            onClose={() => setShowStockBatchesModal(false)}
+            id={selectedStockItem?.inventory_id}
+            allocatedBatches={selectedStockItem?.allocated_batches || []}
+            onApply={handleApplyStockAllocation}
+          />  
 
+        </form>        
       </div>
     </div>
   );
