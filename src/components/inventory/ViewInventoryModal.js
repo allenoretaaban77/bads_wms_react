@@ -1,5 +1,6 @@
 import React from 'react';
 import { getStatusTextColor } from '../../utils/statusColors';
+import { FormButton, FormHeader } from '../../utils/themes.js';
 
 const ViewInventoryModal = ({ selectedItem, showViewModal, setShowViewModal }) => {
   if (!showViewModal || !selectedItem) return null;
@@ -11,24 +12,14 @@ const ViewInventoryModal = ({ selectedItem, showViewModal, setShowViewModal }) =
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3">
       <div className="bg-white rounded-custom shadow-xl border border-gray-200 w-full max-w-2xl flex flex-col max-h-[90vh]">
         
         {/* Header Section - Matches styling with application system headers */}
-        <div className="px-4 py-3 bg-header text-white flex justify-between items-center rounded-t-custom">
-          <h2 className="text-base font-semibold">Inventory Item Information</h2>
-          <button 
-            onClick={() => setShowViewModal(false)} 
-            className="text-white hover:text-gray-200 focus:outline-none"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+        <FormHeader headerTitle="Inventory Item Information" onClick={() => setShowViewModal(false)} />
 
         {/* Modal Main View Data Content Area */}
-        <div className="p-5 overflow-y-auto flex-1 space-y-5">
+        <div className="p-3 overflow-y-auto flex-1 space-y-5">
           
           {/* Primary Item Identity Header Display */}
           <div className="border-b border-gray-100 pb-3">
@@ -37,7 +28,7 @@ const ViewInventoryModal = ({ selectedItem, showViewModal, setShowViewModal }) =
           </div>
 
           {/* Core Configuration & Metrics Data Grid Layout */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-6 text-xs">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
             
             <div>
               <span className="block font-semibold text-gray-500 mb-0.5">SKU Code</span>
@@ -97,7 +88,7 @@ const ViewInventoryModal = ({ selectedItem, showViewModal, setShowViewModal }) =
           </div>
 
           {/* Structured location tracking segment element card container */}
-          <div className="bg-gray-50 border border-gray-200 rounded p-3 grid grid-cols-3 gap-4 text-xs">
+          <div className="bg-gray-50 border border-gray-200 rounded p-3 grid grid-cols-3 gap-3 text-xs">
             <div>
               <span className="block font-semibold text-gray-500 mb-0.5">Rack Space</span>
               <p className="text-gray-900 font-medium">
@@ -119,7 +110,7 @@ const ViewInventoryModal = ({ selectedItem, showViewModal, setShowViewModal }) =
           </div>
 
           {/* Item Logs Context Sizing Wrapper */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-gray-100 pt-3 text-[11px] text-gray-500">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 border-t border-gray-100 pt-3 text-[11px] text-gray-500">
             <div>
               <span className="font-semibold text-gray-400">System Log Ingestion:</span> {selectedItem.date_created || '-'}
             </div>
@@ -132,7 +123,7 @@ const ViewInventoryModal = ({ selectedItem, showViewModal, setShowViewModal }) =
           {selectedItem.remarks && selectedItem.remarks.trim() !== "" && (
             <div className="border-t border-gray-100 pt-3">
               <span className="block text-xs font-semibold text-gray-500 mb-1">Internal Remarks / Notes</span>
-              <div className="bg-amber-50/50 border border-amber-200/60 text-xs text-gray-700 p-2.5 rounded-custom whitespace-pre-wrap leading-relaxed">
+              <div className="bg-amber-50/50 border border-amber-200/60 text-xs text-gray-700 p-3 rounded-custom whitespace-pre-wrap leading-relaxed">
                 {selectedItem.remarks}
               </div>
             </div>
@@ -141,17 +132,13 @@ const ViewInventoryModal = ({ selectedItem, showViewModal, setShowViewModal }) =
         </div>
 
         {/* Action Panel Footer Segment */}
-        <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-end rounded-b-custom">
-          <button
-            type="button"
+        <div className="px-4 pb-3 bg-gray-50 flex justify-end rounded-b-custom">
+          <FormButton
+            btnType="outline"
+            btnLabel="Close"
+            btnIcon="cross" 
             onClick={() => setShowViewModal(false)}
-            className="px-4 py-1.5 border border-gray-300 bg-white text-gray-700 text-xs rounded-custom hover:bg-gray-50 transition-colors shadow-sm flex items-center hover:text-white hover:border-gray-500/50 hover:bg-gray-900/50"
-          >
-            <svg className="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-            Close
-          </button>
+          />
         </div>
 
       </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getStockBatches } from '../../api/salesService';
 import { formatCurrency, formatLongDate } from '../../utils/formatters';
+import { FormButton, FormHeader, FormModalThead } from '../../utils/themes.js';
 
 function ViewStockBatchesModal({ show, onClose, id, allocatedBatches, onApply }) {
   const [data, setData] = useState(null);
@@ -142,16 +143,10 @@ function ViewStockBatchesModal({ show, onClose, id, allocatedBatches, onApply })
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-custom p-4 max-w-3xl w-full mx-4 max-h-[90vh] flex flex-col">
+      <div className="bg-white rounded-custom shadow-xl border border-gray-200 w-full max-w-2xl flex flex-col max-h-[90vh]">
   
         {/* Header */}
-        <div className="mb-2 border-b border-gray-200 pb-4 flex-0">
-          <h2 className="text-2xl font-bold text-gray-800 text-center">
-            View Stock Batches
-          </h2>
-          {loading && <div className='w-full text-center mt-2'><span className='text-green-700 animate-pulse text-sm font-medium'>Loading batch metrics...</span></div>}
-          {error && <div className='w-full text-center mt-2'><span className='text-red-500 text-sm font-medium'>{error}</span></div>}
-        </div>
+        <FormHeader headerTitle="View Stock Batches" onClick={handleClose} />
 
         {/* Content Wrapper - Scrollable area */}
         {data && (
@@ -171,8 +166,8 @@ function ViewStockBatchesModal({ show, onClose, id, allocatedBatches, onApply })
                 <thead className="bg-header text-white sticky top-0 z-10">
                   <tr className="border-0">
                     <th className="px-3 py-2 text-left">Date Received</th>
-                    <th className="p-2 text-right">Cost per Unit</th>
-                    <th className="p-2 text-right">Current Quantity</th>
+                    <th className="p-2 text-right">Unit Cost</th>
+                    <th className="p-2 text-right">Stock Quantity</th>
                     <th className="p-2 text-right w-40">Quantity to Out</th>
                   </tr>
                 </thead>

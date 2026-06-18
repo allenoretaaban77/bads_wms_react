@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { formatCurrency, formatLongDate } from '../../utils/formatters';
+import { formatCurrency, formatLongDate, getTableStatusColor } from '../../utils/formatters';
 import { createInventoryItem, updateInventoryItem, deleteInventoryItem } from '../../api/inventoryService';
 import { APP_CONFIG } from '../../config/constants';
 import { 
@@ -13,6 +13,7 @@ import Alert from '../../utils/alert';
 import ViewReplenishmentModal from './ViewReplenishmentModal';
 import CreateReplenishmentModal from './CreateReplenishmentModal';
 import UpdateReplenishmentModal from './UpdateReplenishmentModal';
+import { FormButton, FormPagination, FormThead } from '../../utils/themes.js';
 
 function ReplenishmentTable() {
   // Data and loading states
@@ -279,11 +280,6 @@ function ReplenishmentTable() {
     return { text: 'In Stock', color: 'text-green-600' };
   };
 
-  const getStatus = (current) => {
-    if (current == "draft") return { text: 'Draft', color: 'text-yellow-600' };
-    return { text: 'Approved', color: 'text-green-600' };
-  };
-
   return (
     <div className="flex flex-col h-screen">
       {/* Alert Component */}
@@ -302,25 +298,20 @@ function ReplenishmentTable() {
           <div className="flex justify-between items-center">
             <h3 className="text-base font-semibold text-gray-800">Replenishment Management</h3>
             <div className="flex space-x-2 pb-2">
-              <button
-                onClick={handleRefresh}
-                className="mt-3 px-3 py-1.5 bg-gray-500 text-white rounded-custom hover:bg-green-600 transition-colors duration-200 flex items-center text-xs"
-                title="Refresh table"
-              >
-                <svg className="h-3.5 w-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                Refresh
-              </button>
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="mt-3 px-3 py-1.5 bg-button text-white rounded-custom hover:bg-button-hover transition-colors duration-200 flex items-center text-xs"
-              >
-                <svg className="h-3.5 w-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Create
-              </button>
+              <FormButton
+                btnType="affirm"
+                btnLabel="Refresh"
+                btnIcon="refresh"
+                onClick={handleRefresh} 
+                className="mt-3"
+              />
+              <FormButton
+                btnType="success"
+                btnLabel="Create"
+                btnIcon="plus"
+                onClick={() => setShowCreateModal(true)} 
+                className="mt-3"
+              />
             </div>
           </div>
           
@@ -334,7 +325,7 @@ function ReplenishmentTable() {
                 placeholder="Search reference number, supplier, amount, remarks..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+                className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
               />
             </div>
           </div>
@@ -352,254 +343,108 @@ function ReplenishmentTable() {
       <div className="flex-1 overflow-auto mt-2">
         {/* Inventory Table */}
         <div className="bg-white border border-gray-200 rounded-custom shadow-sm overflow-hidden">
-        {loading && (
-          <div className="flex justify-center items-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-button"></div>
-            <span className="ml-2 text-gray-600">Loading inventory data...</span>
-          </div>
-        )}
+          {loading && (
+            <div className="flex justify-center items-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-button"></div>
+              <span className="ml-2 text-gray-600">Loading inventory data...</span>
+            </div>
+          )}
         
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 m-4 rounded">
-            <strong>Error:</strong> {error}
-          </div>
-        )}
-        
-        {!loading && !error && (
-          <div className="bg-white border-gray-200 rounded-custom shadow-sm overflow-hidden">
-            <table className="w-full text-sm border-collapse">
-              <thead className="bg-header text-white">
-                <tr>
-                  <th 
-                    onClick={() => handleSort('id')}
-                    className="border-r px-3 py-2 text-left cursor-pointer hover:bg-green-700 text-white text-sm"
-                  >
-                    <div className="flex items-center">
-                      ID
-                      {sortField === 'id' && (
-                        <span className="ml-1">
-                          {sortOrder === 'asc' ? '↑' : '↓'}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    onClick={() => handleSort('reference_no')}
-                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold cursor-pointer hover:bg-green-700"
-                  >
-                    <div className="flex items-center">
-                      Reference Number
-                      {sortField === 'reference_no' && (
-                        <span className="ml-1">
-                          {sortOrder === 'asc' ? '↑' : '↓'}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    onClick={() => handleSort('date_received')}
-                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold cursor-pointer hover:bg-green-700"
-                  >
-                    <div className="flex items-center">
-                      Date Received
-                      {sortField === 'date_received' && (
-                        <span className="ml-1">
-                          {sortOrder === 'asc' ? '↑' : '↓'}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    onClick={() => handleSort('amount')}
-                    className="border-r px-3 py-2 text-right text-white text-sm font-semibold cursor-pointer hover:bg-green-700"
-                  >
-                    <div className="flex items-center justify-end">
-                      Amount
-                      {sortField === 'amount' && (
-                        <span className="ml-1">
-                          {sortOrder === 'asc' ? '↑' : '↓'}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    onClick={() => handleSort('supplier')}
-                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold cursor-pointer hover:bg-green-700"
-                  >
-                    <div className="flex items-center">
-                      Supplier
-                      {sortField === 'supplier' && (
-                        <span className="ml-1">
-                          {sortOrder === 'asc' ? '↑' : '↓'}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    onClick={() => handleSort('remarks')}
-                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
-                  >
-                    <div className="flex items-center">
-                      Remarks
-                      {sortField === 'remarks' && (
-                        <span className="ml-1">
-                          {sortOrder === 'asc' ? '↑' : '↓'}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    onClick={() => handleSort('status')}
-                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
-                  >
-                    <div className="flex items-center">
-                      Status
-                      {sortField === 'status' && (
-                        <span className="ml-1">
-                          {sortOrder === 'asc' ? '↑' : '↓'}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                  <th className="px-3 py-2 text-center text-white font-semibold border-0">Actions</th>
-                </tr>
-              </thead>
-            <tbody>
-              {filteredData.map((item, index) => {
-                const quantityStatus = getQuantityStatus(item.current_qty, item.reorder_level);
-                return (
-                  <tr 
-                    key={item.id}
-                    className={`border-0 transition-colors duration-200 ${
-                      index % 2 === 0 ? 'bg-white hover:bg-green-50' : 'bg-row-alt hover:bg-green-100'
-                    }`}
-                  >
-                    <td className="px-3 py-2 border-r text-sm font-semibold text-green-900">{item.id}</td>
-                    <td className="px-3 py-2 border-r text-sm">{item.reference_no}</td>
-                    <td className="px-3 py-2 border-r text-sm">{formatLongDate(item.date_received)}</td>
-                    <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.amount)}</td>
-                    <td className="px-3 py-2 border-r text-sm">{item.supplier}</td>
-                    <td className="px-3 py-2 border-r text-sm">{item.remarks}</td>
-                    <td className="px-3 py-2 border-r text-sm"><span className={getStatus(item.status).color}>{getStatus(item.status).text}</span></td>
-                    <td className="px-3 py-2 border-0">
-                      <div className="flex justify-center space-x-2">
-                        <button
-                          onClick={() => handleView(item)}
-                          className="text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition-colors"
-                          title="View"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                        </button>
-                        {item.status == "draft" && (
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 m-4 rounded">
+              <strong>Error:</strong> {error}
+            </div>
+          )}
+          
+          {!loading && !error && (
+            <div className="bg-white border-gray-200 rounded-custom shadow-sm overflow-hidden">
+              <table className="w-full text-sm border-collapse">
+                <FormThead sortOrder={sortOrder} sortField={sortField} handleSort={handleSort} data={[
+                  {"title":"ID", "name":"id", "align":"center"},
+                  {"title":"Reference Number", "name":"reference_no", "align":"left"},
+                  {"title":"Date Received", "name":"date_received", "align":"left"},
+                  {"title":"Amount", "name":"amount", "align":"right"},
+                  {"title":"Supplier", "name":"supplier", "align":"left"},
+                  {"title":"Remarks", "name":"remarks", "align":"left"},
+                  {"title":"Status", "name":"status", "align":"center"},
+                  {"title":"Actions", "name":"status", "default":1},
+                ]} />
+                <tbody>
+                {filteredData.map((item, index) => {
+                  const quantityStatus = getQuantityStatus(item.current_qty, item.reorder_level);
+                  return (
+                    <tr 
+                      key={item.id}
+                      className={`border-0 transition-colors duration-200 ${
+                        index % 2 === 0 ? 'bg-white hover:bg-green-50' : 'bg-row-alt hover:bg-green-100'
+                      }`}
+                    >
+                      <td className="px-3 py-2 border-r text-sm font-semibold text-green-900">{item.id}</td>
+                      <td className="px-3 py-2 border-r text-sm">{item.reference_no}</td>
+                      <td className="px-3 py-2 border-r text-sm">{formatLongDate(item.date_received)}</td>
+                      <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.amount)}</td>
+                      <td className="px-3 py-2 border-r text-sm">{item.supplier}</td>
+                      <td className="px-3 py-2 border-r text-sm">{item.remarks}</td>
+                      <td className="px-3 py-2 border-r text-sm capitalize"><span className={getTableStatusColor(item.status)}>{item.status}</span></td>
+                      <td className="px-3 py-2 border-0">
+                        <div className="flex justify-center space-x-2">
                           <button
-                            onClick={() => handleEdit(item)}
-                            className="text-green-600 hover:text-green-800 px-2 py-1 rounded hover:bg-green-50 transition-colors"
-                            title="Edit"
+                            onClick={() => handleView(item)}
+                            className="text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                            title="View"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                             </svg>
-                          </button> 
-                        )}
-                        {item.status == "draft" && (
-                        <button
-                          onClick={() => handleDelete(item.id)}
-                          className="text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
-                          title="Delete"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-        )}
-
-        {filteredData.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
-            No inventory items found matching your criteria.
-          </div>
-        )}
-        
-        {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <div className="px-4 py-3 border-t border-gray-200 bg-gray-50">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-700">
-                  Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalItems)} of {totalItems} results
-                </span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <select
-                  value={pageSize}
-                  onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                  className="px-3 py-1 border border-gray-300 rounded-custom text-sm focus:outline-none focus:ring-2 focus:ring-button"
-                >
-                  <option value={5}>5 per page</option>
-                  <option value={10}>10 per page</option>
-                  <option value={25}>25 per page</option>
-                  <option value={50}>50 per page</option>
-                </select>
-                
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="px-3 py-1 border border-gray-300 rounded-custom text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
-                >
-                  Previous
-                </button>
-                
-                <div className="flex space-x-1">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    let pageNum;
-                    if (totalPages <= 5) {
-                      pageNum = i + 1;
-                    } else if (currentPage <= 3) {
-                      pageNum = i + 1;
-                    } else if (currentPage >= totalPages - 2) {
-                      pageNum = totalPages - 4 + i;
-                    } else {
-                      pageNum = currentPage - 2 + i;
-                    }
-                    
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => handlePageChange(pageNum)}
-                        className={`px-3 py-1 border rounded-custom text-sm ${
-                          currentPage === pageNum
-                            ? 'bg-button text-white border-button'
-                            : 'border-gray-300 hover:bg-gray-100'
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
-                </div>
-                
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-1 border border-gray-300 rounded-custom text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
-                >
-                  Next
-                </button>
-              </div>
+                          </button>
+                          {item.status == "draft" && (
+                            <button
+                              onClick={() => handleEdit(item)}
+                              className="text-green-600 hover:text-green-800 px-2 py-1 rounded hover:bg-green-50 transition-colors"
+                              title="Edit"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button> 
+                          )}
+                          {item.status == "draft" && (
+                          <button
+                            onClick={() => handleDelete(item.id)}
+                            className="text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                            title="Delete"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                </tbody>
+              </table>
             </div>
-          </div>
-        )}
+          )}
+
+          {filteredData.length === 0 && !loading && (
+            <div className="text-center py-8 text-gray-500">
+              No record/s found.
+            </div>
+          )}
+          
+          {/* Pagination Controls */}
+          <FormPagination 
+            currentPage={currentPage}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            totalPages={totalPages}
+            handlePageSizeChange={handlePageSizeChange}
+            handlePageChange={handlePageChange}
+          />
         </div>
 
         {/* New Modal Components */}

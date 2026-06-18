@@ -65,22 +65,22 @@ export const getReturnsList = async (params = {}) => {
   }
 };
 
-export const createReturnTransaction = async (params = {}) => {
+export const createReturnsTransaction = async (params = {}) => {
   return false;
 };
 
-export const updateReturnTransaction = async (params = {}) => {
+export const updateReturnsTransaction = async (params = {}) => {
   return false;
 };
 
-export const approveReturnTransaction = async (params = {}) => {
+export const approveReturnsTransaction = async (params = {}) => {
   return false;
 };
 
-export const voidReturnTransaction = async (params = {}) => {
+export const voidRetursnTransaction = async (params = {}) => {
   return false;
 };
 
-export const deleteReturnTransaction = async (params = {}) => {
+export const deleteReturnsTransaction = async (params = {}) => {
   return false;
 };

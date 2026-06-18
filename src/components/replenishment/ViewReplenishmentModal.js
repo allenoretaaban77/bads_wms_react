@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { getReplenishmentView } from '../../api/replenishmentService';
-import { formatCurrency, toTitleCase, formatLongDate } from '../../utils/formatters';
+import { formatCurrency, tocapitalize, formatLongDate } from '../../utils/formatters';
 import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
+import { FormButton, FormHeader, FormModalTheadDefault } from '../../utils/themes.js';
 
 function ViewReplenishmentModal({ show, onClose, onUpdate, onDelete, onApprove, id }) {
   const userData = useAppViewModel((state) => state.userData);
@@ -52,7 +53,6 @@ function ViewReplenishmentModal({ show, onClose, onUpdate, onDelete, onApprove, 
         });
 
         if (result && result.success) {
-          // onClose(true);
           setError(null);
         } else {
           console.log(result.error.error);
@@ -66,11 +66,6 @@ function ViewReplenishmentModal({ show, onClose, onUpdate, onDelete, onApprove, 
     }
   };
 
-  const getStatus = (current) => {
-    if (current == "draft") return { text: 'Draft', color: 'text-yellow-600' };
-    return { text: 'Approved', color: 'text-green-600' };
-  };
-
   const handleClose = () => {
     setData(null);
     setError(null);
@@ -79,129 +74,137 @@ function ViewReplenishmentModal({ show, onClose, onUpdate, onDelete, onApprove, 
 
   if (!show) return null;
 
-  // const calculateGrandTotal = (items) => {
-  //   return items.reduce((sum, item) => sum + parseFloat(item.total || 0), 0);
-  // };
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-custom p-4 max-w-screen-xl w-full mx-2 max-h-screen overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2">
+      <div className="bg-white rounded-custom border border-gray-200 shadow-xl max-w-screen-xl w-full mx-2 flex flex-col max-h-[85vh]">
   
+        {/* Header Container */}
+        <FormHeader headerStatus={data?.status}  headerTitle="Replenishment Details" onClick={handleClose} />
 
-        <div className="mb-2 border-b border-gray-200 pb-4">
-            <h2 className="text-2xl font-bold text-gray-800 text-center">
-              Replenishment Details {data && (<>- <span className={getStatus(data.status).color}>{getStatus(data.status).text}</span></>)}
-            </h2 >
-            {error && <div className='w-full text-center'><span className='text-red-500'>{error}</span></div>}
-            {loading && <div className='w-full text-center'><span className='text-green-700'>Loading...</span></div>}
-        </div>
-
-        {data && (
-          <div>
-            <div className="grid grid-cols-2 gap-0 mb-2 text-sm">
-              <div><span>Reference No:</span> <span className="font-semibold text-red-400">{data.reference_no}</span></div>
-              <div><span>Supplier:</span> <span className="font-semibold text-red-400">{data.supplier}</span></div>
-              <div><span>Date Received:</span> <span className="font-semibold text-red-400">{formatLongDate(data.date_received)}</span></div>
-              <div><span>Remarks:</span> <span className="font-semibold text-red-400">{data.remarks || '-'}</span></div>
+        {/* Content Body Container */}
+        <div className="p-3 flex-1 flex flex-col min-h-0 space-y-4 text-xs">
+          
+          {/* Global Messaging Status Bars */}
+          {loading && (
+            <div className="w-full text-center py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded font-medium animate-pulse flex-shrink-0">
+              Loading replenishment layout tracking data...
             </div>
+          )}
+          {error && (
+            <div className="w-full text-center py-2 bg-red-50 text-red-600 border border-red-200 rounded font-medium flex-shrink-0">
+              {error}
+            </div>
+          )}
 
-            <div className="bg-white border border-gray-200 rounded-custom shadow-sm overflow-hidden">
-              <div className="bg-white shadow-sm overflow-hidden">
-                <table className="w-full text-sm border-collapse">
-                  <thead className="bg-header text-white">
-                    <tr className="border-0">
-                      <th className="border-r px-3 text-left cursor-pointer hover:bg-green-700 text-white">SKU</th>
-                      <th className="border-r px-3 text-left cursor-pointer hover:bg-green-700 text-white">Product Name</th>
-                      <th className="border-r p-2 text-right">Quantity</th>
-                      <th className="border-r p-2 text-right">Cost per Unit</th>
-                      <th className="border-r p-2 text-right">Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.items.map((item) => (
-                      <tr key={item.id}>
-                        <td className="border-r border-b border-l p-2">{item.sku}</td>
-                        <td className="border-r border-b p-2">{item.product_name}</td>
-                        <td className="border-r border-b p-2 text-right">{item.qty_added}</td>
-                        <td className="border-r border-b p-2 text-right">{formatCurrency(item.cost_per_unit)}</td>
-                        <td className="border-r border-b p-2 text-right">{formatCurrency(item.total)}</td>
+          {data && (
+            <div className="flex-1 flex flex-col min-h-0 space-y-4">
+              
+              {/* Reference Meta Information Data Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded flex-shrink-0">
+                <div>
+                  <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block mb-0.5">Reference No</span>
+                  <span className="font-bold text-gray-800 text-sm font-mono">{data.reference_no}</span>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block mb-0.5">Supplier Name</span>
+                  <span className="font-bold text-gray-800 text-sm">{data.supplier}</span>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block mb-0.5">Date Received</span>
+                  <span className="font-semibold text-gray-700 text-sm">{formatLongDate(data.date_received)}</span>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block mb-0.5">Remarks / Note</span>
+                  <span className="font-medium text-gray-600 text-xs block truncate" title={data.remarks || '-'}>
+                    {data.remarks || '-'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Scrollable Items Table Box Component */}
+              <div className="border border-gray-200 rounded flex-1 overflow-y-auto min-h-0 bg-white shadow-inner">
+                <table className="w-full text-left table-auto border-collapse">
+                  <FormModalTheadDefault data={[
+                    {"title":"SKU", "class":"py-2 text-left w-40"},
+                    {"title":"Product Name", "class":"py-2 text-left"},
+                    {"title":"Quantity", "class":"py-2 text-right w-40"},
+                    {"title":"Unit Cost", "class":"py-2 text-right w-40"},
+                    {"title":"Total", "class":"py-2 pl-5 text-right w-40"},
+                  ]} />
+                  <tbody className="divide-y divide-gray-100">
+                    {data.items && data.items.map((item) => (
+                      <tr key={item.id} className="hover:bg-gray-50/80 transition-colors">
+                        <td className="px-3 py-2 font-mono text-gray-700 font-semibold align-middle">
+                          {item.sku}
+                        </td>
+                        <td className="px-3 py-2 text-gray-800 font-medium align-middle">
+                          {item.product_name}
+                        </td>
+                        <td className="px-3 py-2 text-right font-bold text-gray-700 align-middle">
+                          {item.qty_added}
+                        </td>
+                        <td className="px-3 py-2 text-right text-gray-600 align-middle">
+                          {formatCurrency(item.cost_per_unit)}
+                        </td>
+                        <td className="px-3 py-2 text-right pr-4 font-bold text-gray-900 align-middle">
+                          {formatCurrency(item.total)}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
-                  <tfoot>
-                    <tr className="font-bold bg-gray-50">
-                      <td colSpan="4" className="border-r border-b border-l p-2 text-right">Grand Total</td>
-                      <td className="border-r p-2 text-right">{formatCurrency(data.amount)}</td>
-                      {/* <td className="border-r p-2 text-right">{formatCurrency(calculateGrandTotal(data.items))}</td> */}
+                  <tfoot className="sticky bottom-0 z-10 bg-gray-50 border-t-2 border-gray-200 font-bold text-gray-800">
+                    <tr>
+                      <td colSpan="4" className="px-3 py-2.5 text-right uppercase tracking-wider text-[10px] text-gray-500 align-middle">
+                        Grand Total
+                      </td>
+                      <td className="px-3 py-2.5 text-right pr-4 text-base font-extrabold text-gray-900 align-middle bg-gray-100/60">
+                        {formatCurrency(data.amount)}
+                      </td>
                     </tr>
                   </tfoot>
                 </table>
               </div>
             </div>
+          )}
 
-          </div>
-        )}
+          {/* Dialog Action Footprint Controller Form */}
+          <form onSubmit={(e) => e.preventDefault()} >
+            <div className="flex-shrink-0 rounded bg-gray-50 text-right text-sm font-bold text-emerald-800 shadow-sm flex justify-end items-center gap-2">
+              <FormButton
+                btnType="outline"
+                btnLabel="Close"
+                btnIcon="cross" 
+                onClick={handleClose}
+                form="create-inventory-form"
+              />
+              {data && data.status === "draft" && (
+                <>
+                  <FormButton
+                    btnType="ash"
+                    btnLabel="Edit"
+                    btnIcon="edit"
+                    onClick={() => handleUpdate(data)} 
+                  />
+                  <FormButton
+                    btnType="danger"
+                    btnLabel="Delete"
+                    btnIcon="trash"
+                    onClick={() => handleDelete(data)} 
+                  />
+                  <FormButton
+                    btnType="success"
+                    btnLabel="Approve"
+                    btnIcon="check"
+                    onClick={() => handleSubmit("approved", data)} 
+                    disabled={isSubmitting}
+                    isProcessing={isSubmitting}
+                  />
+                </>
+              )}
+            </div>
+          </form>
 
-        <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
-          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="px-3 py-1.5 border border-gray-300 hover:text-white hover:border-gray-500/50 rounded-custom hover:bg-gray-900/50 transition-colors text-sm flex items-center disabled:opacity-50"
-            >
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              Close
-            </button>
-            {data && data.status == "draft" && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => handleUpdate(data)}
-                  className="px-3 py-1.5 bg-gray-900/50 text-white rounded-custom hover:bg-gray-900 transition-colors text-sm flex items-center disabled:opacity-50"
-                >
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(data)}
-                  className="px-3 py-1.5 bg-red-700 text-white rounded-custom hover:bg-red-900 transition-colors text-sm flex items-center disabled:opacity-50"
-                >
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  Delete
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSubmit("approved", data)}
-                  disabled={isSubmitting}
-                  className="px-3 py-1.5 bg-button text-white rounded-custom hover:bg-button-hover transition-colors text-sm flex items-center disabled:opacity-50"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <svg className="animate-spin h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                      </svg>
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      Approve
-                    </>
-                  )}
-                </button>
-              </>
-            )}
-          </div>
-        </form>
+        </div>
 
       </div>
     </div>

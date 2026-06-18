@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { formatCurrency, toTitleCase, formatLongDate } from '../../utils/formatters';
-import { createInventoryItem, updateInventoryItem, deleteInventoryItem } from '../../api/inventoryService';
+import { formatCurrency, formatLongDate, getTablePaidStatus, getTableStatus, getTablePaymentStatus } from '../../utils/formatters';
 import { APP_CONFIG } from '../../config/constants';
 import {
   getSalesList,
@@ -10,11 +9,11 @@ import {
   voidSalesTransaction,
   deleteSalesTransaction,
 } from '../../api/salesService';
-
 import Alert from '../../utils/alert';
 import ViewSalesModal from './ViewSalesModal';
 import CreateSalesModal from './CreateSalesModal';
 import UpdateSalesModal from './UpdateSalesModal';
+import { FormButton, FormPagination, FormThead } from '../../utils/themes.js';
 
 function SalesTable() {
   // Data and loading states
@@ -302,25 +301,9 @@ function SalesTable() {
     setCurrentPage(1);
   };
   
-  const getQuantityStatus = (status) => {
-    if (status === 'credit') return { text: 'Credit', color: 'text-red-600' };
-    if (status === 'draft') return { text: 'Draft', color: 'text-yellow-600' };
-    return { text: 'Cash', color: 'text-green-600' };
-  };
-  
   const getRecordStatus = (status) => {
     if (status === 'inactive') return { text: 'Voided', color: 'text-red-600' };
     return { text: 'Active', color: 'text-green-600' };
-  };
-  
-  const getStatus = (status) => {
-    if (status === 'draft') return { text: 'Draft', color: 'text-red-600' };
-    return { text: 'Approved', color: 'text-green-600' };
-  };
-  
-  const getPaidStatus = (status) => {
-    if (status === 'no') return { text: 'No', color: 'text-red-600' };
-    return { text: 'Yes', color: 'text-green-600' };
   };
 
   return (
@@ -341,25 +324,20 @@ function SalesTable() {
           <div className="flex justify-between items-center">
             <h3 className="text-base font-semibold text-gray-800">Sales Management</h3>
             <div className="flex space-x-2 pb-2">
-              <button
-                onClick={handleRefresh}
-                className="mt-3 px-3 py-1.5 bg-gray-500 text-white rounded-custom hover:bg-green-600 transition-colors duration-200 flex items-center text-sm"
-                title="Refresh table"
-              >
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                Refresh
-              </button>
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="mt-3 px-3 py-1.5 bg-button text-white rounded-custom hover:bg-button-hover transition-colors duration-200 flex items-center text-sm"
-              >
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Create
-              </button>
+              <FormButton
+                btnType="affirm"
+                btnLabel="Refresh"
+                btnIcon="refresh"
+                onClick={handleRefresh} 
+                className="mt-3"
+              />
+              <FormButton
+                btnType="success"
+                btnLabel="Create"
+                btnIcon="plus"
+                onClick={() => setShowCreateModal(true)} 
+                className="mt-3"
+              />
             </div>
           </div>
           
@@ -391,298 +369,125 @@ function SalesTable() {
       <div className="flex-1 overflow-auto mt-2">
         {/* Inventory Table */}
         <div className="bg-white border border-gray-200 rounded-custom shadow-sm overflow-hidden">
-        {loading && (
-          <div className="flex justify-center items-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-button"></div>
-            <span className="ml-2 text-gray-600">Loading inventory data...</span>
-          </div>
-        )}
-        
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 m-4 rounded">
-            <strong>Error:</strong> {error}
-          </div>
-        )}
-        
-        {!loading && !error && (
-          <div className="bg-white border-gray-200 rounded-custom shadow-sm overflow-hidden">
-            <table className="w-full text-sm border-collapse">
-              <thead className="bg-header text-white">
-                <tr>
-                  <th 
-                    onClick={() => handleSort('id')}
-                    className="border-r px-3 py-2 text-left cursor-pointer hover:bg-green-700 text-white text-sm"
-                  >
-                    <div className="flex items-center">
-                      ID
-                      {sortField === 'id' && (
-                        <span className="ml-1">
-                          {sortOrder === 'asc' ? '↑' : '↓'}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    onClick={() => handleSort('reference_no')}
-                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold cursor-pointer hover:bg-green-700"
-                  >
-                    <div className="flex items-center">
-                      Transaction Number
-                      {sortField === 'reference_no' && (
-                        <span className="ml-1">
-                          {sortOrder === 'asc' ? '↑' : '↓'}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    onClick={() => handleSort('date_received')}
-                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold cursor-pointer hover:bg-green-700"
-                  >
-                    <div className="flex items-center">
-                      Date Sold
-                      {sortField === 'date_received' && (
-                        <span className="ml-1">
-                          {sortOrder === 'asc' ? '↑' : '↓'}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    onClick={() => handleSort('amount')}
-                    className="border-r px-3 py-2 text-right text-white text-sm font-semibold cursor-pointer hover:bg-green-700"
-                  >
-                    <div className="flex items-center justify-end">
-                      Amount
-                      {sortField === 'amount' && (
-                        <span className="ml-1">
-                          {sortOrder === 'asc' ? '↑' : '↓'}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    onClick={() => handleSort('supplier')}
-                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold cursor-pointer hover:bg-green-700"
-                  >
-                    <div className="flex items-center">
-                      Customer
-                      {sortField === 'supplier' && (
-                        <span className="ml-1">
-                          {sortOrder === 'asc' ? '↑' : '↓'}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    onClick={() => handleSort('payment_status')}
-                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold cursor-pointer hover:bg-green-700"
-                  >
-                    <div className="flex items-center">
-                      Payment Type
-                      {sortField === 'payment_status' && (
-                        <span className="ml-1">
-                          {sortOrder === 'asc' ? '↑' : '↓'}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    onClick={() => handleSort('is_paid')}
-                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold cursor-pointer hover:bg-green-700"
-                  >
-                    <div className="flex items-center">
-                      Paid?
-                      {sortField === 'is_paid' && (
-                        <span className="ml-1">
-                          {sortOrder === 'asc' ? '↑' : '↓'}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    onClick={() => handleSort('status')}
-                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
-                  >
-                    <div className="flex items-center">
-                      Status
-                      {sortField === 'status' && (
-                        <span className="ml-1">
-                          {sortOrder === 'asc' ? '↑' : '↓'}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    onClick={() => handleSort('remarks')}
-                    className="border-r px-3 py-2 text-left text-white text-sm font-semibold border-0 cursor-pointer hover:bg-green-700"
-                  >
-                    <div className="flex items-center">
-                      Remarks
-                      {sortField === 'remarks' && (
-                        <span className="ml-1">
-                          {sortOrder === 'asc' ? '↑' : '↓'}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                  <th className="px-3 py-2 text-center text-white font-semibold border-0">Actions</th>
-                </tr>
-              </thead>
-            <tbody>
-              {filteredData.map((item, index) => {
-                const quantityStatus = getQuantityStatus(item.payment_status);
-                return (
-                  <tr 
-                    key={item.id}
-                    className={`border-0 transition-colors duration-200 ${
-                      index % 2 === 0 ? 'bg-white hover:bg-green-50' : 'bg-row-alt hover:bg-green-100'
-                    }`}
-                  >
-                    <td className="px-3 py-2 border-r text-sm font-semibold text-green-900">{item.id}</td>
-                    <td className="px-3 py-2 border-r text-sm">{item.invoice_no}</td>
-                    <td className="px-3 py-2 border-r text-sm">{formatLongDate(item.date_sold)}</td>
-                    <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.amount)}</td>
-                    <td className="px-3 py-2 border-r text-sm">{item.customer_name}</td>
-                    <td className="px-4 py-3 border-r text-sm text-left">
-                      <span className={`font-medium ${quantityStatus.color}`}>
-                        {toTitleCase(item.payment_status)}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 border-r text-sm"><span className={getPaidStatus(item.is_paid).color}> {toTitleCase(getPaidStatus(item.is_paid).text)}</span></td>
-                    <td className="px-3 py-2 border-r text-sm"><span className={getStatus(item.status).color}> {toTitleCase(getStatus(item.status).text)}</span></td>
-                    <td className="px-3 py-2 border-r text-sm">{item.remarks}</td>
-                    <td className="px-3 py-2 border-0">
-                      <div className="flex justify-center space-x-2">
-                        <button
-                          onClick={() => handleView(item)}
-                          className="text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition-colors"
-                          title="View"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                        </button>
-                        {item.status == "draft" && (
-                          <button
-                            onClick={() => handleEdit(item)}
-                            className="text-green-600 hover:text-green-800 px-2 py-1 rounded hover:bg-green-50 transition-colors"
-                            title="Edit"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                          </button>
-                        )}
-                        {item.status != "draft" && (
-                          <button
-                            onClick={() => handleVoid(item.id)}
-                            className="text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
-                            title="Void"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <circle cx="12" cy="12" r="9" strokeWidth={2} />
-                              <line x1="5" y1="5" x2="19" y2="19" strokeWidth={2} />
-                            </svg>
-                          </button>
-                        )}
-                        {item.status == "draft" && (
-                          <button
-                            onClick={() => handleDelete(item.id)}
-                            className="text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
-                            title="Delete"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-        )}
-
-        {filteredData.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
-            No inventory items found matching your criteria.
-          </div>
-        )}
-        
-        {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <div className="px-4 py-3 border-t border-gray-200 bg-gray-50">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-700">
-                  Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalItems)} of {totalItems} results
-                </span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <select
-                  value={pageSize}
-                  onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                  className="px-3 py-1 border border-gray-300 rounded-custom text-sm focus:outline-none focus:ring-2 focus:ring-button"
-                >
-                  <option value={5}>5 per page</option>
-                  <option value={10}>10 per page</option>
-                  <option value={25}>25 per page</option>
-                  <option value={50}>50 per page</option>
-                </select>
-                
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="px-3 py-1 border border-gray-300 rounded-custom text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
-                >
-                  Previous
-                </button>
-                
-                <div className="flex space-x-1">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    let pageNum;
-                    if (totalPages <= 5) {
-                      pageNum = i + 1;
-                    } else if (currentPage <= 3) {
-                      pageNum = i + 1;
-                    } else if (currentPage >= totalPages - 2) {
-                      pageNum = totalPages - 4 + i;
-                    } else {
-                      pageNum = currentPage - 2 + i;
-                    }
-                    
+          {loading && (
+            <div className="flex justify-center items-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-button"></div>
+              <span className="ml-2 text-gray-600">Loading inventory data...</span>
+            </div>
+          )}
+          
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 m-4 rounded">
+              <strong>Error:</strong> {error}
+            </div>
+          )}
+          
+          {!loading && !error && (
+            <div className="bg-white border-gray-200 rounded-custom shadow-sm overflow-hidden">
+              <table className="w-full text-sm border-collapse">
+                <FormThead sortOrder={sortOrder} sortField={sortField} handleSort={handleSort} data={
+                  [
+                    {"title":"ID", "name":"id", "align":"center"},
+                    {"title":"Invoice Number", "name":"invoice_no", "align":"left"},
+                    {"title":"Date Sold", "name":"date_sold", "align":"left"},
+                    {"title":"Amount", "name":"amount", "align":"right"},
+                    {"title":"Customer Name", "name":"customer_name", "align":"left"},
+                    {"title":"Payment Status", "name":"payment_status", "align":"center"},
+                    {"title":"Paid?", "name":"is_paid", "align":"center"},
+                    {"title":"Status", "name":"status", "align":"center"},
+                    {"title":"Remarks", "name":"remarks", "align":"center"},
+                    {"title":"Actions", "name":"status", "default":1},
+                  ]
+                } />
+                <tbody>
+                  {filteredData.map((item, index) => {
                     return (
-                      <button
-                        key={pageNum}
-                        onClick={() => handlePageChange(pageNum)}
-                        className={`px-3 py-1 border rounded-custom text-sm ${
-                          currentPage === pageNum
-                            ? 'bg-button text-white border-button'
-                            : 'border-gray-300 hover:bg-gray-100'
+                      <tr 
+                        key={item.id}
+                        className={`border-0 transition-colors duration-200 ${
+                          index % 2 === 0 ? 'bg-white hover:bg-green-50' : 'bg-row-alt hover:bg-green-100'
                         }`}
                       >
-                        {pageNum}
-                      </button>
+                        <td className="px-3 py-2 border-r text-sm font-semibold text-green-900">{item.id}</td>
+                        <td className="px-3 py-2 border-r text-sm">{item.invoice_no}</td>
+                        <td className="px-3 py-2 border-r text-sm">{formatLongDate(item.date_sold)}</td>
+                        <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.amount)}</td>
+                        <td className="px-3 py-2 border-r text-sm">{item.customer_name}</td>
+                        <td className="px-3 py-2 border-r text-sm text-center capitalize"><span className={getTablePaymentStatus(item.payment_status).color}>{getTablePaymentStatus(item.payment_status).text}</span></td>
+                        <td className="px-3 py-2 border-r text-sm text-center capitalize"><span className={getTablePaidStatus(item.is_paid).color}> {getTablePaidStatus(item.is_paid).text}</span></td>
+                        <td className="px-3 py-2 border-r text-sm text-center capitalize"><span className={getTableStatus(item.status).color}> {getTableStatus(item.status).text}</span></td>
+                        <td className="px-3 py-2 border-r text-sm">{item.remarks}</td>
+                        <td className="px-3 py-2 border-0">
+                          <div className="flex justify-center space-x-2">
+                            <button
+                              onClick={() => handleView(item)}
+                              className="text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                              title="View"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                              </svg>
+                            </button>
+                            {item.status == "draft" && (
+                              <button
+                                onClick={() => handleEdit(item)}
+                                className="text-green-600 hover:text-green-800 px-2 py-1 rounded hover:bg-green-50 transition-colors"
+                                title="Edit"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                              </button>
+                            )}
+                            {item.status != "draft" && (
+                              <button
+                                onClick={() => handleVoid(item.id)}
+                                className="text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                                title="Void"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <circle cx="12" cy="12" r="9" strokeWidth={2} />
+                                  <line x1="5" y1="5" x2="19" y2="19" strokeWidth={2} />
+                                </svg>
+                              </button>
+                            )}
+                            {item.status == "draft" && (
+                              <button
+                                onClick={() => handleDelete(item.id)}
+                                className="text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                                title="Delete"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
                     );
                   })}
-                </div>
-                
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-1 border border-gray-300 rounded-custom text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
+                </tbody>
+            </table>
           </div>
-        )}
+          )}
+
+          {filteredData.length === 0 && !loading && (
+            <div className="text-center py-8 text-gray-500">
+              No record/s found.
+            </div>
+          )}
+          
+          {/* Pagination Controls */}
+          <FormPagination 
+            currentPage={currentPage}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            totalPages={totalPages}
+            handlePageSizeChange={handlePageSizeChange}
+            handlePageChange={handlePageChange}
+          />
         </div>
 
         {/* New Modal Components */}

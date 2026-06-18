@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getInventoryReplenishmentListsearch } from '../../api/inventoryService';
-import { formatCurrency, formatReplinishmentDate, toTitleCase, formatPostingDate } from '../../utils/formatters';
+import { formatCurrency, formatReplinishmentDate, tocapitalize, formatPostingDate, getStatusColor } from '../../utils/formatters';
 import { getReplenishmentView } from '../../api/replenishmentService';
 import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 import ViewStockInHistoryModal from './ViewStockInHistoryModal';
+import { FormButton, FormHeader, FormModalThead } from '../../utils/themes.js';
 
 const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModal, onSave }) => {
   const userData = useAppViewModel((state) => state.userData);
@@ -101,7 +102,7 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
   const handleBlur = () => {
     setTimeout(() => {
       setShowSuggestions(false);
-    }, 200);
+    }, 250);
   };
 
   const updateItemField = (index, field, value) => {
@@ -114,7 +115,6 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
       return updated;
     }));
 
-    // Clear unique input field errors dynamically when typing
     if (errors[`${field}_${index}`]) {
       setErrors(prev => ({ ...prev, [`${field}_${index}`]: '' }));
     }
@@ -123,7 +123,6 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
   const removeItemRow = (index) => {
     setItems(prev => prev.filter((_, idx) => idx !== index));
     
-    // Clear validation error trace corresponding to the deleted row
     setErrors(prev => {
       const updatedErrors = { ...prev };
       delete updatedErrors[`quantity_${index}`];
@@ -164,6 +163,13 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
   const handleSelectSuggestion = (suggestion) => {
     const name = resolveSuggestionName(suggestion);
     const costValue = resolveSuggestionCost(suggestion);
+
+    // const isDuplicate = items.some(item => item.inventory_id === suggestion.id);
+    // if (isDuplicate) {
+    //   setErrors(prev => ({ ...prev, items: `Item "${name}" is already included in this batch.` }));
+    //   setItemSearchTerm('');
+    //   return;
+    // }
 
     setErrors(prev => ({ ...prev, items: '' }));
 
@@ -230,15 +236,15 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
     const newErrors = {};
 
     if (items.length === 0) {
-      newErrors['items'] = "Please add at least one item to save the transaction.";
+      newErrors['items'] = "Please add at least one inventory item to register the replenishment payload.";
     }
 
     items.forEach((item, index) => {
-      if (item.quantity === "" || item.quantity === null || item.quantity === undefined || isNaN(item.quantity) || Number(item.quantity) <= 0) {
-        newErrors[`quantity_${index}`] = "Invalid quantity.";
+      if (!item.quantity || isNaN(item.quantity) || Number(item.quantity) <= 0) {
+        newErrors[`quantity_${index}`] = "Required quantity";
       }
-      if (item.cost === "" || item.cost === null || item.cost === undefined || isNaN(item.cost) || Number(item.cost) <= 0) {
-        newErrors[`cost_${index}`] = "Invalid cost.";
+      if (!item.cost || isNaN(item.cost) || Number(item.cost) < 0) {
+        newErrors[`cost_${index}`] = "Required cost";
       }
     });
 
@@ -265,7 +271,7 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
           quantity: Number(item.quantity) || 0,
           cost: Number(item.cost) || 0,
           total: Number(item.total) || 0,
-        })),
+         })),
         status: action,
       });
 
@@ -290,88 +296,81 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
     }
   };
 
-  const getStatus = (current) => {
-    if (current === "draft") return { text: 'Draft', color: 'text-yellow-600' };
-    return { text: 'Approved', color: 'text-green-600' };
-  };
-
   if (!showEditModal) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-custom p-4 max-w-screen-2xl w-full h-full flex flex-col">
+      <div className="bg-white rounded-custom border border-gray-200 shadow-xl w-full h-full flex flex-col">
         
-        {/* Modal Header */}
-        <div className="mb-6 pb-4 border-b border-gray-200 flex-0">
-          <h2 className="text-2xl font-bold text-gray-800 text-center">
-            Update Replenishment - <span className={getStatus(formData.status).color}>{toTitleCase(formData.status || '')}</span>
-          </h2>
-        </div>
+        {/* Header Container */}
+        <FormHeader headerStatus={formData.status} headerTitle="Update Replenishment" onClick={handleCancel} />
 
-        {/* Form Container */}
-        <form onSubmit={(e) => e.preventDefault()} className="space-y-4 flex-1 flex flex-col min-h-0">
+        {/* Content View Form */}
+        <form onSubmit={(e) => e.preventDefault()} className="p-4 flex-1 flex flex-col min-h-0 space-y-3 bg-gray-50/30">
 
-          {/* Inputs section - Fixed at top */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-2 flex-0">
+          {/* Transaction Fields Metadata Block */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-2 flex-shrink-0 text-xs">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Reference Number</label>
-              <input
-                name="reference_no"
-                value={formData.reference_no}
-                onChange={handleChange}
-                placeholder="Enter reference number"
-                className={`w-full px-3 py-2 text-sm border rounded-custom bg-gray-50 focus:outline-none ${
-                  errors.reference_no ? 'border-red-300' : 'border-gray-300'
-                }`}
-              />
-              {errors.reference_no && <p className="mt-1 text-xs text-red-600">{errors.reference_no}</p>}
+              <label className="block font-semibold text-gray-600 mb-1">Reference Number</label>
+              <div className={`flex items-center gap-2 px-3 py-1.5 border rounded bg-gray-50 focus-within:ring-1 focus-within:ring-button focus-within:border-transparent ${
+                errors.reference_no ? 'border-red-400 bg-red-50/30' : 'border-gray-300'
+              }`}>
+                <input
+                  name="reference_no"
+                  value={formData.reference_no}
+                  onChange={handleChange}
+                  placeholder="Enter reference number"
+                  className="flex-1 focus:outline-none bg-transparent font-medium text-gray-800"
+                />
+              </div>
+              {errors.reference_no && <p className="mt-1 text-[11px] text-red-600">{errors.reference_no}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date Received</label>
+              <label className="block font-semibold text-gray-600 mb-1">Date Received</label>
               <input
                 type="date"
                 name="date_received"
                 value={formData.date_received}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
-                  errors.date_received ? 'border-red-300' : 'border-gray-300'
+                className={`w-full px-3 py-1.5 border rounded focus:outline-none focus:ring-1 focus:ring-button focus:border-transparent text-gray-800 ${
+                  errors.date_received ? 'border-red-400 bg-red-50/30' : 'border-gray-300'
                 }`}
               />
-              {errors.date_received && <p className="mt-1 text-xs text-red-600">{errors.date_received}</p>}
+              {errors.date_received && <p className="mt-1 text-[11px] text-red-600">{errors.date_received}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
+              <label className="block font-semibold text-gray-600 mb-1">Supplier</label>
               <input
                 name="supplier"
                 value={formData.supplier}
                 onChange={handleChange}
-                placeholder="Enter supplier"
-                className={`w-full px-3 py-2 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
-                  errors.supplier ? 'border-red-300' : 'border-gray-300'
+                placeholder="Specify supplier name"
+                className={`w-full px-3 py-1.5 border rounded focus:outline-none focus:ring-1 focus:ring-button focus:border-transparent text-gray-800 ${
+                  errors.supplier ? 'border-red-400 bg-red-50/30' : 'border-gray-300'
                 }`}
               />
-              {errors.supplier && <p className="mt-1 text-xs text-red-600">{errors.supplier}</p>}
+              {errors.supplier && <p className="mt-1 text-[11px] text-red-600">{errors.supplier}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
+              <label className="block font-semibold text-gray-600 mb-1">Remarks / Notes</label>
               <textarea
                 name="remarks"
                 value={formData.remarks}
                 onChange={handleChange}
                 rows={1}
-                placeholder="Add any remarks or notes"
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+                placeholder="Log transaction details..."
+                className="w-full px-3 py-1.5 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-button focus:border-transparent text-gray-800 resize-none"
               />
             </div>
           </div>
 
-          {/* Search Bar Container */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-2 flex-0 relative">
-            <div className="md:col-span-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Search items</label>
+          {/* Autocomplete Real-time Search Processing Block */}
+          <div className="flex-shrink-0 relative text-xs">
+            <label className="block font-semibold text-gray-600 mb-1">Search Item</label>
+            <div className="relative">
               <input
                 type="text"
                 ref={searchInputRef}
@@ -381,79 +380,103 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
                   setItemSearchTerm(e.target.value);
                   setShowSuggestions(true);
                 }}
-                placeholder="Search items to add..."
-                className="w-full px-3 py-2 text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+                placeholder="Type product name, SKU and other description..."
+                className="w-full pl-8 pr-3 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-button focus:border-transparent"
+                style={{paddingTop:'6px', paddingBottom:'7px'}}
               />
-              {showSuggestions && itemSearchTerm.trim() && (
-                <div className="absolute left-0 right-0 z-20 mt-1 rounded-custom border border-gray-200 bg-white shadow-lg max-h-60 overflow-y-auto">
-                  {isSearching ? (
-                    <div className="px-3 py-2 text-sm text-gray-500">Searching...</div>
-                  ) : itemSuggestions.length > 0 ? (
-                    itemSuggestions.map((suggestion, index) => {
-                      const name = resolveSuggestionName(suggestion);
-                      const costValue = resolveSuggestionCost(suggestion);
-                      return (
-                        <button
-                          key={`${suggestion.id || index}-${index}`}
-                          type="button"
-                          onMouseDown={() => handleSelectSuggestion(suggestion)}
-                          className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 block border-b border-gray-50 last:border-b-0"
-                        >
-                          <div className="font-medium">{name} {suggestion.sku ? `[${suggestion.sku}]` : ''}</div>
-                          <div className="text-xs text-gray-500">Cost: ₱{Number(costValue).toFixed(2)}</div>
-                        </button>
-                      );
-                    })
-                  ) : (
-                    <div className="px-3 py-2 text-sm text-gray-500">No items found</div>
-                  )}
-                </div>
-              )}
+              <div className="absolute left-2.5 top-2 text-gray-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
             </div>
+
+            {/* Float Dropdown Menu Wrapper */}
+            {showSuggestions && itemSearchTerm.trim() && (
+              <div className="absolute left-0 right-0 z-30 mt-1 rounded border border-gray-200 bg-white shadow-xl max-h-56 overflow-y-auto">
+                {isSearching ? (
+                  <div className="px-4 py-3 text-gray-500 italic flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-button animate-ping"></span>
+                    Querying warehouse endpoints...
+                  </div>
+                ) : itemSuggestions.length > 0 ? (
+                  itemSuggestions.map((suggestion, index) => {
+                    const name = resolveSuggestionName(suggestion);
+                    const costValue = resolveSuggestionCost(suggestion);
+                    return (
+                      <button
+                        key={`${suggestion.id || index}-${index}`}
+                        type="button"
+                        onMouseDown={() => handleSelectSuggestion(suggestion)}
+                        className="w-full px-4 py-2.5 text-left text-gray-700 hover:bg-gray-50 block border-b border-gray-100 last:border-b-0 transition-colors"
+                      >
+                        <div className="font-semibold text-gray-800">
+                          {name} {suggestion.sku ? <span className="text-gray-400 font-normal ml-1">[{suggestion.sku}]</span> : ''}
+                        </div>
+                        <div className="text-[11px] text-gray-500 mt-0.5 flex gap-2">
+                          <span>Stock: <strong className="text-gray-700">{suggestion.current_qty ?? 0}</strong></span>
+                          <span>Base Cost: <strong className="text-gray-700">₱{Number(costValue).toFixed(2)}</strong></span>
+                        </div>
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="px-4 py-3 text-gray-500 italic">No inventory products match criteria.</div>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Scrollable Table Section */}
-          <div className="flex flex-col flex-1 min-h-0">
-            <label className="block text-sm font-medium text-gray-700 mb-1 flex-0">
-              Items ({items.length || 0}) {errors.items && <span className="ml-2 text-xs text-red-600 font-normal">{errors.items}</span>}
-            </label>
+          {/* Dynamic Manifest Interactive Table Section Container */}
+          <div className="flex-1 flex flex-col min-h-0">
+            <div className="flex justify-between items-center mb-1 flex-shrink-0">
+              <label className="block text-xs font-semibold text-gray-600">
+                Item Count ({items.length || 0})
+              </label>
+              {errors.items && (
+                <span className="text-xs text-red-600 font-medium bg-red-50 border border-red-200 rounded px-2 py-0.5 animate-pulse">
+                  {errors.items}
+                </span>
+              )}
+            </div>
             
-            <div className="rounded-custom border border-gray-300 flex-1 overflow-y-auto min-h-0">
-              <table className="min-w-full text-left text-sm table-auto border-collapse">
-                <thead className="bg-header text-white sticky top-0 z-10">
-                  <tr>
-                    <th className="py-2 pl-2 bg-header w-10"></th>
-                    <th className="py-2 bg-header w-12">#</th>
-                    <th className="px-3 py-2 bg-header">Item</th>
-                    <th className="px-3 py-2 text-right pr-9 bg-header w-44">Quantity</th>
-                    <th className="px-3 py-2 text-right pr-9 bg-header w-44">Cost</th>
-                    <th className="px-3 py-2 text-right pr-3 bg-header w-40">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
+            <div className="border border-gray-200 rounded flex-1 overflow-y-auto min-h-0 bg-white shadow-inner">
+              <table className="min-w-full text-left text-xs table-auto border-collapse">
+                <FormModalThead data={[
+                  {"title":"#", "class":"pl-2 w-10 text-center"},
+                  {"title":"Item Description", "class":"py-2 text-left"},
+                  {"title":"Quantity", "class":"py-2 text-right w-40"},
+                  {"title":"Unit Cost", "class":"py-2 text-right w-40"},
+                  {"title":"Total", "class":"py-2 text-right w-40"},
+                ]} />
+                <tbody className="divide-y divide-gray-100">
                   {items.map((item, index) => (
-                    <tr key={`${item.inventory_id}-${index}`} className="border-t border-gray-200 hover:bg-gray-50">
-                      <td className="px-1 py-2 align-top text-center">
+                    <tr key={`${item.inventory_id}-${index}`} className="hover:bg-gray-50/80 transition-colors">
+                      <td className="p-1 align-middle text-center">
                         <button
                           type="button"
                           onClick={() => removeItemRow(index)}
-                          className="text-sm text-red-600 hover:text-red-800 pt-1 block mx-auto"
+                          className="text-gray-400 hover:text-red-600 p-1 rounded transition-colors block mx-auto focus:outline-none"
+                          title="Remove item"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
                         </button>
                       </td>
-                      <td className="py-3 align-top text-left">{index + 1}</td>
-                      <td className="px-3 py-3 align-top text-gray-700">
-                        <span className="font-medium">{item.item_name}</span> {item.sku ? `[${item.sku}]` : ''} 
-                        <span className="pl-2 text-xs text-gray-400 mt-0.5">Stock: {item.current_qty || 0} / Reorder: {item.reorder_level || 0}</span>
+                      <td className="py-2 text-center text-gray-400 font-medium align-middle">{index + 1}</td>
+                      <td className="px-3 py-2 align-middle text-gray-800">
+                        <div className="font-medium">
+                          {item.item_name} {item.sku ? <span className="text-gray-400 font-normal ml-0.5">[{item.sku}]</span> : ''}
+                        </div>
+                        <div className="text-[10px] text-gray-400 mt-0.5">
+                          Current Stock: {item.current_qty || 0} <span className="mx-1">|</span> Reorder Level: {item.reorder_level || 0}
+                        </div>
                       </td>
-                      <td className="px-3 py-2 align-top">
-                        <div className={`w-full flex items-center px-2 py-1 border rounded-custom bg-white ${
-                            errors[`quantity_${index}`] ? 'border-red-300' : 'border-gray-300'
-                          }`}
-                        >
+                      <td className="px-3 py-1 align-middle">
+                        <div className={`flex items-center px-2 py-1 border rounded bg-white ${
+                          errors[`quantity_${index}`] ? 'border-red-400 bg-red-50/20' : 'border-gray-300 focus-within:ring-1 focus-within:ring-button focus-within:border-transparent'
+                        }`}>
                           <input
                             type="number"
                             name="quantity"
@@ -461,21 +484,25 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
                             onChange={(e) => updateItemField(index, 'quantity', e.target.value)}
                             onFocus={(e) => e.target.select()}
                             placeholder="0"
-                            className="flex-1 focus:outline-none text-right bg-transparent w-full"
+                            className="w-full focus:outline-none text-right bg-transparent font-semibold text-gray-800"
                           />
                         </div>
-                        {errors[`quantity_${index}`] && <p className="mt-1 text-[11px] text-red-600 text-right">{errors[`quantity_${index}`]}</p>}
+                        {errors[`quantity_${index}`] && (
+                          <p className="mt-0.5 text-[10px] text-red-600 text-right font-medium">{errors[`quantity_${index}`]}</p>
+                        )}
                       </td>
-                      <td className="px-3 py-2 align-top">
-                        <div className={`w-full flex items-center px-2 py-1 border rounded-custom bg-white ${
-                            errors[`cost_${index}`] ? 'border-red-300' : 'border-gray-300'
-                          }`}
-                        >
-                          <button type="button" aria-label="View history" title="View History" onClick={() => showAvailableStocks(item)}
-                            className="text-blue-600 hover:text-blue-800 mr-1 flex-shrink-0"
+                      <td className="px-3 py-1 align-middle">
+                        <div className={`flex items-center px-2 py-1 border rounded bg-white ${
+                          errors[`cost_${index}`] ? 'border-red-400 bg-red-50/20' : 'border-gray-300 focus-within:ring-1 focus-within:ring-button focus-within:border-transparent'
+                        }`}>
+                          <button 
+                            type="button" 
+                            title="View Stock History" 
+                            onClick={() => showAvailableStocks(item)}
+                            className="text-blue-500 hover:text-blue-700 mr-1.5 focus:outline-none flex-shrink-0"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                           </button>
                           <input
@@ -486,63 +513,57 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
                             onChange={(e) => updateItemField(index, 'cost', e.target.value)}
                             onFocus={(e) => e.target.select()}
                             placeholder="0.00"
-                            className="flex-1 focus:outline-none text-right bg-transparent w-full"
+                            className="w-full focus:outline-none text-right bg-transparent text-gray-800"
                           />
                         </div>
-                        {errors[`cost_${index}`] && <p className="mt-1 text-[11px] text-red-600 text-right">{errors[`cost_${index}`]}</p>}
+                        {errors[`cost_${index}`] && (
+                          <p className="mt-0.5 text-[10px] text-red-600 text-right font-medium">{errors[`cost_${index}`]}</p>
+                        )}
                       </td>
-                      <td className="px-3 py-3 align-top text-right pr-3 font-medium text-gray-900">{formatCurrency(item.total) || '₱ 0.00'}</td>
+                      <td className="px-3 py-2 align-middle text-right pr-4 font-bold text-gray-700">
+                        {formatCurrency(item.total) || '₱ 0.00'}
+                      </td>
                     </tr>
                   ))}
+                  {items.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center text-gray-400 italic bg-gray-50/30">
+                        No product lines staging. Search above to append items.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
           </div>
 
-          {/* Total Summary Row */}
-          <div className="flex-0 rounded-custom border border-gray-300 pr-3 py-2 bg-gray-50 text-right text-md font-semibold text-green-900" style={{ marginTop: "5px" }}>
-            Total: {formatCurrency(getItemsTotal()) || '₱ 0.00'}
+          {/* Aggregate Valuation Footer Summary Indicator */}
+          <div className="flex-shrink-0 rounded border border-gray-200 px-4 py-2.5 bg-gray-50 text-right text-sm font-bold text-emerald-800 shadow-sm flex justify-end items-center gap-2">
+            <span className="text-xs uppercase tracking-wider text-gray-400 font-medium">Accumulated Total:</span>
+            <span className="text-base font-black">{formatCurrency(getItemsTotal()) || '₱ 0.00'}</span>
           </div>
 
-          {/* Actions Footer row */}
-          <div className="justify-end space-x-3 flex flex-0">
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="px-4 py-2 border border-gray-300 hover:text-white hover:border-gray-500/50 rounded-custom hover:bg-gray-900/50 transition-colors text-sm flex items-center disabled:opacity-50"
-            >
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              Cancel
-            </button>
-            
-            <button
-              type="button"
-              onClick={() => handleSubmit("draft")}
-              disabled={isSubmitting}
-              className="px-4 py-2 bg-gray-900/50 text-white rounded-custom hover:bg-gray-900 transition-colors text-sm flex items-center disabled:opacity-50 font-medium"
-            >
-              {isSubmitting ? (
-                <>
-                  <svg className="animate-spin h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Update
-                </>
-              )}
-            </button>
+          {/* Control Buttons Panel */}
+          <div className="justify-end space-x-2 flex flex-shrink-0 text-xs">
+            <FormButton
+              btnType="outline"
+              btnLabel="Cancel"
+              btnIcon="cross"
+              onClick={handleCancel} 
+            />
+            <FormButton
+              btnType="success"
+              btnLabel="Update"
+              btnIcon="draft"
+              onClick={() => handleSubmit("draft")} 
+              disabled={isSubmitting || items.length === 0}
+              isProcessing={isSubmitting}
+            />
           </div>
 
         </form>        
         
+        {/* Secondary Overlay Modal */}
         <ViewStockInHistoryModal
           show={showStockInHistoryModal}
           onClose={() => setShowStockInHistoryModal(false)}

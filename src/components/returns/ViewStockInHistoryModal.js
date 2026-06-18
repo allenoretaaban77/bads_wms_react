@@ -43,14 +43,14 @@ function ViewStockInHistoryModal({ show, onClose, id, item }) {
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-custom border border-gray-200 shadow-xl max-w-3xl w-full mx-4 flex flex-col max-h-[85vh]">
   
         {/* Header Container */}
         <FormHeader headerTitle="View Stock-In History" onClick={handleClose} />
 
         {/* Content Body Container */}
-        <div className="p-3 flex-1 flex flex-col min-h-0 space-y-4 text-xs">
+        <div className="p-5 flex-1 flex flex-col min-h-0 space-y-4 text-xs">
           
           {/* Global Messaging Status Bars */}
           {loading && (
@@ -124,7 +124,7 @@ function ViewStockInHistoryModal({ show, onClose, id, item }) {
           )}
 
           {/* Dialog Action Footprint */}
-          <div className="flex justify-end space-x-2 flex-shrink-0 border-t border-gray-100">
+          <div className="flex justify-end space-x-2 flex-shrink-0 pt-2 border-t border-gray-100">
             <FormButton
               btnType="outline"
               btnLabel="Close"

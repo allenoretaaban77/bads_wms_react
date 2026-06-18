@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { getSalesViewSales } from '../../api/salesService';
-import { formatCurrency, toTitleCase, formatLongDate } from '../../utils/formatters';
+import { formatCurrency, tocapitalize, formatLongDate, getQuantityStatus, getPaidStatus } from '../../utils/formatters';
 import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 import { generatePrintReceipt } from '../../utils/printUtils';
+import { FormButton, FormHeader, FormModalTheadDefault } from '../../utils/themes.js';
 
 function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onReturn, id }) {
   const userData = useAppViewModel((state) => state.userData);
@@ -129,20 +130,9 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onReturn
     }
   };
   
-  const getQuantityStatus = (status) => {
-    if (status === 'credit') return { text: 'Credit', color: 'text-red-600' };
-    if (status === 'draft') return { text: 'Draft', color: 'text-yellow-600' };
-    return { text: 'Cash', color: 'text-green-600' };
-  };
-  
   const getRecordStatus = (status) => {
     if (status === 'inactive') return { text: 'Voided', color: 'text-red-600' };
     return { text: '', color: 'text-green-600' };
-  };
-
-  const getStatus = (current) => {
-    if (current === "draft") return { text: 'Draft', color: 'text-yellow-600' };
-    return { text: 'Approved', color: 'text-green-600' };
   };
   
   const getPaidStatus = (status) => {
@@ -159,175 +149,149 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onReturn
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-custom p-4 max-w-screen-xl w-full mx-2 max-h-screen overflow-y-auto">
-  
-        {loading && <div className='w-full text-center'><span className='text-green-700'>Loading...</span></div>}
-  
-        <div className="mb-6 border-b border-gray-200 pb-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3">
+      <div className="bg-white rounded-custom border border-gray-200 shadow-xl max-w-screen-xl w-full mx-2 flex flex-col max-h-[85vh]">
+
+        <FormHeader headerStatus={data?.status} headerPaymentStatus={data?.payment_status} headerIsPaidStatus={data?.is_paid} headerTitle="Sales Transaction Details" onClick={handleClose} />
+
+        <div className="p-3 flex-1 flex flex-col min-h-0 space-y-4 text-xs">
+          {loading && (
+            <div className="w-full text-center py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded font-medium animate-pulse flex-shrink-0">
+              Loading replenishment layout tracking data...
+            </div>
+          )}
+          {error && (
+            <div className="w-full text-center py-2 bg-red-50 text-red-600 border border-red-200 rounded font-medium flex-shrink-0">
+              {error}
+            </div>
+          )}
+          
           {data && (
-            <>
-            <h2 className="text-2xl font-bold text-gray-800 text-center">
-              Sales Transaction Details - <span className={getQuantityStatus(data.payment_status).color}> {toTitleCase(data.payment_status)}</span> - <span className={getStatus(data.status).color}>{getStatus(data.status).text}</span> - <span className={getPaidStatus(data.is_paid).color}>{getPaidStatus(data.is_paid).text}</span>
-            </h2 >
-            {error && <div className='w-full text-center'><span className='text-red-500'>{error}</span></div>}
-            </>
+            <div className="flex-1 flex flex-col min-h-0 space-y-4">
+              {/* Reference Meta Information Data Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded flex-shrink-0">
+                <div>
+                  <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block mb-0.5">Transaction No</span>
+                  <span className="font-bold text-gray-800 text-sm font-mono">{data.invoice_no}</span>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block mb-0.5">Date Sold</span>
+                  <span className="font-semibold text-gray-700 text-sm">{formatLongDate(data.date_sold)}</span>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block mb-0.5">Customer Name</span>
+                  <span className="font-bold text-gray-800 text-sm">{data.customer_name}</span>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-500 capitalize tracking-wider text-[10px] block mb-0.5">Remarks / Note</span>
+                  <span className="font-medium text-gray-600 text-xs block truncate" title={data.remarks || '-'}>
+                    {data.remarks || '-'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="border border-gray-200 rounded flex-1 overflow-y-auto min-h-0 bg-white shadow-inner">
+                  <table className="w-full text-left table-auto border-collapse">
+                    <FormModalTheadDefault data={[
+                      {"title":"SKU", "class":"py-2 text-left w-40"},
+                      {"title":"Product Name", "class":"py-2 text-left"},
+                      {"title":"Quantity", "class":"py-2 text-right w-40"},
+                      {"title":"Unit Price", "class":"py-2 text-right w-40"},
+                      {"title":"Total", "class":"py-2 pl-5 text-right w-40"},
+                    ]} />
+                    <tbody className="divide-y divide-gray-100">
+                      {data.items && data.items.map((item) => (
+                        <tr key={item.id} className="hover:bg-gray-50/80 transition-colors">
+                          <td className="px-3 py-2 font-mono text-gray-700 font-semibold align-middle">
+                            {item.sku}
+                          </td>
+                          <td className="px-3 py-2 text-gray-800 font-medium align-middle">
+                            {item.product_name}
+                          </td>
+                          <td className="px-3 py-2 text-right font-bold text-gray-700 align-middle">
+                            {item.qty_sold}
+                          </td>
+                          <td className="px-3 py-2 text-right font-bold text-gray-700 align-middle">
+                            {formatCurrency(item.price_per_unit)}
+                          </td>
+                          <td className="px-3 py-2 text-right font-bold text-gray-700 align-middle">
+                            {formatCurrency(item.total)}
+                          </td>
+                        </tr>
+                      ))}
+                      </tbody>
+                      <tfoot className="sticky bottom-0 z-10 bg-gray-50 border-t-2 border-gray-200 font-bold text-gray-800">
+                        <tr>
+                          <td colSpan="4" className="px-3 py-2.5 text-right uppercase tracking-wider text-[10px] text-gray-500 align-middle">
+                            Grand Total
+                          </td>
+                          <td className="px-3 py-2.5 text-right pr-4 text-base font-extrabold text-gray-900 align-middle bg-gray-100/60">
+                            {formatCurrency(data.amount)}
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
+              </div>
+            </div>
           )}
         </div>
 
-        {data && (
-          <div>
-            <div className="grid grid-cols-4 gap-4 mb-4 text-sm">
-              <div><strong>Transaction No:</strong> {data.invoice_no}</div>
-              <div><strong>Date Sold:</strong> {formatLongDate(data.date_sold)}</div>
-              <div><strong>Customer Name:</strong> {data.customer_name}</div>
-              <div><strong>Remarks:</strong> <span className={getRecordStatus(data.record_status).color}> {toTitleCase(getRecordStatus(data.record_status).text)}</span>{data.remarks}</div>
-            </div>
-
-            <div className="bg-white border border-gray-200 rounded-custom shadow-sm overflow-hidden">
-              <div className="bg-white shadow-sm overflow-hidden">
-                <table className="w-full text-sm border-collapse">
-                  <thead className="bg-header text-white">
-                    <tr className="border-0">
-                      <th className="border-r px-3 py-2 text-left text-white">SKU</th>
-                      <th className="border-r px-3 py-2 text-left text-white">Product Name</th>
-                      <th className="border-r p-2 text-right">Quantity</th>
-                      <th className="border-r p-2 text-right">Price per Unit</th>
-                      <th className="border-r p-2 text-right">Total</th>
-                      {data.status === "approved" && <th className="p-2 text-center">Actions</th>}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.items.map((item) => (
-                      <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="border-r border-b border-l p-2">{item.sku}</td>
-                        <td className="border-r border-b p-2">{item.product_name}</td>
-                        <td className="border-r border-b p-2 text-right">{item.qty_sold}</td>
-                        <td className="border-r border-b p-2 text-right">{formatCurrency(item.price_per_unit)}</td>
-                        <td className="border-r border-b p-2 text-right">{formatCurrency(item.total)}</td>
-                        {data.status === "approved" && (
-                          <td className="border-r border-b p-2 text-center">
-                            {item.qty_sold > 0 ? (
-                              <button
-                                type="button"
-                                disabled={isSubmitting}
-                                onClick={() => handleInitiateSingleReturn(item)}
-                                className="px-2 py-1 bg-orange-500 text-white rounded text-xs hover:bg-orange-600 transition-colors disabled:opacity-50 flex items-center mx-auto"
-                                title="Process single line item item exchange/return"
-                              >
-                                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                                </svg>
-                                Return
-                              </button>
-                            ) : (
-                              <span className="text-xs text-gray-400 italic">Fully Returned</span>
-                            )}
-                          </td>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr className="font-bold bg-gray-50">
-                      <td colSpan="4" className="border-r border-b border-l p-2 text-right">Grand Total</td>
-                      <td className="border-r p-2 text-right">{formatCurrency(data.amount)}</td>
-                      {data.status === "approved" && <td className="border-r border-b p-2"></td>}
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
-          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-            <button
-              type="button"
+        <form onSubmit={(e) => e.preventDefault()}>
+          <div className="flex-shrink-0 rounded bg-gray-50 text-right text-sm font-bold text-emerald-800 shadow-sm flex justify-end items-center gap-2 px-3 pb-3">
+            <FormButton
+              btnType="outline"
+              btnLabel="Close"
+              btnIcon="cross" 
               onClick={handleClose}
-              className="px-3 py-1.5 border border-gray-300 hover:text-white hover:border-gray-500/50 rounded-custom hover:bg-gray-900/50 transition-colors text-sm flex items-center disabled:opacity-50"
-            >
-              <svg className="w-4 h-4 mr-1" fill="red" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              Close
-            </button>
+              form="create-inventory-form"
+            />
             {data && data.status === "draft" && (
               <>
-                <button
-                  type="button"
-                  onClick={() => handleUpdate(data)}
-                  className="px-3 py-1.5 bg-gray-900/50 text-white rounded-custom hover:bg-gray-900 transition-colors text-sm flex items-center disabled:opacity-50"
-                >
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(data)}
-                  className="px-3 py-1.5 bg-red-700 text-white rounded-custom hover:bg-red-900 transition-colors text-sm flex items-center disabled:opacity-50"
-                >
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  Delete
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSubmit("approved", data)}
+                <FormButton
+                  btnType="ash"
+                  btnLabel="Edit"
+                  btnIcon="edit"
+                  onClick={() => handleUpdate(data)} 
+                />
+                <FormButton
+                  btnType="danger"
+                  btnLabel="Delete"
+                  btnIcon="trash"
+                  onClick={() => handleDelete(data)} 
+                />
+                <FormButton
+                  btnType="success"
+                  btnLabel="Approve"
+                  btnIcon="check"
+                  onClick={() => handleSubmit("approved", data)} 
                   disabled={isSubmitting}
-                  className="px-3 py-1.5 bg-button text-white rounded-custom hover:bg-button-hover transition-colors text-sm flex items-center disabled:opacity-50"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <svg className="animate-spin h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                      </svg>
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      Approve
-                    </>
-                  )}
-                </button>
+                  isProcessing={isSubmitting}
+                />
               </>
             )}
             {data && (
-              <button
-                type="button"
-                onClick={() => handlePrint(data)}
-                className="px-3 py-1.5 text-white border border-blue-600/50 bg-blue-500 hover:text-white hover:border-blue-800/50 rounded-custom hover:bg-blue-700 transition-colors text-sm flex items-center disabled:opacity-50"
-              >
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2m-10 0h10v4H6v-4z"
-                  />
-                </svg>
-                Print
-              </button>
+              <FormButton
+                btnType="primary"
+                btnLabel="Print"
+                btnIcon="print"
+                onClick={() => handlePrint(data)} 
+              />
             )}
-            {data && (
-              <button
-                type="button"
-                onClick={() => handlePaidUnpaid(data)}
-                className="px-3 py-1.5 text-white border border-yellow-600/50 bg-yellow-500 hover:text-white hover:border-yellow-800/50 rounded-custom hover:bg-yellow-700 transition-colors text-sm flex items-center disabled:opacity-50"
-              >
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {data.is_paid === "yes" && ('Set Unpaid')}
-                {data.is_paid === "no" && ('Set Paid')}
-              </button>
+            {data && data.is_paid === "yes" && (
+              <FormButton
+                btnType="affirm"
+                btnLabel="Set Unpaid"
+                btnIcon="dollar"
+                onClick={() => handlePaidUnpaid(data)} 
+              />
+            )}
+            {data && data.is_paid === "no" && (
+              <FormButton
+                btnType="success"
+                btnLabel="Set Paid"
+                btnIcon="dollar"
+                onClick={() => handlePaidUnpaid(data)} 
+              />
             )}
           </div>
         </form>

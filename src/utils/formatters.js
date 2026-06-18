@@ -26,14 +26,6 @@ export const formatDate = (dateString) => {
   return rawDate;
 }
 
-export const toTitleCase = (str = "") => {
-  return str
-    .toLowerCase()
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
-
 export const formatLongDate = (dateString) =>  {
   const date = new Date(dateString);
   return date.toLocaleDateString("en-US", {
@@ -42,3 +34,45 @@ export const formatLongDate = (dateString) =>  {
     day: "numeric",
   });
 }
+
+export const getStatusColor = (current) => {
+  if (current === "draft") return 'text-gray-300 font-bold capitalize';
+  return 'text-green-300 font-bold';
+};
+
+export const getStatus = (current) => {
+  if (current === "draft") return { text: 'Draft', color: 'text-gray-300 capitalize' };
+  return { text: 'Approved', color: 'text-green-300' };
+};
+
+export const getPaymentStatus = (status) => {
+  if (status === 'credit') return { text: 'Credit', color: 'text-blue-200 capitalize' };
+  if (status === 'draft') return { text: 'Draft', color: 'text-gray-300 capitalize' };
+  return { text: 'Cash', color: 'text-yellow-300' };
+};
+
+export const getPaidStatus = (status) => {
+  if (status === 'no') return { text: 'Not Paid', color: 'text-red-200' };
+  return { text: 'Paid', color: 'text-yellow-300' };
+};
+
+export const getTablePaidStatus = (status) => {
+  if (status === 'no') return { text: 'Not Paid', color: 'text-red-600 font-semibold' };
+  return { text: 'Paid', color: 'text-green-600 font-semibold' };
+};
+
+export const getTableStatus = (current) => {
+  if (current === "draft") return { text: 'Draft', color: 'text-gray-600 capitalize font-semibold ' };
+  return { text: 'Approved', color: 'text-green-600 font-semibold capitalize' };
+};
+
+export const getTableStatusColor = (current) => {
+  if (current === "draft") return 'text-gray-600 font-semibold capitalize';
+  return 'text-green-600 font-semibold capitalize';
+};
+
+export const getTablePaymentStatus = (status) => {
+  if (status === 'credit') return { text: 'Credit', color: 'text-blue-600 capitalize font-semibold' };
+  if (status === 'draft') return { text: 'Draft', color: 'text-gray-600 capitalize font-semibold' };
+  return { text: 'Cash', color: 'text-yellow-500 font-semibold capitalize' };
+};
