@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getStockBatches } from '../../api/salesService';
 import { formatCurrency, formatLongDate } from '../../utils/formatters';
-import { FormButton, FormHeader, FormModalThead } from '../../utils/themes.js';
+import { FormButton, FormHeader, FormModalThead, FormModalTheadDefault } from '../../utils/themes.js';
 
 function ViewStockBatchesModal({ show, onClose, id, allocatedBatches, onApply }) {
   const [data, setData] = useState(null);
@@ -142,96 +142,113 @@ function ViewStockBatchesModal({ show, onClose, id, allocatedBatches, onApply })
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-custom shadow-xl border border-gray-200 w-full max-w-2xl flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3">
+      <div className="bg-white rounded-custom border border-gray-200 shadow-xl max-w-3xl w-full mx-4 flex flex-col max-h-[85vh]">
   
         {/* Header */}
         <FormHeader headerTitle="View Stock Batches" onClick={handleClose} />
 
-        {/* Content Wrapper - Scrollable area */}
-        {data && (
-          <div className="flex-1 overflow-y-auto min-h-0 pr-1 space-y-3">
-            <div className="text-sm">
-              <span className="text-gray-600">Product Name:</span>{" "}
-              <span className="font-semibold text-gray-800">
-                {data.product_name} {data.sku ? `(${data.sku})` : ''}
-              </span>
-              <span className="ml-2 px-2 py-0.5 text-xs rounded bg-red-50 text-red-600 font-medium">
-                Stock: {data.current_qty} / Reorder: {data.reorder_level}
-              </span>
+        <div className="p-3 flex-1 flex flex-col min-h-0 space-y-4 text-xs">
+          {/* Global Messaging Status Bars */}
+          {loading && (
+            <div className="w-full text-center py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded font-medium animate-pulse">
+              Loading transaction history matrix...
             </div>
+          )}
+          {error && (
+            <div className="w-full text-center py-2 bg-red-50 text-red-600 border border-red-200 rounded font-medium">
+              {error}
+            </div>
+          )}
 
-            <div className="bg-white border border-gray-200 rounded-custom shadow-sm overflow-hidden">
-              <table className="w-full text-sm border-collapse">
-                <thead className="bg-header text-white sticky top-0 z-10">
-                  <tr className="border-0">
-                    <th className="px-3 py-2 text-left">Date Received</th>
-                    <th className="p-2 text-right">Unit Cost</th>
-                    <th className="p-2 text-right">Stock Quantity</th>
-                    <th className="p-2 text-right w-40">Quantity to Out</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.items.map((item) => (
-                    <tr key={item.id || item.batch_id} className="border-b border-gray-100 hover:bg-gray-50 last:border-b-0">
-                      <td className="p-2 text-gray-700">{formatLongDate(item.date_received)}</td>
-                      <td className="p-2 text-right text-gray-700">{formatCurrency(item.cost_per_unit)}</td>
-                      <td className="p-2 text-right font-medium text-gray-900">{item.current_qty}</td>
-                      <td className="p-2 text-right">
-                        <input
-                          type="number"
-                          name="quantity"
-                          value={item.quantity_out}
-                          onChange={(e) => updateItemField(item.id, 'quantity_out', e.target.value)}
-                          onFocus={(e) => e.target.select()}
-                          placeholder="0"
-                          min="0"
-                          max={item.current_qty}
-                          className={`w-full px-2 py-1 text-right text-sm border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
-                            errors[`quantity_out_${item.id}`] ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                          }`}
-                        />
-                        {errors[`quantity_out_${item.id}`] && (
-                          <p className="mt-1 text-[11px] text-red-600 text-right font-medium">
-                            {errors[`quantity_out_${item.id}`]}
-                          </p>
-                        )}
-                      </td>
+          {data && (
+            <div className="flex-1 flex flex-col min-h-0 space-y-3">
+              {/* Product Metadata Info Board */}
+              <div className="px-3 pt-1 pb-2 bg-gray-50 border border-gray-200 rounded flex items-center justify-between flex-shrink-0">
+                <div>
+                  <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block">Product Name</span>
+                  <span className="font-bold text-gray-800 text-sm">{data.product_name}</span>
+                </div>
+                <div className="text-center">
+                  <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block pb-1">Stock Keeping Unit</span>
+                  <span className="font-mono bg-white border border-gray-300 px-2 py-0.5 rounded text-gray-700 font-bold">{data.sku}</span>
+                </div>
+                <div className="text-center">
+                  <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block pb-1">Total Stocks</span>
+                  <span className="font-mono bg-white border border-gray-300 px-2 py-0.5 rounded text-gray-700 font-bold">{data.current_qty}</span>
+                </div>
+                <div className="text-center">
+                  <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block pb-1">Reorder Quantity</span>
+                  <span className="font-mono bg-white border border-gray-300 px-2 py-0.5 rounded text-gray-700 font-bold">{data.reorder_level}</span>
+                </div>
+              </div>
+              <div className="border border-gray-200 rounded flex-1 overflow-y-auto min-h-0 bg-white shadow-inner">
+                <table className="w-full text-left table-auto border-collapse">
+                  <FormModalTheadDefault data={[
+                    {"title":"Date Received", "class":"py-2 text-left"},
+                    {"title":"Unit Cost", "class":"py-2 text-right"},
+                    {"title":"Stock", "class":"py-2 text-right"},
+                    {"title":"Quantity to Out", "class":"py-2 pl-5 text-right"},
+                  ]} />
+                  <tbody>
+                    {data.items.map((item) => (
+                      <tr key={item.id} className="hover:bg-gray-50/80 transition-colors">
+                        <td className="px-3 py-2 text-gray-600 align-middle">
+                          {formatLongDate(item.date_received)}
+                        </td>
+                        <td className="px-3 py-2 text-right font-semibold text-gray-700 align-middle">
+                          {item.cost_per_unit}
+                        </td>
+                        <td className="px-3 py-2 text-right font-semibold text-gray-700 align-middle">
+                          {item.current_qty}
+                        </td>
+                        <td className="p-2 text-right w-40">
+                          <input
+                            type="number"
+                            name="quantity"
+                            value={item.quantity_out}
+                            onChange={(e) => updateItemField(item.id, 'quantity_out', e.target.value)}
+                            onFocus={(e) => e.target.select()}
+                            placeholder="0"
+                            min="0"
+                            max={item.current_qty}
+                            className={`w-full px-2 py-1 text-right text-xs border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                              errors[`quantity_out_${item.id}`] ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                            }`}
+                          />
+                          {errors[`quantity_out_${item.id}`] && (
+                            <p className="mt-1 text-[11px] text-red-600 text-right font-medium">
+                              {errors[`quantity_out_${item.id}`]}
+                            </p>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                    <tr className="bg-gray-50 border-t border-gray-200 font-semibold text-gray-900">
+                      <td className="p-2 text-right" colSpan={3}>Total Selected:</td>
+                      <td className="p-2 text-right pr-3 text-green-700">{data.total_target_quantity}</td>
                     </tr>
-                  ))}
-                  <tr className="bg-gray-50 border-t border-gray-200 font-semibold text-gray-900">
-                    <td className="p-2 text-right" colSpan={3}>Total Selected:</td>
-                    <td className="p-2 text-right pr-3 text-green-700">{data.total_target_quantity}</td>
-                  </tr>
-                </tbody>
-              </table>
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Footer Actions */}
-        <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 flex-0 mt-4">
-          <button
-            type="button"
-            onClick={handleClose}
-            className="px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-custom text-sm flex items-center transition-colors"
-          >
-            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-            Close
-          </button>
-          <button
-            type="button"
-            onClick={handleApplyClick}
-            disabled={!data}
-            className="px-4 py-2 bg-button text-white rounded-custom hover:bg-button-hover transition-colors text-sm flex items-center font-medium disabled:opacity-50"
-          >
-            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-            Apply Allocation
-          </button>
+        <div className="flex justify-end space-x-2 flex-shrink-0  border-t border-gray-100 px-3 pb-3">
+          <FormButton
+            btnType="outline"
+            btnLabel="Close"
+            btnIcon="cross"
+            onClick={handleClose} 
+          />
+          <FormButton
+            btnType="success"
+            btnLabel="Apply Allocation"
+            btnIcon="check"
+            onClick={handleApplyClick} 
+          />
         </div>
 
       </div>

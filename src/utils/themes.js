@@ -283,7 +283,7 @@ export const FormThead = ({
           {data.map((item, index) => {
             if (item.default === 1) {
               return (
-                <th className="border-0 px-3 py-2 text-center text-white font-semibold border-0 text-xs">{item.title}</th>
+                <th className="border-0 px-3 py-2 text-center text-white font-semibold border-0 text-xs w-40">{item.title}</th>
               )
             } else {
               return (

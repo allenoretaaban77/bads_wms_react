@@ -56,8 +56,7 @@ const menuItems = [
   { key: 'stocks', label: 'Replenishment' },
   { key: 'sales', label: 'Sales' },
   { key: 'returns', label: 'Returns' },
-  { key: 'users', label: 'Users' },
-  // { key: 'profile', label: 'Profile' },
+  { key: 'employees', label: 'Employees' },
   { key: 'logout', label: 'Logout' },
 ];
 

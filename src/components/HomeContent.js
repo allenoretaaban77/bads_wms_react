@@ -4,6 +4,7 @@ import InventoryTable from './inventory/InventoryTable';
 import ReplenishmentTable from './replenishment/ReplenishmentTable';
 import SalesTable from './sales/SalesTable';
 import ReturnsTable from './returns/ReturnsTable.js';
+import EmployeesTable from './employees/EmployeesTable.js';
 
 const descriptions = {
   profile: 'View your account details, role, and recent activity.',
@@ -25,6 +26,9 @@ function HomeContent() {
   const menuChild = menuParts[1] ?? null; 
   
   switch(menuParent) {
+    case 'employees':
+      return <EmployeesTable />;
+      break;
     case 'stocks':
       return <ReplenishmentTable />;
       break;
@@ -37,8 +41,8 @@ function HomeContent() {
     case 'inventory':
       return <InventoryTable page_type={menuChild}/>;
       break;
-    default:
-      return <InventoryTable page_type={''}/>;
+    // default:
+      // return <InventoryTable page_type={''}/>;
   }
 
   // Render placeholder content for other menus

@@ -65,16 +65,141 @@ export const getReturnsList = async (params = {}) => {
   }
 };
 
-export const createReturnsTransaction = async (params = {}) => {
-  return false;
+export const getReturnsView = async (id) => {
+  try {
+    const headers = getApiHeaders();
+    const response = await fetch(`${API_BASE_URL}/api/returns/view?id=${id}`, {
+      method: 'GET',
+      headers: headers,
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to fetch returns details';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch (e) {
+        errorMessage = response.statusText || errorMessage;
+      }
+      
+      return {
+        success: false,
+        error: errorMessage,
+        status: response.status,
+      };
+    }
+
+    const data = await response.json();
+    
+    return {
+      success: true,
+      data: data.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: 'An unexpected error occurred while fetching returns details',
+    };
+  }
+};
+
+export const createReturnsTransaction = async (itemData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/returns/create`, {
+      method: 'POST',
+      headers: getApiHeaders(),
+      body: JSON.stringify(itemData),
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to create returns transaction.';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData;
+      } catch (e) {
+        errorMessage = response.statusText || errorMessage;
+      }
+      
+      return {
+        success: false,
+        error: errorMessage,
+        status: response.status,
+      };
+    }
+
+    const data = await response.json();
+    
+    return {
+      success: true,
+      data: data,
+    };
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      return {
+        success: false,
+        error: 'Network error. Please check if the server is running.',
+      };
+    } else {
+      return {
+        success: false,
+        error: 'An unexpected error occurred while creating returns transaction.',
+      };
+    }
+  }
 };
 
 export const updateReturnsTransaction = async (params = {}) => {
   return false;
 };
 
-export const approveReturnsTransaction = async (params = {}) => {
-  return false;
+export const approveReturnsTransaction = async (itemData) => {
+  try {
+    const formData = new URLSearchParams();
+    Object.keys(itemData).forEach(key => {
+      formData.append(key, itemData[key]);
+    });
+
+    const response = await fetch(`${API_BASE_URL}/api/returns/approve`, {
+      method: 'PUT',
+      headers: getApiHeaders(),
+      body: JSON.stringify(itemData),
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to update returns transaction.';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData;
+      } catch (e) {
+        errorMessage = response.statusText || errorMessage;
+      }
+      
+      return {
+        success: false,
+        error: errorMessage,
+        status: response.status,
+      };
+    }
+
+    const data = await response.json();
+    
+    return {
+      success: true,
+      data: data,
+    };
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      return {
+        success: false,
+        error: 'Network error. Please check if the server is running.',
+      };
+    } else {
+      return {
+        success: false,
+        error: 'An unexpected error occurred while approving returns transaction.',
+      };
+    }
+  }
 };
 
 export const voidRetursnTransaction = async (params = {}) => {
@@ -83,4 +208,63 @@ export const voidRetursnTransaction = async (params = {}) => {
 
 export const deleteReturnsTransaction = async (params = {}) => {
   return false;
+};
+
+export const getInvoiceItems = async (id) => {
+  try {
+    const headers = getApiHeaders();
+    const response = await fetch(`${API_BASE_URL}/api/returns/getinvoiceitems?id=${id}`, {
+      method: 'GET',
+      headers: headers,
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to fetch invoice details';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch (e) {
+        errorMessage = response.statusText || errorMessage;
+      }
+      
+      return {
+        success: false,
+        error: errorMessage,
+        status: response.status,
+      };
+    }
+
+    const data = await response.json();
+    
+    return {
+      success: true,
+      data: data.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: 'An unexpected error occurred while fetching invoice details',
+    };
+  }
+};
+
+export const generateTransactionNumber = async () => {
+  try {
+
+    const response = await fetch(`${API_BASE_URL}/returns/generatetrnxno`, {
+      method: 'GET',
+      headers: getApiHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to generate transaction number');
+    }
+
+    const data = await response.json();
+
+    return data.trnxno;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };

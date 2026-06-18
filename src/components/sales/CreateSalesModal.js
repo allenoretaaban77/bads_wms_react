@@ -542,12 +542,11 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
                           )}
                           <input
                             type="number"
-                            step="0.01"
                             name="quantity"
                             value={item.quantity}
                             onChange={(e) => updateItemField(item.id, 'quantity', e.target.value)}
                             onFocus={(e) => e.target.select()}
-                            placeholder="0.00"
+                            placeholder="0"
                             className="w-full focus:outline-none text-right bg-transparent text-gray-800"
                           />
                         </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { formatCurrency, formatLongDate, getStatusColor } from '../../utils/formatters';
+import { formatCurrency, formatLongDate, getTableStatusColor, getTableStatus } from '../../utils/formatters';
 import { createInventoryItem, updateInventoryItem, deleteInventoryItem } from '../../api/inventoryService';
 import { APP_CONFIG } from '../../config/constants';
 import { 
@@ -8,7 +8,7 @@ import {
   updateReturnsTransaction,
   approveReturnsTransaction,
   deleteReturnsTransaction
-} from '../../api/returnsService.js';
+} from '../../api/returnsService';
 import Alert from '../../utils/alert';
 import ViewReturnsModal from './ViewReturnsModal';
 import CreateReturnsModal from './CreateReturnsModal';
@@ -17,7 +17,7 @@ import { FormButton, FormPagination, FormThead } from '../../utils/themes.js';
 
 function ReturnsTable() {
   // Data and loading states
-  const [replenishmentData, setReturnsData] = useState([]);
+  const [returnsData, setReturnsData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -55,7 +55,7 @@ function ReturnsTable() {
 
   // Fetch inventory data from API
   useEffect(() => {
-    const loadreplenishmentData = async () => {
+    const loadreturnsData = async () => {
       try {
         setLoading(true);
         setError(null);
@@ -108,7 +108,7 @@ function ReturnsTable() {
       }
     };
 
-    loadreplenishmentData();
+    loadreturnsData();
   }, [currentPage, pageSize, searchTerm, sortField, sortOrder, statusFilter, quantityFilter, recordStatusFilter, refreshKey]);
 
   const handleView = (item) => {
@@ -152,10 +152,10 @@ function ReturnsTable() {
           // Refresh data to show updated list
           setRefreshKey(prev => prev + 1);
         } else {
-          setError(result.error || 'Failed to replenishment transaction.');
+          setError(result.error || 'Failed to returns transaction.');
         }
       } catch (err) {
-        setError('Failed to delete replenishment transaction.');
+        setError('Failed to delete returns transaction.');
       }
     }
   };
@@ -190,11 +190,11 @@ function ReturnsTable() {
       // Return the result so CreateInventoryModal can handle success/error states
       return result;
     } catch (err) {
-      setError('Failed to create replenishment transaction.');
+      setError('Failed to create returns transaction.');
       // Return error result
       return {
         success: false,
-        error: 'Failed to create replenishment transaction.'
+        error: 'Failed to create returns transaction.'
       };
     }
   };
@@ -220,11 +220,11 @@ function ReturnsTable() {
         return result;
       }
     } catch (err) {
-      setError('Failed to update replenishment transaction.');
+      setError('Failed to update returns transaction.');
 
       return {
         success: false,
-        error: 'Failed to update replenishment transaction.'
+        error: 'Failed to update returns transaction.'
       };
     }
   };
@@ -250,11 +250,11 @@ function ReturnsTable() {
         return result;
       }
     } catch (err) {
-      setError('Failed to approve replenishment transaction.');
+      setError('Failed to approve returns transaction.');
 
       return {
         success: false,
-        error: 'Failed to approve replenishment transaction.'
+        error: 'Failed to approve returns transaction.'
       };
     }
   };
@@ -362,9 +362,9 @@ function ReturnsTable() {
                 <FormThead sortOrder={sortOrder} sortField={sortField} handleSort={handleSort} data={[
                   {"title":"ID", "name":"id", "align":"center"},
                   {"title":"Reference Number", "name":"reference_no", "align":"left"},
-                  {"title":"Date Received", "name":"date_received", "align":"left"},
+                  {"title":"Date Returned", "name":"date_received", "align":"left"},
                   {"title":"Amount", "name":"amount", "align":"right"},
-                  {"title":"Supplier", "name":"supplier", "align":"left"},
+                  {"title":"Customer Name", "name":"supplier", "align":"left"},
                   {"title":"Remarks", "name":"remarks", "align":"left"},
                   {"title":"Status", "name":"status", "align":"center"},
                   {"title":"Actions", "name":"status", "default":1},
@@ -380,12 +380,12 @@ function ReturnsTable() {
                       }`}
                     >
                       <td className="px-3 py-2 border-r text-sm font-semibold text-green-900">{item.id}</td>
-                      <td className="px-3 py-2 border-r text-sm">{item.reference_no}</td>
+                      <td className="px-3 py-2 border-r text-sm">{item.return_no}</td>
                       <td className="px-3 py-2 border-r text-sm">{formatLongDate(item.date_received)}</td>
                       <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.amount)}</td>
-                      <td className="px-3 py-2 border-r text-sm">{item.supplier}</td>
+                      <td className="px-3 py-2 border-r text-sm">{item.customer_name}</td>
                       <td className="px-3 py-2 border-r text-sm">{item.remarks}</td>
-                      <td className="px-3 py-2 border-r text-sm capitalize"><span className={getStatusColor(item.status)}>{item.status}</span></td>
+                      <td className="px-3 py-2 border-r text-sm text-center capitalize"><span className={getTableStatus(item.status).color}> {getTableStatus(item.status).text}</span></td>
                       <td className="px-3 py-2 border-0">
                         <div className="flex justify-center space-x-2">
                           <button

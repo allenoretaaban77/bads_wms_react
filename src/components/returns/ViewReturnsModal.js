@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getReplenishmentView } from '../../api/replenishmentService';
+import { getReturnsView } from '../../api/returnsService.js';
 import { formatCurrency, tocapitalize, formatLongDate } from '../../utils/formatters';
 import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 import { FormButton, FormHeader, FormModalTheadDefault } from '../../utils/themes.js';
@@ -18,7 +18,7 @@ function ViewReturnsModal({ show, onClose, onUpdate, onDelete, onApprove, id }) 
       const fetchData = async () => {
         setLoading(true);
         setError(null);
-        const result = await getReplenishmentView(id);
+        const result = await getReturnsView(id);
         if (result.success) {
           console.log('datax', result.data);
           setData(result.data);
@@ -47,7 +47,8 @@ function ViewReturnsModal({ show, onClose, onUpdate, onDelete, onApprove, id }) 
       try {
         const result = await onApprove({
           id: data.id,
-          reference_no: data.reference_no,
+          return_no: data.return_no,
+          reference_no: data.return_no,
           updated_by: userData.employee_id,
           status : action
         });
@@ -103,18 +104,18 @@ function ViewReturnsModal({ show, onClose, onUpdate, onDelete, onApprove, id }) 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded flex-shrink-0">
                 <div>
                   <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block mb-0.5">Reference No</span>
-                  <span className="font-bold text-gray-800 text-sm font-mono">{data.reference_no}</span>
+                  <span className="font-bold text-gray-800 text-sm font-mono">{data.return_no}</span>
                 </div>
                 <div>
-                  <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block mb-0.5">Supplier Partner</span>
-                  <span className="font-bold text-gray-800 text-sm">{data.supplier}</span>
+                  <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block mb-0.5">Customer Name</span>
+                  <span className="font-bold text-gray-800 text-sm">{data.customer_name}</span>
                 </div>
                 <div>
-                  <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block mb-0.5">Date Received</span>
+                  <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block mb-0.5">Date Returned</span>
                   <span className="font-semibold text-gray-700 text-sm">{formatLongDate(data.date_received)}</span>
                 </div>
                 <div>
-                  <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block mb-0.5">Remarks / Log Note</span>
+                  <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block mb-0.5">Remarks / Notes</span>
                   <span className="font-medium text-gray-600 text-xs block truncate" title={data.remarks || '-'}>
                     {data.remarks || '-'}
                   </span>
@@ -125,26 +126,26 @@ function ViewReturnsModal({ show, onClose, onUpdate, onDelete, onApprove, id }) 
               <div className="border border-gray-200 rounded flex-1 overflow-y-auto min-h-0 bg-white shadow-inner">
                 <table className="w-full text-left table-auto border-collapse">
                   <FormModalTheadDefault data={[
-                    {"title":"SKU", "class":"py-2 text-left w-40"},
+                    {"title":"#", "class":"py-2 text-left w-40"},
                     {"title":"Product Name", "class":"py-2 text-left"},
-                    {"title":"Quantity Added", "class":"py-2 text-right w-40"},
-                    {"title":"Cost per Unit", "class":"py-2 text-right w-40"},
+                    {"title":"Quantity", "class":"py-2 text-right w-40"},
+                    {"title":"Unit Price", "class":"py-2 text-right w-40"},
                     {"title":"Total", "class":"py-2 pl-5 text-right w-40"},
                   ]} />
                   <tbody className="divide-y divide-gray-100">
-                    {data.items && data.items.map((item) => (
+                    {data.items && data.items.map((item, index) => (
                       <tr key={item.id} className="hover:bg-gray-50/80 transition-colors">
                         <td className="px-3 py-2 font-mono text-gray-700 font-semibold align-middle">
-                          {item.sku}
+                          {index + 1}
                         </td>
                         <td className="px-3 py-2 text-gray-800 font-medium align-middle">
-                          {item.product_name}
+                          {item.product_name} [{item.sku}]
                         </td>
                         <td className="px-3 py-2 text-right font-bold text-gray-700 align-middle">
-                          {item.qty_added}
+                          {item.qty_returned}
                         </td>
                         <td className="px-3 py-2 text-right text-gray-600 align-middle">
-                          {formatCurrency(item.cost_per_unit)}
+                          {formatCurrency(item.unit_price)}
                         </td>
                         <td className="px-3 py-2 text-right pr-4 font-bold text-gray-900 align-middle">
                           {formatCurrency(item.total)}
@@ -155,7 +156,7 @@ function ViewReturnsModal({ show, onClose, onUpdate, onDelete, onApprove, id }) 
                   <tfoot className="sticky bottom-0 z-10 bg-gray-50 border-t-2 border-gray-200 font-bold text-gray-800">
                     <tr>
                       <td colSpan="4" className="px-3 py-2.5 text-right uppercase tracking-wider text-[10px] text-gray-500 align-middle">
-                        Grand Total Summary
+                        Grand Total
                       </td>
                       <td className="px-3 py-2.5 text-right pr-4 text-base font-extrabold text-gray-900 align-middle bg-gray-100/60">
                         {formatCurrency(data.amount)}

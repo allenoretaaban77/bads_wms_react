@@ -67,14 +67,14 @@ function ViewStockInHistoryModal({ show, onClose, id, item }) {
           {data && (
             <div className="flex-1 flex flex-col min-h-0 space-y-3">
               {/* Product Metadata Info Board */}
-              <div className="p-3 bg-gray-50 border border-gray-200 rounded flex items-center justify-between flex-shrink-0">
+              <div className="p-3 pt-1 pb-2 bg-gray-50 border border-gray-200 rounded flex items-center justify-between flex-shrink-0">
                 <div>
-                  <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block">Target Item</span>
+                  <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block">Product Name</span>
                   <span className="font-bold text-gray-800 text-sm">{data.product_name}</span>
                 </div>
                 {data.sku && (
                   <div className="text-right">
-                    <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block">Stock Keeping Unit</span>
+                    <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block pb-1">Stock Keeping Unit</span>
                     <span className="font-mono bg-white border border-gray-300 px-2 py-0.5 rounded text-gray-700 font-bold">{data.sku}</span>
                   </div>
                 )}
@@ -124,7 +124,7 @@ function ViewStockInHistoryModal({ show, onClose, id, item }) {
           )}
 
           {/* Dialog Action Footprint */}
-          <div className="flex justify-end space-x-2 flex-shrink-0 border-t border-gray-100">
+          <div className="flex justify-end space-x-2 flex-shrink-0  border-t border-gray-100">
             <FormButton
               btnType="outline"
               btnLabel="Close"
