@@ -1,80 +1,127 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { getStatusTextColor } from '../../utils/statusColors.js';
 import { FormButton, FormHeader } from '../../utils/themes.js';
 import { ViewEmployeesModalProps } from '../../interface/employee.tsx';
+import { viewEmployee } from '../../api/employeeService.js';
+import { Employee, initialFormState } from '../../interface/employee.tsx';
+import { formatLongDate } from '../../utils/formatters.js';
 
 const ViewEmployeesModal: React.FC<ViewEmployeesModalProps> = ({ selectedItem, showViewModal, setShowViewModal }) => {
-  if (!showViewModal || !selectedItem) return null;
+
+  const [data, setData] = useState<Employee>(initialFormState);
+  const [isLoading, setIsLoading] = useState(false);
+  // const [errors, setErrors] = useState<Record<string, string>>({});
+  const [error, setError] = useState<string | null | undefined>(null);
+  
+  useEffect(() => {
+    console.log(data);
+    if (showViewModal && selectedItem) {
+      setData(initialFormState);
+
+      const fetchData = async () => {
+        setIsLoading(true);
+        setError(null);
+
+        const result = await viewEmployee(selectedItem.id);
+        if (result.success) {
+          setData(result.data)
+        } else {
+          setError(result.error);
+        }
+        setIsLoading(false);
+      };
+      fetchData();
+    }
+  }, [showViewModal, selectedItem]);
 
   // Helper to format full names nicely
   const formatFullName = (first, middle, last) => {
     return [first, middle, last].filter(Boolean).join(' ');
   };
 
+  const onClose = () => {
+    setData(initialFormState);
+    setShowViewModal(false);
+  } 
+
+  if (!showViewModal || !selectedItem) return null;
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3">
-      <div className="bg-white rounded-custom shadow-xl border border-gray-200 w-full max-w-2xl flex flex-col max-h-[90vh]">
+      <div className="bg-white rounded-custom shadow-xl border border-gray-200 w-full max-w-sm flex flex-col">
         
         {/* Header Section */}
-        <FormHeader headerTitle="Employee Information" onClick={() => setShowViewModal(false)} />
+        <FormHeader headerTitle="Employee Information" onClick={() => onClose()} />
 
         {/* Modal Main View Data Content Area */}
         <div className="p-3 overflow-y-auto flex-1 space-y-5">
           
-          {/* Primary Identity Header Display */}
-          <div className="border-b border-gray-100 pb-3">
-            <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400 block mb-0.5">Full Name</span>
-            <h1 className="text-xl font-bold text-gray-800">
-              {formatFullName(selectedItem.firstname, selectedItem.middlename, selectedItem.lastname)}
-            </h1>
-          </div>
-
-          {/* Core Configuration & Metrics Data Grid Layout */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-xs">
-            
-            <div>
-              <span className="block font-semibold text-gray-500 mb-0.5">Employee ID</span>
-              <p className="text-gray-900 font-bold text-sm">{selectedItem.employee_number || '-'}</p>
+          {/* Global Messaging Status Bars */}
+          {isLoading && (
+            <div className="w-full text-center py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded font-medium animate-pulse flex-shrink-0">
+              Loading...
             </div>
-
-            <div>
-              <span className="block font-semibold text-gray-500 mb-0.5">Account Status</span>
-              <p className={`font-bold ${getStatusTextColor(selectedItem.status)}`}>
-                {selectedItem.status || 'Unknown'}
-              </p>
+          )}
+          {error && (
+            <div className="w-full text-center py-2 bg-red-50 text-red-600 border border-red-200 rounded font-medium flex-shrink-0">
+              {error}
             </div>
+          )}
+          
+          {data.id !== '' && (
+            <>
+              {/* Primary Identity Header Display */}
+              <div className="border-b border-gray-100">
+                <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400 block mb-0.5">Full Name</span>
+                <h1 className="text-xl font-bold text-gray-800">
+                  {formatFullName(data.firstname, data.middlename, data.lastname)}
+                </h1>
+              </div>
 
-            <div>
-              <span className="block font-semibold text-gray-500 mb-0.5">Job Position</span>
-              <p className="text-gray-900 font-medium">{selectedItem.position_name || '-'}</p>
-            </div>
+              {/* Core Configuration & Metrics Data Grid Layout */}
+              <div className="grid grid-cols-2 md:grid-cols-2 gap-5 text-xs">
+                
+                <div>
+                  <span className="block font-semibold text-gray-500 mb-0.5">Employee ID</span>
+                  <p className="text-gray-900 font-bold text-sm">{data.employee_number || '-'}</p>
+                </div>
 
-            <div className="border-t border-gray-100 pt-2">
-              <span className="block font-semibold text-gray-500 mb-0.5">Username</span>
-              <p className="text-gray-900 font-medium">{selectedItem.username || '-'}</p>
-            </div>
+                <div>
+                  <span className="block font-semibold text-gray-500 mb-0.5">Username</span>
+                  <p className="text-gray-900 font-medium">{data.username || '-'}</p>
+                </div>
 
-            <div className="border-t border-gray-100 pt-2">
-              <span className="block font-semibold text-gray-500 mb-0.5">System Status ID</span>
-              <p className="text-gray-900 font-medium">{selectedItem.status_id ?? '-'}</p>
-            </div>
+                <div>
+                  <span className="block font-semibold text-gray-500 mb-0.5">Account Status</span>
+                  <p className={`font-bold ${getStatusTextColor(data.status)}`}>
+                    {selectedItem.status || 'Unknown'}
+                  </p>
+                </div>
 
-            <div className="border-t border-gray-100 pt-2">
-              <span className="block font-semibold text-gray-500 mb-0.5">Position Code ID</span>
-              <p className="text-gray-900 font-medium">{selectedItem.position_id ?? '-'}</p>
-            </div>
+                <div>
+                  <span className="block font-semibold text-gray-500 mb-0.5">Job Position</span>
+                  <p className="text-gray-900 font-medium">{data.position_name || '-'}</p>
+                </div>
 
-          </div>
+                {/* <div>
+                  <span className="block font-semibold text-gray-500 mb-0.5">System Status ID</span>
+                  <p className="text-gray-900 font-medium">{data.status_id ?? '-'}</p>
+                </div> */}
 
-          {/* System Logs Context Sizing Wrapper */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 border-t border-gray-100 pt-3 text-[11px] text-gray-500">
-            <div>
-              <span className="font-semibold text-gray-400">Profile Created:</span> {selectedItem.date_created || '-'}
-            </div>
-            <div className="md:text-right">
-              <span className="font-semibold text-gray-400">Last Records Update:</span> {selectedItem.date_updated || '-'}
-            </div>
-          </div>
+                <div>
+                  <span className="block font-semibold text-gray-500 mb-0.5">Date Created</span>
+                  <p className="text-gray-900 font-medium">{formatLongDate(data.date_created) || '-'}</p>
+                </div>
+
+                <div>
+                  <span className="block font-semibold text-gray-500 mb-0.5">Date Updated</span>
+                  <p className="text-gray-900 font-medium">{formatLongDate(data.date_updated) || '-'}</p>
+                </div>
+
+              </div>
+            </>
+          )
+          }
 
         </div>
 
@@ -84,7 +131,7 @@ const ViewEmployeesModal: React.FC<ViewEmployeesModalProps> = ({ selectedItem, s
             btnType="outline"
             btnLabel="Close"
             btnIcon="cross" 
-            onClick={() => setShowViewModal(false)}
+            onClick={() => onClose()}
           />
         </div>
 

@@ -20,6 +20,15 @@ export const getSalesList = async (params = {}) => {
     if (params.order && params.order.trim()) {
       queryParams.append('order', params.order.trim());
     }
+    if (params.status && params.status.trim() && params.status !== 'all') {
+      queryParams.append('status', params.status.trim());
+    }
+    if (params.payment_status && params.payment_status.trim() && params.payment_status !== 'all') {
+      queryParams.append('payment_status', params.payment_status.trim());
+    }
+    if (params.is_paid && params.is_paid.trim() && params.is_paid !== 'all') {
+      queryParams.append('is_paid', params.is_paid.trim());
+    }
     
     const headers = getApiHeaders();
 

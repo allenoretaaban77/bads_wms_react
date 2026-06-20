@@ -10,6 +10,8 @@ export interface Employee {
   password: string;
   status_id?: string;
   position_id: string;
+  date_created: string;
+  date_updated: string;
 }
 
 export interface EmployeesTableProps {
@@ -30,6 +32,7 @@ export interface FetchParams {
   sort: string;
   order: 'asc' | 'desc';
   status: string;
+  position_id: string;
 }
 
 export interface CreateEmployeesModalProps {
@@ -63,4 +66,6 @@ export const initialFormState: Employee = {
   password: '',
   status_id: '',
   position_id: '',
+  date_created: '',
+  date_updated: ''
 };

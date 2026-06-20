@@ -515,13 +515,6 @@ export const deleteInventoryItem = async (id, employee_id) => {
   }
 };
 
-export default {
-  getInventoryList,
-  createInventoryItem,
-  updateInventoryItem,
-  deleteInventoryItem,
-};
-
 export const getInventoryReturnsListsearch = async (params = {}) => {
   try {
     // Validate and build query parameters
@@ -611,4 +604,11 @@ export const getInventoryReturnsListsearch = async (params = {}) => {
       };
     }
   }
+};
+
+export default {
+  getInventoryList,
+  createInventoryItem,
+  updateInventoryItem,
+  deleteInventoryItem,
 };

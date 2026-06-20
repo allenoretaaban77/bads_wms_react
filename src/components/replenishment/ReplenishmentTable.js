@@ -316,7 +316,7 @@ function ReplenishmentTable() {
           </div>
           
           {/* Search and Filters */}
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-6 gap-2">
             {/* Search Bar */}
             <div className="lg:col-span-5">
               <label className="block text-xs font-medium text-gray-700 mb-0.5">Search</label>
@@ -327,6 +327,19 @@ function ReplenishmentTable() {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
               />
+            </div>
+
+            <div className="text-xs">
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">Status</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+              >
+                <option value="all">All</option>
+                <option value="draft">Draft</option>
+                <option value="approved">Approved</option>
+              </select>
             </div>
           </div>
           

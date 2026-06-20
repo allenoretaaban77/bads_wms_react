@@ -8,13 +8,15 @@ import CreateEmployeesModal from './CreateEmployeesModal.tsx';
 import Alert from '../../utils/alert';
 import { FormButton, FormPagination, FormThead } from '../../utils/themes.js';
 import { EmployeesTableProps, Employee, AlertState, FetchParams, initialFormState } from '../../interface/employee.tsx';
+import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 
 function EmployeesTable({ page_type }: EmployeesTableProps) {
+  const userData = useAppViewModel((state) => state.userData);
 
   // Cleaned state names specifically for Employee entities with strong types
   const [employeeData, setEmployeeData] = useState<Employee[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null| undefined>(null);
   
   // Pagination states
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -29,6 +31,7 @@ function EmployeesTable({ page_type }: EmployeesTableProps) {
   // Filter states
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [positionIdFilter, setPositionIdFilter] = useState<string>('all');
   
   // Modal states
   const [selectedItem, setSelectedItem] = useState<Employee>(initialFormState);
@@ -58,7 +61,8 @@ function EmployeesTable({ page_type }: EmployeesTableProps) {
           search: searchTerm,
           sort: sortField,
           order: sortOrder,
-          status: statusFilter !== 'all' ? statusFilter : '',
+          status: '',
+          position_id: positionIdFilter !== 'all' ? positionIdFilter : 'all',
         };
 
         const result = await getEmployeeList(params);
@@ -90,7 +94,7 @@ function EmployeesTable({ page_type }: EmployeesTableProps) {
     };
 
     loadEmployeeData();
-  }, [page_type, currentPage, pageSize, searchTerm, sortField, sortOrder, statusFilter, refreshKey]);
+  }, [page_type, currentPage, pageSize, searchTerm, sortField, sortOrder, statusFilter, refreshKey, positionIdFilter]);
 
   const handleView = (item: Employee): void => {
     setSelectedItem(item);
@@ -191,13 +195,15 @@ function EmployeesTable({ page_type }: EmployeesTableProps) {
                 onClick={handleRefresh} 
                 className="mt-3"
               />
-              <FormButton
-                btnType="success"
-                btnLabel="Create"
-                btnIcon="plus"
-                onClick={() => setShowCreateModal(true)} 
-                className="mt-3"
-              />
+              {userData?.position_id === 1 && (
+                <FormButton
+                  btnType="success"
+                  btnLabel="Create"
+                  btnIcon="plus"
+                  onClick={() => setShowCreateModal(true)} 
+                  className="mt-3"
+                />
+              )}
             </div>
           </div>
           
@@ -210,21 +216,20 @@ function EmployeesTable({ page_type }: EmployeesTableProps) {
                 placeholder="Search by name, employee number, or username..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+                className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
               />
             </div>
 
-            <div className="text-xs">
-              <label className="block text-xs font-medium text-gray-700 mb-0.5">Status</label>
+            <div className="text-xs lg:col-span-1">
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">Position Filter</label>
               <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
+                value={positionIdFilter}
+                onChange={(e) => setPositionIdFilter(e.target.value)}
                 className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
               >
-                <option value="all">All Statuses</option>
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-                <option value="Suspended">Suspended</option>
+                <option value="all">All</option>
+                <option value="1">Admin</option>
+                <option value="2">Employee</option>
               </select>
             </div>
           </div>
@@ -295,7 +300,7 @@ function EmployeesTable({ page_type }: EmployeesTableProps) {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                               </svg>
                             </button>
-                            <button
+                            {/* <button
                               onClick={() => handleEdit(item)}
                               className="text-green-600 hover:text-green-800 px-2 py-1 rounded hover:bg-green-50 transition-colors"
                               title="Edit"
@@ -303,7 +308,7 @@ function EmployeesTable({ page_type }: EmployeesTableProps) {
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                               </svg>
-                            </button>
+                            </button> */}
                             <button
                               onClick={() => handleDelete(item.id)}
                               className="text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"

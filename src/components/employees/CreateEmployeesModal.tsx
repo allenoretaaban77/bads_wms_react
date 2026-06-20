@@ -1,20 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 import { APP_CONFIG } from '../../config/constants.js';
 import { FormButton, FormHeader } from '../../utils/themes.js';
 import { generateEmployeeNumber } from '../../api/employeeService.js';
 import { Employee, CreateEmployeesModalProps, initialFormState } from '../../interface/employee.tsx';
+// import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 
 const CreateEmployeesModal: React.FC<CreateEmployeesModalProps> = ({ showCreateModal, setShowCreateModal, onSave }) => {
-  const userData = useAppViewModel((state) => state.userData);
+  // const userData = useAppViewModel((state) => state.userData);
   const [isLoading, setIsLoading] = useState(false);
 
   // FIXED: Changed type from Employee[] to Employee, and set initial state to initialFormState object
   const [formData, setFormData] = useState<Employee>(initialFormState);
   const [errors, setErrors] = useState<Record<string, string>>({});
-
-  
-
 
   useEffect(() => {
     if (showCreateModal) {
@@ -145,7 +142,7 @@ const CreateEmployeesModal: React.FC<CreateEmployeesModalProps> = ({ showCreateM
                   name="firstname"
                   value={formData.firstname}
                   onChange={handleChange}
-                  placeholder="e.g. Michael"
+                  placeholder="e.g. John"
                   className={`w-full px-3 py-1.5 text-xs border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                     errors.firstname ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                   }`}
@@ -161,7 +158,7 @@ const CreateEmployeesModal: React.FC<CreateEmployeesModalProps> = ({ showCreateM
                   name="middlename"
                   value={formData.middlename || ''}
                   onChange={handleChange}
-                  placeholder="e.g. Mac Lee"
+                  placeholder="e.g. Smith"
                   className={`w-full px-3 py-1.5 text-xs border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                     errors.middlename ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                   }`}
@@ -176,7 +173,7 @@ const CreateEmployeesModal: React.FC<CreateEmployeesModalProps> = ({ showCreateM
                   name="lastname"
                   value={formData.lastname}
                   onChange={handleChange}
-                  placeholder="e.g. Faraday"
+                  placeholder="e.g. Doe"
                   className={`w-full px-3 py-1.5 text-xs border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                     errors.lastname ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                   }`}

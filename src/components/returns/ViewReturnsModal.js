@@ -88,7 +88,7 @@ function ViewReturnsModal({ show, onClose, onUpdate, onDelete, onApprove, id }) 
           {/* Global Messaging Status Bars */}
           {loading && (
             <div className="w-full text-center py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded font-medium animate-pulse flex-shrink-0">
-              Loading replenishment layout tracking data...
+              Loading...
             </div>
           )}
           {error && (

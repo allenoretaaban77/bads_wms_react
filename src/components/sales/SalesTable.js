@@ -37,6 +37,8 @@ function SalesTable() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [quantityFilter, setQuantityFilter] = useState('all');
   const [recordStatusFilter, setRecordStatusFilter] = useState('all');
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState('all');
+  const [isPaidFilter, setIsPaidFilter] = useState('all');
   
   // Modal states
   const [selectedItem, setSelectedItem] = useState(null);
@@ -67,7 +69,9 @@ function SalesTable() {
           sort: sortField,
           order: sortOrder,
           status: statusFilter !== 'all' ? statusFilter : '',
-          record_status: recordStatusFilter !== 'all' ? recordStatusFilter : ''
+          record_status: recordStatusFilter !== 'all' ? recordStatusFilter : '',
+          payment_status: paymentStatusFilter !== 'all' ? paymentStatusFilter : '',
+          is_paid: isPaidFilter !== 'all' ? isPaidFilter : '',
         };
 
         const result = await getSalesList(params);
@@ -109,7 +113,7 @@ function SalesTable() {
     };
 
     loadsatSalesData();
-  }, [currentPage, pageSize, searchTerm, sortField, sortOrder, statusFilter, quantityFilter, recordStatusFilter, refreshKey]);
+  }, [currentPage, pageSize, searchTerm, sortField, sortOrder, statusFilter, quantityFilter, recordStatusFilter, refreshKey, paymentStatusFilter, isPaidFilter]);
 
   const handleView = (item) => {
     setSelectedItem(item);
@@ -342,7 +346,7 @@ function SalesTable() {
           </div>
           
           {/* Search and Filters */}
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-8 gap-2">
             {/* Search Bar */}
             <div className="lg:col-span-5">
               <label className="block text-xs font-medium text-gray-700 mb-0.5">Search</label>
@@ -351,8 +355,47 @@ function SalesTable() {
                 placeholder="Search transaction number, customer name, amount, payment type, remarks..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+                className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
               />
+            </div>
+
+            <div className="text-xs lg:col-span-1">
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">Status</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+              >
+                <option value="all">All</option>
+                <option value="draft">Draft</option>
+                <option value="approved">Approved</option>
+              </select>
+            </div>
+
+            <div className="text-xs lg:col-span-1">
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">Payment Status</label>
+              <select
+                value={paymentStatusFilter}
+                onChange={(e) => setPaymentStatusFilter(e.target.value)}
+                className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+              >
+                <option value="all">All</option>
+                <option value="cash">Cash</option>
+                <option value="credit">Credit</option>
+              </select>
+            </div>
+
+            <div className="text-xs lg:col-span-1">
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">Paid Status</label>
+              <select
+                value={isPaidFilter}
+                onChange={(e) => setIsPaidFilter(e.target.value)}
+                className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+              >
+                <option value="all">All</option>
+                <option value="yes">Paid</option>
+                <option value="no">No Paid</option>
+              </select>
             </div>
           </div>
           

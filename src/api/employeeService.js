@@ -24,17 +24,8 @@ export const getEmployeeList = async (params = {}) => {
     if (params.order && params.order.trim()) {
       queryParams.append('order', params.order.trim());
     }
-    if (params.rack && params.rack.trim()) {
-      queryParams.append('rack', params.rack.trim());
-    }
-    if (params.shelf && params.shelf.trim()) {
-      queryParams.append('shelf', params.shelf.trim());
-    }
-    if (params.box && params.box.trim()) {
-      queryParams.append('box', params.box.trim());
-    }
-    if (params.status && params.status.trim() && params.status !== 'all') {
-      queryParams.append('status', params.status.trim());
+    if (params.position_id && params.position_id.trim() && params.position_id !== 'all') {
+      queryParams.append('position_id', params.position_id.trim());
     }
     if (params.record_status && params.record_status.trim() && params.record_status !== 'all') {
       queryParams.append('record_status', params.record_status.trim());
@@ -91,33 +82,42 @@ export const getEmployeeList = async (params = {}) => {
   }
 };
 
-export const viewEmployee = async (params = {}) => {
-  return false;
-};
-
-export const generateEmployeeNumber = async () => {
+export const viewEmployee = async (id) => {
   try {
-
-    const response = await fetch(`${API_BASE_URL}/employee/generateemployeenumber`, {
+    const headers = getApiHeaders();
+    const response = await fetch(`${API_BASE_URL}/api/employee/view?id=${id}`, {
       method: 'GET',
-      headers: getApiHeaders(),
+      headers: headers,
     });
 
     if (!response.ok) {
-      throw new Error('Failed to generate transaction number');
+      let errorMessage = 'Failed to fetch employee details';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch (e) {
+        errorMessage = response.statusText || errorMessage;
+      }
+      
+      return {
+        success: false,
+        error: errorMessage,
+        status: response.status,
+      };
     }
 
     const data = await response.json();
-
-    return data.trnxno;
+    
+    return {
+      success: true,
+      data: data.data,
+    };
   } catch (error) {
-    console.error(error);
-    throw error;
+    return {
+      success: false,
+      error: 'An unexpected error occurred while fetching employee details',
+    };
   }
-};
-
-export const deleteEmployee = async (params = {}) => {
-  return { success: true, error: null, data: null };
 };
 
 export const createEmployee = async (itemData) => {
@@ -176,4 +176,73 @@ export const updateEmployee = async (params = {}) => {
     success: true,
     data: null,
   };
+};
+
+export const generateEmployeeNumber = async () => {
+  try {
+
+    const response = await fetch(`${API_BASE_URL}/employee/generateemployeenumber`, {
+      method: 'GET',
+      headers: getApiHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to generate transaction number');
+    }
+
+    const data = await response.json();
+
+    return data.trnxno;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const deleteEmployee = async (id) => {
+  try {
+    const formData = new URLSearchParams();
+    formData.append('id', id);
+
+    const response = await fetch(`${API_BASE_URL}/api/employee/delete`, {
+      method: 'DELETE',
+      headers: getApiHeadersPost(),
+      body: formData,
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to delete inventory item';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch (e) {
+        errorMessage = response.statusText || errorMessage;
+      }
+      
+      return {
+        success: false,
+        error: errorMessage,
+        status: response.status,
+      };
+    }
+
+    const data = await response.json();
+    
+    return {
+      success: true,
+      data: data,
+    };
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      return {
+        success: false,
+        error: 'Network error. Please check if the server is running.',
+      };
+    } else {
+      return {
+        success: false,
+        error: 'An unexpected error occurred while deleting replenishment transaction.',
+      };
+    }
+  }
 };

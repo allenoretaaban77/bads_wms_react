@@ -20,6 +20,9 @@ export const getReplenishmentList = async (params = {}) => {
     if (params.order && params.order.trim()) {
       queryParams.append('order', params.order.trim());
     }
+    if (params.status && params.status.trim() && params.status !== 'all') {
+      queryParams.append('status', params.status.trim());
+    }
     
     const headers = getApiHeaders();
 

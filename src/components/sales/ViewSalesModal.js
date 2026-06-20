@@ -120,7 +120,7 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onUpdate
         <div className="p-3 flex-1 flex flex-col min-h-0 space-y-4 text-xs">
           {loading && (
             <div className="w-full text-center py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded font-medium animate-pulse flex-shrink-0">
-              Loading replenishment layout tracking data...
+              Loading...
             </div>
           )}
           {error && (

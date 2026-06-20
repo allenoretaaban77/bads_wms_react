@@ -306,9 +306,9 @@ function InventoryTable({ page_type }) {
           </div>
           
           {/* Search and Filters */}
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-2">
+          <div className="grid grid-cols-1 lg:grid-cols-6 gap-2">
             {/* Search Bar */}
-            <div className="lg:col-span-4 text-xs">
+            <div className="lg:col-span-5 text-xs">
               <label className="block font-semibold text-gray-600 mb-1">Search</label>
               <input
                 type="text"
@@ -320,13 +320,13 @@ function InventoryTable({ page_type }) {
             </div>
 
             <div className="text-xs">
-              <label className="block text-xs font-medium text-gray-700 mb-0.5">Status</label>
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">Stock Status</label>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
               >
-                <option value="all">All Quantities</option>
+                <option value="all">All</option>
                 <option value="In Stock">In Stock</option>
                 <option value="Low Stock">Low Stock</option>
                 <option value="No Stock">No Stock</option>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getReplenishmentView } from '../../api/replenishmentService';
-import { formatCurrency, tocapitalize, formatLongDate } from '../../utils/formatters';
+import { formatCurrency, formatLongDate } from '../../utils/formatters';
 import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 import { FormButton, FormHeader, FormModalTheadDefault } from '../../utils/themes.js';
 
@@ -87,7 +87,7 @@ function ViewReplenishmentModal({ show, onClose, onUpdate, onDelete, onApprove, 
           {/* Global Messaging Status Bars */}
           {loading && (
             <div className="w-full text-center py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded font-medium animate-pulse flex-shrink-0">
-              Loading replenishment layout tracking data...
+              Loading...
             </div>
           )}
           {error && (
