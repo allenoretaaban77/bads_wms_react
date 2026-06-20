@@ -103,7 +103,7 @@ export const FormButton = ({
   btnType = '',
   btnLabel = '', 
   btnIcon = '',
-  isProcessing = undefined,
+  isProcessing = false,
   className = '', 
   type = 'button',
   ...props 
@@ -272,7 +272,7 @@ export const FormThSort = ({
 };
 
 export const FormThead = ({
-  data = [],
+  data = {},
   sortField,
   sortOrder,
   handleSort

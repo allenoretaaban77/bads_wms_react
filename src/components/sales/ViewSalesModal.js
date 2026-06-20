@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { getSalesViewSales, setPaidUnpaid } from '../../api/salesService';
-import { formatCurrency, tocapitalize, formatLongDate, getQuantityStatus, getPaidStatus } from '../../utils/formatters';
+import { formatCurrency, formatLongDate } from '../../utils/formatters';
 import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 import { generatePrintReceipt } from '../../utils/printUtils';
 import { FormButton, FormHeader, FormModalTheadDefault } from '../../utils/themes.js';
 
-function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onReturn, onUpdateTable, id }) {
+function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onUpdateTable, id }) {
   const userData = useAppViewModel((state) => state.userData);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -47,58 +47,6 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onReturn
     generatePrintReceipt(dataToPrint);
   };
 
-  const handleInitiateSingleReturn = async (item) => {
-    const qtyToReturn = window.prompt(`How many units of "${item.product_name}" are being returned?`, "1");
-    
-    if (qtyToReturn === null) return; // User cancelled prompt
-    
-    const parsedQty = parseInt(qtyToReturn, 10);
-    if (isNaN(parsedQty) || parsedQty <= 0) {
-      window.alert("Please enter a valid positive quantity.");
-      return;
-    }
-
-    if (parsedQty > item.qty_sold) {
-      window.alert(`Maximum allowed return quantity is ${item.qty_sold}.`);
-      return;
-    }
-
-    const isDefective = window.confirm("Is this item defective or structurally damaged?\n\n[OK] Yes, set as Defective\n[Cancel] No, restock as Sellable");
-
-    if (window.confirm(`Confirm processing return for ${parsedQty} unit(s) of "${item.product_name}"?`)) {
-      setIsSubmitting(true);
-      try {
-        const returnPayload = {
-          invoice_no: data.invoice_no,
-          updated_by: userData.employee_id,
-          items: [
-            {
-              inventory_id: item.inventory_id || item.id, // Fallback depending on your structural item key
-              batch_id: item.batch_id,
-              quantity: parsedQty,
-              is_defective: isDefective
-            }
-          ]
-        };
-
-        const result = await onReturn(returnPayload);
-        if (result && result.success) {
-          // Refresh item details view to showcase changes
-          const updatedDetails = await getSalesViewSales(id);
-          if (updatedDetails.success) setData(updatedDetails.data);
-          setError(null);
-        } else {
-          setError(result?.error || "Failed to complete processing return sequence.");
-        }
-      } catch (err) {
-        console.error("Error running return operation execution:", err);
-        setError("An unhandled exception occurred during transaction rollback handling.");
-      } finally {
-        setIsSubmitting(false);
-      }
-    }
-  };
-
   const handlePaidUnpaid = async (data) => {
     if (window.confirm(`Set this invoice?`)) {
       setIsSubmitting(true);
@@ -131,7 +79,6 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onReturn
   };
 
   const handleSubmit = async (action, data) => {
-    console.log(action, data);
     if (window.confirm('Are you sure you want to APPROVE this transaction?')) {
       setIsSubmitting(true);
 
@@ -146,7 +93,6 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onReturn
         if (result && result.success) {
           setError(null);
         } else {
-          console.log(result.error.error);
           setError(result.error.error);
         }
       } catch (error) {
@@ -155,16 +101,6 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onReturn
         setIsSubmitting(false);
       }
     }
-  };
-  
-  const getRecordStatus = (status) => {
-    if (status === 'inactive') return { text: 'Voided', color: 'text-red-600' };
-    return { text: '', color: 'text-green-600' };
-  };
-  
-  const getPaidStatus = (status) => {
-    if (status === 'no') return { text: 'Not Paid', color: 'text-red-600' };
-    return { text: 'Paid', color: 'text-green-600' };
   };
 
   const handleClose = () => {

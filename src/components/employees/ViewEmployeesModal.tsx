@@ -1,8 +1,9 @@
 import React from 'react';
-import { getStatusTextColor } from '../../utils/statusColors';
+import { getStatusTextColor } from '../../utils/statusColors.js';
 import { FormButton, FormHeader } from '../../utils/themes.js';
+import { ViewEmployeesModalProps } from '../../interface/employee.tsx';
 
-const ViewEmployeesModal = ({ selectedItem, showViewModal, setShowViewModal }) => {
+const ViewEmployeesModal: React.FC<ViewEmployeesModalProps> = ({ selectedItem, showViewModal, setShowViewModal }) => {
   if (!showViewModal || !selectedItem) return null;
 
   // Helper to format full names nicely

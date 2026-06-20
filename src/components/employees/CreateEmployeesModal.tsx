@@ -1,41 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
-import { APP_CONFIG } from '../../config/constants';
+import { APP_CONFIG } from '../../config/constants.js';
 import { FormButton, FormHeader } from '../../utils/themes.js';
 import { generateEmployeeNumber } from '../../api/employeeService.js';
+import { Employee, CreateEmployeesModalProps, initialFormState } from '../../interface/employee.tsx';
 
-// Add CSS for loading circle animation
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-  .animate-spin {
-    animation: spin 1s linear infinite;
-  }
-`;
-document.head.appendChild(style);
-
-const CreateEmployeesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
+const CreateEmployeesModal: React.FC<CreateEmployeesModalProps> = ({ showCreateModal, setShowCreateModal, onSave }) => {
   const userData = useAppViewModel((state) => state.userData);
   const [isLoading, setIsLoading] = useState(false);
-  
-  // Exactly matching your Postman keys
-  const getInitialFormState = () => ({
-    firstname: '',
-    lastname: '',
-    middlename: '',
-    username: '',
-    password: '',
-    status: 'Active',
-    status_id: '1', // Passed as string/value to match standard form data
-    position_name: '',
-    position_id: '',
-  });
 
-  const [formData, setFormData] = useState(getInitialFormState());
-  const [errors, setErrors] = useState({});
+  // FIXED: Changed type from Employee[] to Employee, and set initial state to initialFormState object
+  const [formData, setFormData] = useState<Employee>(initialFormState);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  
+
 
   useEffect(() => {
     if (showCreateModal) {
@@ -56,7 +35,7 @@ const CreateEmployeesModal = ({ showCreateModal, setShowCreateModal, onSave }) =
     }
   };
 
-  const validateForm = (result) => {
+  const validateForm = (result: any = true) => {
     const newErrors = {};
     setErrors(newErrors);
     
@@ -67,12 +46,13 @@ const CreateEmployeesModal = ({ showCreateModal, setShowCreateModal, onSave }) =
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     
     // Auto-sync position_name when position_id changes to match your exact Postman blueprint
     if (name === 'position_id') {
-      const selectedText = e.target.options[e.target.selectedIndex].text;
+      const selectElement = e.target as HTMLSelectElement;
+      const selectedText = selectElement.options[selectElement.selectedIndex].text;
       setFormData(prev => ({
         ...prev,
         position_id: value,
@@ -93,19 +73,18 @@ const CreateEmployeesModal = ({ showCreateModal, setShowCreateModal, onSave }) =
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!validateForm()) return;
     
     setIsLoading(true);
     
     try {
-      // Note: Ensure your `onSave` utility formats data as URL-encoded if needed, 
-      // though a standard flat object works perfectly with modern fetch/axios libraries.
       const result = await onSave(formData);
       
       if (result.success) {
-        setFormData(getInitialFormState());
+        // FIXED: Reset state back to initial object instead of []
+        setFormData(initialFormState);
         setErrors({});
         setShowCreateModal(false);
       } else {
@@ -121,7 +100,8 @@ const CreateEmployeesModal = ({ showCreateModal, setShowCreateModal, onSave }) =
   const handleCancel = () => {
     setErrors({});
     setShowCreateModal(false);
-    setFormData(getInitialFormState());
+    // FIXED: Reset state back to initial object instead of []
+    setFormData(initialFormState);
   };
 
   if (!showCreateModal) return null;
@@ -139,20 +119,20 @@ const CreateEmployeesModal = ({ showCreateModal, setShowCreateModal, onSave }) =
 
             <div className="grid grid-cols-1 md:grid-cols-1 gap-2">
               <div className="flex flex-col space-y-1">
-                <label className="text-xs font-semibold text-gray-700">Employe Number *</label>
+                <label className="text-xs font-semibold text-gray-700">Employee Number *</label>
                 <input
                   type="text"
                   name="employee_number"
                   value={formData.employee_number}
                   onChange={handleChange}
-                  placeholder="e.g. Michael"
+                  placeholder="Generating..."
                   className={`w-full px-3 py-1.5 text-xs border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                     errors.employee_number ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                   }`}
                   required
-                  readOnly={1}
+                  readOnly
                 />
-                {errors.firstname && <p className="text-xs text-red-600 mt-0.5">{errors.firstname}</p>}
+                {errors.employee_number && <p className="text-xs text-red-600 mt-0.5">{errors.employee_number}</p>}
               </div>
             </div>
             
@@ -175,17 +155,16 @@ const CreateEmployeesModal = ({ showCreateModal, setShowCreateModal, onSave }) =
               </div>
 
               <div className="flex flex-col space-y-1">
-                <label className="text-xs font-semibold text-gray-700">Middle Name *</label>
+                <label className="text-xs font-semibold text-gray-700">Middle Name</label>
                 <input
                   type="text"
                   name="middlename"
-                  value={formData.middlename}
+                  value={formData.middlename || ''}
                   onChange={handleChange}
                   placeholder="e.g. Mac Lee"
                   className={`w-full px-3 py-1.5 text-xs border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                     errors.middlename ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                   }`}
-                  required
                 />
                 {errors.middlename && <p className="text-xs text-red-600 mt-0.5">{errors.middlename}</p>}
               </div>
@@ -257,7 +236,7 @@ const CreateEmployeesModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                 >
                   <option value="">Select Position Role</option>
                   {Object.entries(APP_CONFIG.EMPLOYEE_POSITIONS).map(([key, value]) => (
-                    <option key={key} value={value}>
+                    <option key={key} value={value as unknown as string}>
                       {key.charAt(0) + key.slice(1).toLowerCase()}
                     </option>
                   ))}
