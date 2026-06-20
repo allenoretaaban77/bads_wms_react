@@ -4,7 +4,7 @@ import InventoryTable from './inventory/InventoryTable';
 import ReplenishmentTable from './replenishment/ReplenishmentTable';
 import SalesTable from './sales/SalesTable';
 import ReturnsTable from './returns/ReturnsTable.js';
-import EmployeesTable from './employees/EmployeesTable.js';
+import EmployeesTable from './employees/EmployeesTable.tsx';
 
 const descriptions = {
   profile: 'View your account details, role, and recent activity.',

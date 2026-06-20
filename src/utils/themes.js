@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { getStatusColor, getPaymentStatus, getPaidStatus } from './formatters';
 
 // 1. Define distinct styles and icons for each title type
@@ -103,7 +103,7 @@ export const FormButton = ({
   btnType = '',
   btnLabel = '', 
   btnIcon = '',
-  isProcessing,
+  isProcessing = undefined,
   className = '', 
   type = 'button',
   ...props 
@@ -283,11 +283,12 @@ export const FormThead = ({
           {data.map((item, index) => {
             if (item.default === 1) {
               return (
-                <th className="border-0 px-3 py-2 text-center text-white font-semibold border-0 text-xs w-40">{item.title}</th>
+                <th key={index} className="border-0 px-3 py-2 text-center text-white font-semibold border-0 text-xs w-40">{item.title}</th>
               )
             } else {
               return (
                 <th 
+                  key={index} 
                   onClick={() => handleSort(item.name)}
                   className={`border-r px-3 py-2 text-white text-xs font-semibold border-0 cursor-pointer hover:bg-green-700 text-` + item.align}
                 >
@@ -302,7 +303,6 @@ export const FormThead = ({
                 </th>
               );
             }
-            
           })}
       </tr>
     </thead>
@@ -318,7 +318,7 @@ export const FormModalThead = ({
           <th className="py-2 pl-2 w-10 text-center bg-header"></th>
           {data.map((item, index) => {
             return (
-              <th className={`px-3 bg-header ` + item.class}>{item.title}</th>
+              <th key={index} className={`px-3 bg-header ` + item.class}>{item.title}</th>
             )
           })}
       </tr>
@@ -334,7 +334,7 @@ export const FormModalTheadDefault = ({
       <tr>
           {data.map((item, index) => {
             return (
-              <th className={`px-3 bg-header ` + item.class}>{item.title}</th>
+              <th key={index} className={`px-3 bg-header ` + item.class}>{item.title}</th>
             )
           })}
       </tr>

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { getSalesViewSales } from '../../api/salesService';
+import { getSalesViewSales, setPaidUnpaid } from '../../api/salesService';
 import { formatCurrency, tocapitalize, formatLongDate, getQuantityStatus, getPaidStatus } from '../../utils/formatters';
 import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 import { generatePrintReceipt } from '../../utils/printUtils';
 import { FormButton, FormHeader, FormModalTheadDefault } from '../../utils/themes.js';
 
-function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onReturn, id }) {
+function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onReturn, onUpdateTable, id }) {
   const userData = useAppViewModel((state) => state.userData);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -30,10 +30,6 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onReturn
       fetchData();
     }
   }, [show, id]);
-
-  const handlePaidUnpaid = (data) => {
-    // Implement your payment status toggler here
-  };
 
   const handleUpdate = (item) => {
     onUpdate(item);
@@ -96,6 +92,37 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onReturn
         }
       } catch (err) {
         console.error("Error running return operation execution:", err);
+        setError("An unhandled exception occurred during transaction rollback handling.");
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+  };
+
+  const handlePaidUnpaid = async (data) => {
+    if (window.confirm(`Set this invoice?`)) {
+      setIsSubmitting(true);
+
+      try {
+        const result = await setPaidUnpaid({
+          invoice_no: data.invoice_no,
+          updated_by: userData.employee_id,
+          is_paid: data.is_paid === "yes" ? "no" : "yes",
+        });
+
+        if (result && result.success) {
+          const result = await getSalesViewSales(id);
+          if (result.success) {
+            setData(result.data);
+            setError(null);
+            onUpdateTable();
+          } else {
+            setError(result.error);
+          }
+        } else {
+          setError(result?.error || "Failed to complete processing sequence.");
+        }
+      } catch (err) {
         setError("An unhandled exception occurred during transaction rollback handling.");
       } finally {
         setIsSubmitting(false);
@@ -283,6 +310,8 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onReturn
                 btnLabel="Set Unpaid"
                 btnIcon="dollar"
                 onClick={() => handlePaidUnpaid(data)} 
+                disabled={isSubmitting}
+                isProcessing={isSubmitting}
               />
             )}
             {data && data.is_paid === "no" && (
@@ -291,6 +320,8 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onReturn
                 btnLabel="Set Paid"
                 btnIcon="dollar"
                 onClick={() => handlePaidUnpaid(data)} 
+                disabled={isSubmitting}
+                isProcessing={isSubmitting}
               />
             )}
           </div>

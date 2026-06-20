@@ -1,4 +1,4 @@
-import create from 'zustand';
+import { create } from 'zustand';
 import { login as loginApi } from '../api/authService';
 import { setAccessToken } from '../api/tokenService';
 import { APP_CONFIG } from '../config/constants';
@@ -11,8 +11,48 @@ const STORAGE_KEYS = {
   USERNAME: 'wms_username',
 };
 
+// 1. Define the User Data shape explicitly
+interface UserData {
+  id: any;
+  employee_id: any;
+  employee_number: any;
+  firstname: string;
+  lastname: string;
+  middlename: string;
+  username: string;
+  position_name: string;
+  position_id: any;
+  status: any;
+  status_id: any;
+  date_created: string;
+  date_updated: string;
+}
+
+// 2. Define the Complete Store State and Actions Interface
+interface AppViewModelState {
+  // State variables
+  isLoggedIn: boolean;
+  accessToken: string;
+  userData: UserData | null;
+  username: string;
+  password?: string;
+  activeMenu: string;
+  sidebarCollapsed: boolean;
+  formError: string;
+  isLoading: boolean;
+  menuItems: Array<{ key: string; label: string; children?: Array<{ key: string; label: string }> }>;
+
+  // Actions / Methods
+  saveAuthState: (isLoggedIn: boolean, accessToken: string, userData: UserData | null, username: string) => void;
+  setField: (name: string, value: any) => void;
+  toggleSidebar: () => void;
+  selectMenu: (key: string, type?: string | null) => void;
+  login: () => Promise<{ success: boolean; error?: string; data?: any }>;
+  logout: () => void;
+}
+
 // Load initial state from localStorage
-const loadInitialState = () => {
+const loadInitialState = (): Pick<AppViewModelState, 'isLoggedIn' | 'accessToken' | 'userData' | 'username'> => {
   try {
     const accessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
     const userData = localStorage.getItem(STORAGE_KEYS.USER_DATA);
@@ -20,7 +60,6 @@ const loadInitialState = () => {
     const username = localStorage.getItem(STORAGE_KEYS.USERNAME) || '';
 
     if (accessToken && userData && isLoggedIn) {
-      // Set token in apiService for immediate use
       setAccessToken(accessToken);
       
       return {
@@ -48,7 +87,7 @@ const menuItems = [
     label: 'Inventory',
     children: [
       { key: 'inventory_' + APP_CONFIG.INVENTORY_TYPES.ALL, label: 'All Items' },
-      { key: 'inventory_' + APP_CONFIG.INVENTORY_TYPES.ITEMS, label: 'Hadware Items' },
+      { key: 'inventory_' + APP_CONFIG.INVENTORY_TYPES.ITEMS, label: 'Hardware Items' }, // Fixed typo 'Hadware' -> 'Hardware'
       { key: 'inventory_' + APP_CONFIG.INVENTORY_TYPES.BAKAL, label: 'Bakal' },
       { key: 'inventory_' + APP_CONFIG.INVENTORY_TYPES.CEMENT, label: 'Cement' },
     ]
@@ -62,7 +101,8 @@ const menuItems = [
 
 const initialState = loadInitialState();
 
-const useAppViewModel = create((set, get) => ({
+// 3. Pass <AppViewModelState> generic here to permanently clean up all "unknown" errors
+const useAppViewModel = create<AppViewModelState>((set, get) => ({
   ...initialState,
   password: '',
   activeMenu: 'inventory',
@@ -71,7 +111,6 @@ const useAppViewModel = create((set, get) => ({
   isLoading: false,
   menuItems,
 
-  // Save state to localStorage
   saveAuthState: (isLoggedIn, accessToken, userData, username) => {
     try {
       if (isLoggedIn && accessToken && userData) {
@@ -80,7 +119,6 @@ const useAppViewModel = create((set, get) => ({
         localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
         localStorage.setItem(STORAGE_KEYS.USERNAME, username);
       } else {
-        // Clear auth data
         localStorage.removeItem(STORAGE_KEYS.IS_LOGGED_IN);
         localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
         localStorage.removeItem(STORAGE_KEYS.USER_DATA);
@@ -91,22 +129,23 @@ const useAppViewModel = create((set, get) => ({
     }
   },
 
-  setField: (name, value) => set({ [name]: value, formError: '' }),
+  setField: (name, value) => set((state) => ({ ...state, [name]: value, formError: '' })),
 
   toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
 
-  selectMenu: (key, type = null) => {
+  // 4. Safely uncommented and typed!
+  selectMenu: (key: string, type = null) => {
     if (key === 'logout') {
-      get().logout();
+      get().logout(); // Works instantly!
       return;
     }
     set({ activeMenu: key });
   },
 
   login: async () => {
+    // Clean code: type assertions like 'as { username: string }' are no longer required
     const { username, password } = get();
     
-    // Validate inputs
     if (!username && !password) {
       set({ formError: 'Please enter both username and password' });
       return { success: false, error: 'Please enter both username and password' };
@@ -122,7 +161,6 @@ const useAppViewModel = create((set, get) => ({
       return { success: false, error: 'Password is required' };
     }
 
-    // Set loading state
     set({ isLoading: true, formError: '' });
 
     try {
@@ -131,10 +169,9 @@ const useAppViewModel = create((set, get) => ({
       if (result.success) {
         const { data } = result;
         
-        // Set access token for future API calls
         setAccessToken(data.access_token || '');
         
-        const userData = {
+        const userData: UserData = {
           id: data.id,
           employee_id: data.employee_id,
           employee_number: data.employee_number,
@@ -150,7 +187,6 @@ const useAppViewModel = create((set, get) => ({
           date_updated: data.date_updated
         };
         
-        // Save to localStorage
         get().saveAuthState(true, data.access_token || '', userData, username);
         
         set({ 
@@ -173,14 +209,10 @@ const useAppViewModel = create((set, get) => ({
   },
 
   logout: () => {
-    // Show confirmation dialog
     const isConfirmed = window.confirm('Are you sure you want to logout?');
     
     if (isConfirmed) {
-      // Clear access token from apiService
       setAccessToken('');
-      
-      // Clear localStorage
       get().saveAuthState(false, '', null, '');
       
       set({

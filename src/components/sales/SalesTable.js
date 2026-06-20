@@ -497,6 +497,7 @@ function SalesTable() {
           onUpdate={handleShowUpdateFromView}
           onDelete={handleDelete}
           onApprove={handleApproveSales}
+          onUpdateTable={() => handleRefresh()}
           id={selectedItem?.id}
         />
         

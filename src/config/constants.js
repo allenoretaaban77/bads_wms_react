@@ -66,6 +66,7 @@ export const APP_CONFIG = {
   },
 
   INVENTORY_TYPES: {
+    ALL: '',
     ITEMS: 'items',
     CEMENT: 'cement',
     BAKAL: 'bakal',
@@ -90,6 +91,11 @@ export const APP_CONFIG = {
     BATCH: 'batch_monitored',
     STANDARD: 'standard',
   },
+
+  EMPLOYEE_POSITIONS: {
+    ADMIN: 1,
+    EMPLOYEE: 2
+  }
 };
 
 export default APP_CONFIG;
