@@ -37,6 +37,7 @@ interface AppViewModelState {
   username: string;
   password?: string;
   activeMenu: string;
+  activeTitle?: string;
   sidebarCollapsed: boolean;
   formError: string;
   isLoading: boolean;
@@ -46,7 +47,7 @@ interface AppViewModelState {
   saveAuthState: (isLoggedIn: boolean, accessToken: string, userData: UserData | null, username: string) => void;
   setField: (name: string, value: any) => void;
   toggleSidebar: () => void;
-  selectMenu: (key: string, type?: string | null) => void;
+  selectMenu: (key: string, type: string) => void;
   login: () => Promise<{ success: boolean; error?: string; data?: any }>;
   logout: () => void;
 }
@@ -86,17 +87,26 @@ const menuItems = [
     key: 'inventory', 
     label: 'Inventory',
     children: [
-      { key: 'inventory_' + APP_CONFIG.INVENTORY_TYPES.ALL, label: 'All Items' },
-      { key: 'inventory_' + APP_CONFIG.INVENTORY_TYPES.ITEMS, label: 'Hardware Items' }, // Fixed typo 'Hadware' -> 'Hardware'
-      { key: 'inventory_' + APP_CONFIG.INVENTORY_TYPES.BAKAL, label: 'Bakal' },
-      { key: 'inventory_' + APP_CONFIG.INVENTORY_TYPES.CEMENT, label: 'Cement' },
-    ]
+      { key: 'inventory_' + APP_CONFIG.INVENTORY_TYPES.ALL, label: 'All Items', title: 'Inventory Management'  },
+      { key: 'inventory_' + APP_CONFIG.INVENTORY_TYPES.ITEMS, label: 'Hardware Items', title: 'Inventory Management ' + APP_CONFIG.INVENTORY_TYPES.ITEMS }, 
+      { key: 'inventory_' + APP_CONFIG.INVENTORY_TYPES.BAKAL, label: 'Bakal', title: 'Inventory Management ' + APP_CONFIG.INVENTORY_TYPES.BAKAL  },
+      { key: 'inventory_' + APP_CONFIG.INVENTORY_TYPES.CEMENT, label: 'Cement', title: 'Inventory Management ' + APP_CONFIG.INVENTORY_TYPES.CEMENT  },
+    ],
+    title: 'Inventory Management'
   },
-  { key: 'stocks', label: 'Replenishment' },
-  { key: 'sales', label: 'Sales' },
-  { key: 'returns', label: 'Returns' },
-  { key: 'employees', label: 'Employees' },
-  { key: 'logout', label: 'Logout' },
+  { key: 'stocks', label: 'Replenishment', title: 'Replenishment Management' },
+  { key: 'sales', label: 'Sales', title: 'Sales Management' },
+  { key: 'returns', label: 'Returns', title: 'Returns Management' },
+  { key: 'employees', label: 'Employees', title: 'Employees Management' },
+  { key: 'reports', label: 'Reports', title: 'Reports',
+    children: [
+      { key: 'reports_sales', label: 'Daily Sales Reports', title: 'Daily Sales Reports' },
+      // { key: 'reports_generate', label: 'Generate Reeports', title: 'Generate Reeports' }
+    ] },
+  { 
+    key: 'logout', 
+    label: 'Logout',
+  },
 ];
 
 const initialState = loadInitialState();
@@ -106,7 +116,8 @@ const useAppViewModel = create<AppViewModelState>((set, get) => ({
   ...initialState,
   password: '',
   activeMenu: 'inventory',
-  sidebarCollapsed: true,
+  activeTitle: '',
+  sidebarCollapsed: false,
   formError: '',
   isLoading: false,
   menuItems,
@@ -134,12 +145,12 @@ const useAppViewModel = create<AppViewModelState>((set, get) => ({
   toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
 
   // 4. Safely uncommented and typed!
-  selectMenu: (key: string, type = null) => {
+  selectMenu: (key: string, title: string) => {
     if (key === 'logout') {
       get().logout(); // Works instantly!
       return;
     }
-    set({ activeMenu: key });
+    set({ activeMenu: key, activeTitle: title });
   },
 
   login: async () => {
@@ -192,6 +203,7 @@ const useAppViewModel = create<AppViewModelState>((set, get) => ({
         set({ 
           isLoggedIn: true, 
           activeMenu: 'inventory', 
+          activeTitle: '', 
           formError: '', 
           isLoading: false,
           accessToken: data.access_token || '',
@@ -220,7 +232,8 @@ const useAppViewModel = create<AppViewModelState>((set, get) => ({
         username: '',
         password: '',
         activeMenu: 'inventory',
-        sidebarCollapsed: true,
+        activeTitle: '',
+        sidebarCollapsed: false,
         formError: '',
         accessToken: '',
         userData: null,

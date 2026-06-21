@@ -285,7 +285,7 @@ function InventoryTable({ page_type }) {
 
         {/* Search and Filters */}
         <div className="bg-white pl-3 pr-3 pb-2 rounded-custom border border-gray-200">
-          <div className="flex justify-between items-center">
+          {/* <div className="flex justify-between items-center">
             <h3 className="text-base font-semibold text-gray-800">Inventory Management</h3>
             <div className="flex space-x-2 pb-2">
               <FormButton
@@ -303,12 +303,12 @@ function InventoryTable({ page_type }) {
                 className="mt-3"
               />
             </div>
-          </div>
+          </div> */}
           
           {/* Search and Filters */}
-          <div className="grid grid-cols-1 lg:grid-cols-6 gap-2">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 pt-2">
             {/* Search Bar */}
-            <div className="lg:col-span-5 text-xs">
+            <div className="lg:col-span-9 text-xs">
               <label className="block font-semibold text-gray-600 mb-1">Search</label>
               <input
                 type="text"
@@ -331,6 +331,26 @@ function InventoryTable({ page_type }) {
                 <option value="Low Stock">Low Stock</option>
                 <option value="No Stock">No Stock</option>
               </select>
+            </div>
+
+            <div className="text-xs lg:col-span-1 mt-1.5">
+              <FormButton
+                btnType="affirm"
+                btnLabel="Refresh"
+                btnIcon="refresh"
+                onClick={handleRefresh} 
+                className="mt-3 w-full"
+              />
+            </div>
+
+            <div className="text-xs lg:col-span-1 mt-1.5">
+              <FormButton
+                btnType="success"
+                btnLabel="Create"
+                btnIcon="plus"
+                onClick={() => setShowCreateModal(true)} 
+                className="mt-3 w-full"
+              />
             </div>
             
             {/* <div>

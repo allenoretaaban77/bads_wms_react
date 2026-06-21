@@ -110,7 +110,7 @@ export const FormButton = ({
 }) => {
   const config = BUTTON_CONFIGS[btnType.toLowerCase()] || BUTTON_CONFIGS.edit;
   const icon_config = ICONS[btnIcon.toLowerCase()] || ICONS.edit;
-  const baseLayoutClasses = 'px-3 py-1.5 rounded-custom transition-colors flex items-center disabled:opacity-50 duration-200 border text-xs';
+  const baseLayoutClasses = 'px-3 py-1.5 rounded-custom transition-colors flex items-center justify-center disabled:opacity-50 duration-200 border text-xs';
   
   return (
     <button

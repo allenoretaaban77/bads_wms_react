@@ -40,6 +40,11 @@ const menuIcons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
     </svg>
   ),
+  reports: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+  )
 };
 
 function SidebarMenu() {
@@ -57,7 +62,7 @@ function SidebarMenu() {
   return (
     <aside
       className={`bg-sidebar text-white transition-all duration-300 ease-in-out ${
-        sidebarCollapsed ? 'w-15' : 'w-60'
+        sidebarCollapsed ? 'w-15' : 'w-48'
       } flex-shrink-0`}
     >
       <div className="flex items-center justify-between p-2 h-16">
@@ -85,10 +90,10 @@ function SidebarMenu() {
               <button
                 onClick={() => {
                   if (sidebarCollapsed) {
-                    selectMenu(item.key);
+                    selectMenu(item.key, item.title);
                   } else {
                     if (item.children) toggleExpand(item.key);
-                    else selectMenu(item.key);
+                    else selectMenu(item.key, item.title);
                   }
                 }}
                 className={`w-full flex items-center py-3 px-2 text-white transition-colors duration-200 ${
@@ -118,7 +123,7 @@ function SidebarMenu() {
                   {item.children.map(child => (
                     <li key={child.key}>
                       <button
-                        onClick={() => selectMenu(child.key)}
+                        onClick={() => selectMenu(child.key, child.title)}
                         className={`text-left w-full py-2 pl-10 pr-2 text-sm text-gray-300 hover:text-white ${activeMenu === child.key ? 'bg-white bg-opacity-20' : ''}`}
                       >
                         {child.label}

@@ -1,6 +1,7 @@
 {
   "name": "bads-wms",
   "version": "0.1.0",
+  "homepage": "/app",
   "private": true,
   "proxy": "http://localhost:8080",
   "dependencies": {

@@ -185,7 +185,7 @@ function EmployeesTable({ page_type }: EmployeesTableProps) {
       <div className="flex-shrink-0 space-y-0">
       
         <div className="bg-white pl-3 pr-3 pb-2 rounded-custom border border-gray-200">
-          <div className="flex justify-between items-center">
+          {/* <div className="flex justify-between items-center">
             <h3 className="text-base font-semibold text-gray-800">Employees Management</h3>
             <div className="flex space-x-2 pb-2">
               <FormButton
@@ -205,11 +205,11 @@ function EmployeesTable({ page_type }: EmployeesTableProps) {
                 />
               )}
             </div>
-          </div>
+          </div> */}
           
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-2">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 pt-2">
             {/* Search Input mapping to names/username */}
-            <div className="lg:col-span-4 text-xs">
+            <div className="lg:col-span-9 text-xs">
               <label className="block font-semibold text-gray-600 mb-1">Search</label>
               <input
                 type="text"
@@ -221,7 +221,7 @@ function EmployeesTable({ page_type }: EmployeesTableProps) {
             </div>
 
             <div className="text-xs lg:col-span-1">
-              <label className="block text-xs font-medium text-gray-700 mb-0.5">Position Filter</label>
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">Position</label>
               <select
                 value={positionIdFilter}
                 onChange={(e) => setPositionIdFilter(e.target.value)}
@@ -231,6 +231,26 @@ function EmployeesTable({ page_type }: EmployeesTableProps) {
                 <option value="1">Admin</option>
                 <option value="2">Employee</option>
               </select>
+            </div>
+
+            <div className="text-xs lg:col-span-1 mt-1.5">
+              <FormButton
+                btnType="affirm"
+                btnLabel="Refresh"
+                btnIcon="refresh"
+                onClick={handleRefresh} 
+                className="mt-3 w-full"
+              />
+            </div>
+
+            <div className="text-xs lg:col-span-1 mt-1.5">
+              <FormButton
+                btnType="success"
+                btnLabel="Create"
+                btnIcon="plus"
+                onClick={() => setShowCreateModal(true)} 
+                className="mt-3 w-full"
+              />
             </div>
           </div>
           
@@ -309,15 +329,17 @@ function EmployeesTable({ page_type }: EmployeesTableProps) {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                               </svg>
                             </button> */}
-                            <button
-                              onClick={() => handleDelete(item.id)}
-                              className="text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
-                              title="Delete"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                            </button>
+                            {userData?.position_id === 1 && (
+                              <button
+                                onClick={() => handleDelete(item.id)}
+                                className="text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                                title="Delete"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>

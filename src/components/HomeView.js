@@ -6,6 +6,8 @@ import useAppViewModel from '../viewmodels/useAppViewModel.tsx';
 function HomeView() {
   const userData = useAppViewModel((state) => state.userData);
   const logout = useAppViewModel((state) => state.logout);
+  const menuItems = useAppViewModel((state) => state.menuItems);
+  const activeTitle = useAppViewModel((state) => state.activeTitle);
 
   return (
     <div className="flex">
@@ -15,7 +17,7 @@ function HomeView() {
           <div className="flex items-center justify-between px-4 py-3">
             <div>
               <p className="text-white text-sm">Badong's Hardware Inventory System</p>
-              <h1 className="text-white text-xl font-semibold">Home</h1>
+              <h1 className="text-white text-xl font-semibold capitalize">{activeTitle}</h1>
             </div>
             <div className="flex items-center text-white text-sm">
               <span>Welcome, <strong>{userData?.firstname} {userData?.middlename} {userData?.lastname} [{userData?.employee_number}]</strong> | {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} {new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase()}</span>

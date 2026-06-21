@@ -539,7 +539,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                               </svg>
                             </button>
-                          )}
+                          )}n  
                           <input
                             type="number"
                             name="quantity"
@@ -547,6 +547,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
                             onChange={(e) => updateItemField(item.id, 'quantity', e.target.value)}
                             onFocus={(e) => e.target.select()}
                             placeholder="0"
+                            readOnly={item && item.tracking_method === APP_CONFIG.TRACKING_METHOD.BATCH ? 1 : 0}
                             className="w-full focus:outline-none text-right bg-transparent text-gray-800"
                           />
                         </div>

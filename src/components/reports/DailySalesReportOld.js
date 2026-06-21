@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { formatCurrency, formatLongDate, getTablePaidStatus, getTableStatus, getTablePaymentStatus } from '../../utils/formatters';
-import { APP_CONFIG } from '../../config/constants';
+import { formatCurrency, formatLongDate, getTablePaidStatus, getTableStatus, getTablePaymentStatus } from '../../utils/formatters.js';
+import { APP_CONFIG } from '../../config/constants.js';
 import {
   getSalesList,
   createSalesTransaction,
@@ -8,14 +8,15 @@ import {
   approveSalesTransaction,
   voidSalesTransaction,
   deleteSalesTransaction,
-} from '../../api/salesService';
-import Alert from '../../utils/alert';
-import ViewSalesModal from './ViewSalesModal';
-import CreateSalesModal from './CreateSalesModal';
-import UpdateSalesModal from './UpdateSalesModal';
+} from '../../api/salesService.js';
+import Alert from '../../utils/alert.js';
+// import ViewSalesModal from './ViewSalesModal';
+// import CreateSalesModal from './CreateSalesModal';
+// import UpdateSalesModal from './UpdateSalesModal';
 import { FormButton, FormPagination, FormThead } from '../../utils/themes.js';
+import { getDailyReports } from '../../api/reportsService.js';
 
-function SalesTable() {
+function DailySalesReport() {
   // Data and loading states
   const [saleDate, satSalesData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -74,7 +75,7 @@ function SalesTable() {
           is_paid: isPaidFilter !== 'all' ? isPaidFilter : '',
         };
 
-        const result = await getSalesList(params);
+        const result = await getDailyReports(params);
         
         // Check if API call was successful and returned data
         if (result.success && result.data) {
@@ -322,10 +323,9 @@ function SalesTable() {
       
       {/* Fixed Header Sections */}
       <div className="flex-shrink-0 space-y-0">
-
         {/* Search and Filters */}
         <div className="bg-white pl-3 pr-3 pb-2 rounded-custom border border-gray-200">
-          {/* <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center">
             <h3 className="text-base font-semibold text-gray-800">Sales Management</h3>
             <div className="flex space-x-2 pb-2">
               <FormButton
@@ -343,12 +343,12 @@ function SalesTable() {
                 className="mt-3"
               />
             </div>
-          </div> */}
+          </div>
           
           {/* Search and Filters */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 pt-2">
+          <div className="grid grid-cols-1 lg:grid-cols-8 gap-2">
             {/* Search Bar */}
-            <div className="lg:col-span-7">
+            <div className="lg:col-span-5">
               <label className="block text-xs font-medium text-gray-700 mb-0.5">Search</label>
               <input
                 type="text"
@@ -396,26 +396,6 @@ function SalesTable() {
                 <option value="yes">Paid</option>
                 <option value="no">No Paid</option>
               </select>
-            </div>
-
-            <div className="text-xs lg:col-span-1 mt-1.5">
-              <FormButton
-                btnType="affirm"
-                btnLabel="Refresh"
-                btnIcon="refresh"
-                onClick={handleRefresh} 
-                className="mt-3 w-full"
-              />
-            </div>
-            
-            <div className="text-xs lg:col-span-1 mt-1.5">
-              <FormButton
-                btnType="success"
-                btnLabel="Create"
-                btnIcon="plus"
-                onClick={() => setShowCreateModal(true)} 
-                className="mt-3 w-full"
-              />
             </div>
           </div>
           
@@ -553,8 +533,7 @@ function SalesTable() {
           />
         </div>
 
-        {/* New Modal Components */}
-        <ViewSalesModal
+        {/* <ViewSalesModal
           show={showViewModal}
           onClose={() => setShowViewModal(false)}
           onUpdate={handleShowUpdateFromView}
@@ -575,12 +554,12 @@ function SalesTable() {
           showEditModal={showEditModal}
           setShowEditModal={setShowEditModal}
           onSave={handleEditSales}
-        />
+        /> */}
 
       </div>
     </div>
   );
 }
 
-export default SalesTable;
+export default DailySalesReport;
 

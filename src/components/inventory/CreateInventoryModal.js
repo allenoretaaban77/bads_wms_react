@@ -73,7 +73,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
       const result = await onSave(formData);
       
       if (result.success) {
-        setFormData({
+        const refData = {
           product_name: '',
           sku: '',
           cost_per_unit: '',
@@ -87,7 +87,9 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
           remarks: '',
           added_by: userData?.employee_id || '',
           tracking_method: ''
-        });
+        };
+        setFormData(refData);
+
         setErrors({});
         setShowCreateModal(false);
       } else {
