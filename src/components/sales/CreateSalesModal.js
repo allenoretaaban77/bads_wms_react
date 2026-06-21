@@ -371,7 +371,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
             <div>
               <label className="block font-semibold text-gray-600 mb-1">Customer Name</label>
               <input
-                required
+                // required
                 name="customer_name"
                 value={formData.customer_name}
                 onChange={handleChange}
@@ -539,7 +539,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                               </svg>
                             </button>
-                          )}n  
+                          )}
                           <input
                             type="number"
                             name="quantity"

@@ -324,7 +324,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
             <div>
               <label className="block font-semibold text-gray-600 mb-1">Supplier</label>
               <input
-                required
+                // required
                 name="supplier"
                 value={formData.supplier}
                 onChange={handleChange}

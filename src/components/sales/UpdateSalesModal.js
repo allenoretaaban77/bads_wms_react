@@ -417,7 +417,7 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
             <div>
               <label className="block font-semibold text-gray-600 mb-1">Customer Name</label>
               <input
-                required
+                // required
                 name="customer_name"
                 value={formData.customer_name}
                 onChange={handleChange}
