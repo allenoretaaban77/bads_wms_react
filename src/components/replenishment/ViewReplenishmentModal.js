@@ -100,7 +100,7 @@ function ViewReplenishmentModal({ show, onClose, onUpdate, onDelete, onApprove, 
             <div className="flex-1 flex flex-col min-h-0 space-y-4">
               
               {/* Reference Meta Information Data Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded flex-shrink-0">
+              <div className="grid grid-cols-5 md:grid-cols-5 gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded flex-shrink-0">
                 <div>
                   <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block mb-0.5">Reference No</span>
                   <span className="font-bold text-gray-800 text-sm font-mono">{data.reference_no}</span>
@@ -112,6 +112,10 @@ function ViewReplenishmentModal({ show, onClose, onUpdate, onDelete, onApprove, 
                 <div>
                   <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block mb-0.5">Date Received</span>
                   <span className="font-semibold text-gray-700 text-sm">{formatLongDate(data.date_received)}</span>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block mb-0.5">Record Count</span>
+                  <span className="font-semibold text-gray-700 text-sm text-right">{data?.items.length.toLocaleString()}</span>
                 </div>
                 <div>
                   <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block mb-0.5">Remarks / Note</span>

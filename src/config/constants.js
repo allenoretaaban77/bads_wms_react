@@ -1,6 +1,6 @@
 import { getAccessToken } from '../api/tokenService';
 
-export const API_BASE_URL = 'http://bhis.loc';
+export const API_BASE_URL = 'http://his.local';
 
 export const getApiHeaders = () => {
   const headers = {

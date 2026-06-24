@@ -1,13 +1,13 @@
 export const getStatusColor = (status) => {
   switch (status) {
     case 'In Stock':
-      return 'text-green-600 bg-green-100';
+      return 'text-green-600 bg-green-0';
     case 'Low Stock':
-      return 'text-yellow-600 bg-yellow-100';
+      return 'text-yellow-600 bg-yellow-0';
     case 'No Stock':
-      return 'text-red-600 bg-red-100';
+      return 'text-red-600 bg-red-0';
     default:
-      return 'text-gray-600 bg-gray-100';
+      return 'text-gray-600 bg-gray-0';
   }
 };
 

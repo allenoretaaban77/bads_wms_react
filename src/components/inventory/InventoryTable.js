@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getStatusColor } from '../../utils/statusColors';
-import { getInventoryList, createInventoryItem, updateInventoryItem, deleteInventoryItem } from '../../api/inventoryService';
+import { getInventoryList, createInventoryItem, updateInventoryItem, deleteInventoryItem, getInventoryTableListSearch } from '../../api/inventoryService';
 import { APP_CONFIG } from '../../config/constants';
 import ViewInventoryModal from './ViewInventoryModal';
 import UpdateInventoryModal from './UpdateInventoryModal';
@@ -257,27 +257,27 @@ function InventoryTable({ page_type }) {
         <div className="bg-white p-2 rounded-custom border border-gray-200 mb-2">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mb-1">
             <div className="text-center">
-              <div className="text-2xl font-bold text-gray-800">1,817</div>
+              <div className="text-2xl font-bold text-gray-800">0</div>
               <div className="text-xs text-gray-600">No. of Products</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">₱1,950,918.73</div>
+              <div className="text-2xl font-bold text-green-600">0</div>
               <div className="text-xs text-gray-600">Current Inventory Value</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">₱1,193,482.74</div>
+              <div className="text-2xl font-bold text-blue-600">0</div>
               <div className="text-xs text-gray-600">Current Inventory Cost</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">1,444</div>
+              <div className="text-2xl font-bold text-green-600">0</div>
               <div className="text-xs text-gray-600">In Stock</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-600">224</div>
+              <div className="text-2xl font-bold text-yellow-600">0</div>
               <div className="text-xs text-gray-600">Low Stock</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">149</div>
+              <div className="text-2xl font-bold text-red-600">0</div>
               <div className="text-xs text-gray-600">No Stock</div>
             </div>
           </div>
@@ -397,6 +397,7 @@ function InventoryTable({ page_type }) {
             <div className="bg-white border border-gray-200 rounded-custom shadow-sm overflow-hidden">
               <table className="w-full">
                 <FormThead sortOrder={sortOrder} sortField={sortField} handleSort={handleSort} data={[
+                  {"title":"#", "name":"id", "align":"center"},
                   {"title":"Product Name", "name":"product_name", "align":"left"},
                   {"title":"SKU", "name":"sku", "align":"left"},
                   {"title":"Cost per Unit", "name":"cost_per_unit", "align":"right"},
@@ -405,7 +406,7 @@ function InventoryTable({ page_type }) {
                   {"title":"Reorder Level", "name":"reorder_level", "align":"right"},
                   {"title":"Total Inventory Cost", "name":"total_inventory_cost", "align":"right"},
                   {"title":"Total Inventory Value", "name":"total_inventory_value", "align":"right"},
-                  {"title":"Total Sold", "name":"total_sold", "align":"left"},
+                  {"title":"Total Sold", "name":"total_sold", "align":"right"},
                   {"title":"Status", "name":"status", "align":"center"},
                   {"title":"Actions", "name":"status", "default":1},
                 ]} />
@@ -419,10 +420,11 @@ function InventoryTable({ page_type }) {
                           index % 2 === 0 ? 'bg-white hover:bg-green-50' : 'bg-row-alt hover:bg-green-100'
                         }`}
                       >
-                        <td className="px-3 py-2 border-r text-sm font-semibold text-green-900">{item.product_name}</td>
-                        <td className="px-3 py-2 border-r text-sm">{item.sku}</td>
+                        <td className="px-3 py-2 border-r text-xs font-semibold text-green-900">{item.id}</td>
+                        <td className="px-3 py-2 border-r text-xs font-semibold text-green-900">{item.product_name}</td>
+                        <td className="px-3 py-2 border-r text-xs">{item.sku}</td>
                         {item && item.tracking_method === APP_CONFIG.TRACKING_METHOD.BATCH && (
-                          <td className="px-4 border-r text-sm text-center">
+                          <td className="px-4 border-r text-sxsm text-center">
                             <button
                               onClick={() => handleView(item)}
                               className="text-yellow-600 hover:text-yellow-800 px-2 py-1 rounded hover:bg-yellow-50 transition-colors"
@@ -448,8 +450,8 @@ function InventoryTable({ page_type }) {
                         <td className="px-4 py-3 border-r text-sm text-blue-600 font-medium text-right">{formatCurrency(item.total_inventory_cost)}</td>
                         <td className="px-4 py-3 border-r text-sm text-green-600 font-medium text-right">{formatCurrency(item.total_inventory_value)}</td>
                         <td className="px-4 py-3 border-r text-sm text-right">{item.total_sold}</td>
-                        <td className="px-3 py-2 border-r text-right">
-                          <span className={`px-2 py-1 rounded-full text-sm font-medium ${getStatusColor(item.status)}`}>
+                        <td className="px-3 py-2 border-r text-right justify-center">
+                          <span className={`py-1 text-xs font-medium text-center ${getStatusColor(item.status)}`}>
                             {item.status}
                           </span>
                         </td>
