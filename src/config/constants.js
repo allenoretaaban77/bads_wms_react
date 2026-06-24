@@ -66,19 +66,28 @@ export const APP_CONFIG = {
   },
 
   INVENTORY_TYPES: {
-    ALL: '',
-    ITEMS: 'items',
-    CEMENT: 'cement',
-    BAKAL: 'bakal',
+    NUTS_AND_BOLTS: 'nuts and bolts',
+    CEMENTS: 'cements',
+    ELECTRICALS: 'electricals',
+    FAST_MOVING_MATERIALS: 'fast moving materials',
+    PAINTS: 'paints',
+    ROOFINGS: 'roofings',
+    SANITARY_AND_WATERLINES: 'sanitary and waterlines', 
+    STEEL_MATERIAL: 'steel materials',
     UNCATEGORIZED: 'uncategorized',
   },
 
   INVENTORY_MENU: {
-    ITEMS: 'items',
-    CEMENT: 'cement',
-    BAKAL: 'bakal',
+    ALL: 'all',
+    NUTS_AND_BOLTS: 'nuts and bolts',
+    CEMENTS: 'cements',
+    ELECTRICALS: 'electricals',
+    FAST_MOVING_MATERIALS: 'fast moving materials',
+    PAINTS: 'paints',
+    ROOFINGS: 'roofings',
+    SANITARY_AND_WATERLINES: 'sanitary and waterlines', 
+    STEEL_MATERIAL: 'steel materials',
     UNCATEGORIZED: 'uncategorized',
-    ALL: '',
   },
 
   PAYMENT_STATUS: {

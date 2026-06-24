@@ -15,7 +15,7 @@ import CreateReplenishmentModal from './CreateReplenishmentModal';
 import UpdateReplenishmentModal from './UpdateReplenishmentModal';
 import { FormButton, FormPagination, FormThead } from '../../utils/themes.js';
 
-function ReplenishmentTable() {
+function ReplenishmentTable({ page_type }) {
   // Data and loading states
   const [replenishmentData, setReplenishmentData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);

@@ -431,6 +431,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
                     itemSuggestions.map((suggestion, index) => {
                       const name = resolveSuggestionName(suggestion);
                       const costValue = resolveSuggestionCost(suggestion);
+                      const priceValue = resolveSuggestionPrice(suggestion);
                       return (
                         <button
                           key={`${suggestion.id || index}-${index}`}
@@ -443,7 +444,8 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
                           </div>
                           <div className="text-[11px] text-gray-500 mt-0.5 flex gap-2">
                             <span>Stock: <strong className="text-gray-700">{suggestion.current_qty ?? 0}</strong></span>
-                            <span>Base Cost: <strong className="text-gray-700">₱{Number(costValue).toFixed(2)}</strong></span>
+                            <span>Cost: <strong className="text-gray-700">₱{Number(costValue).toFixed(2)}</strong></span>
+                            <span>Price: <strong className="text-gray-700">₱{Number(priceValue).toFixed(2)}</strong></span>
                           </div>
                         </button>
                       );
@@ -519,9 +521,8 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
                         <div className="font-medium">
                           {item.item_name} {item.sku ? <span className="text-gray-400 font-normal ml-0.5">[{item.sku}]</span> : ''}
                         </div>
-                        <div className="text-[10px] text-gray-400 mt-0.5">
-                          Current Stock: {item.current_qty || 0} <span className="mx-1">|</span> Reorder Level: {item.reorder_level || 0}
-                          <span>•</span>
+                        <div className="text-[10px] text-red-500 mt-0.5">
+                          Stock: {item.current_qty || 0} <span className="mx-1">|</span> Reorder Level: {item.reorder_level || 0} <span className="mx-1">|</span> Cost: {formatCurrency(item.cost) || 0}
                         </div>
                       </td>
                       <td className="px-3 py-1 align-middle">

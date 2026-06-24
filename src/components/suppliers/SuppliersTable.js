@@ -1,22 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { formatCurrency, formatLongDate, getTablePaidStatus, getTableStatus, getTablePaymentStatus } from '../../utils/formatters';
 import { APP_CONFIG } from '../../config/constants';
-import {
-  getSalesList,
-  createSalesTransaction,
-  updateSalesTransaction,
-  approveSalesTransaction,
-  voidSalesTransaction,
-  deleteSalesTransaction,
-} from '../../api/salesService';
 import Alert from '../../utils/alert';
-// import ViewSalesModal from './ViewSalesModal';
-// import CreateSalesModal from './CreateSalesModal';
-// import UpdateSalesModal from './UpdateSalesModal';
 import { FormButton, FormPagination, FormThead } from '../../utils/themes.js';
-import { getDailyReports } from '../../api/reportsService.js';
+import { getSuppliersList } from '../../api/suppliersService.js';
 
-function DailySalesReport({ page_type }) {
+function SuppliersTable({ page_type }) {
   // Data and loading states
   const [saleDate, satSalesData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -75,7 +64,7 @@ function DailySalesReport({ page_type }) {
           is_paid: isPaidFilter !== 'all' ? isPaidFilter : '',
         };
 
-        const result = await getDailyReports(params);
+        const result = await getSuppliersList(params);
         
         // Check if API call was successful and returned data
         if (result.success && result.data) {
@@ -130,165 +119,6 @@ function DailySalesReport({ page_type }) {
   const handleEdit = (item) => {
     setSelectedItem(item);
     setShowEditModal(true);
-  };
-
-  const handleVoid = async (id) => {
-    if (window.confirm('Are you sure you want to VOID this transaction?')) {
-      try {
-        const result = await voidSalesTransaction(id);
-        if (result.success) {
-          // Show success alert
-          setAlert({
-            show: true,
-            message: 'Item successfully deleted',
-            type: 'success'
-          });
-          
-          // Hide alert after 3 seconds
-          setTimeout(() => {
-            setAlert({ show: false, message: '', type: '' });
-          }, 3000);
-          
-          // Refresh data to show updated list
-          setRefreshKey(prev => prev + 1);
-        } else {
-          setError(result.error || 'Failed to void sales transaction.');
-        }
-      } catch (err) {
-        setError('Failed to void sales transaction.');
-      }
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to DELETE this transaction?')) {
-      setShowViewModal(false);
-
-      try {
-        const result = await deleteSalesTransaction(id);
-        if (result.success) {
-          // Show success alert
-          setAlert({
-            show: true,
-            message: 'Item successfully deleted',
-            type: 'success'
-          });
-          
-          // Hide alert after 3 seconds
-          setTimeout(() => {
-            setAlert({ show: false, message: '', type: '' });
-          }, 3000);
-          
-          // Refresh data to show updated list
-          setRefreshKey(prev => prev + 1);
-        } else {
-          setError(result.error || 'Failed to delete sales transaction.');
-        }
-      } catch (err) {
-        setError('Failed to void delete transaction.');
-      }
-    }
-  };
-
-  const handleApproveSales = async (itemData) => {
-    try {
-      const result = await approveSalesTransaction(itemData);
-      if (result.success) {
-        setShowViewModal(false);
-        
-        setAlert({
-          show: true,
-          message: 'Sales transaction approved successfully!',
-          type: 'success'
-        });
-        setTimeout(() => {
-          setAlert({ show: false, message: '', type: '' });
-        }, 3000);
-
-        setCurrentPage(1);
-        setRefreshKey(prev => prev + 1); // Trigger data refresh
-      } else {      
-        return result;
-      }
-    } catch (err) {
-      setError('Failed to approve sales transaction.');
-
-      return {
-        success: false,
-        error: 'Failed to approve sales transaction.'
-      };
-    }
-  };
-
-  const handleCreateSales = async (itemData) => {
-    try {
-      const result = await createSalesTransaction(itemData);
-      
-      if (result.success) {
-        // Close modal immediately
-        setShowCreateModal(false);
-        
-        // Show success alert
-        setAlert({
-          show: true,
-          message: 'Sales transaction created successfully!',
-          type: 'success'
-        });
-        
-        // Hide alert after 3 seconds
-        setTimeout(() => {
-          setAlert({ show: false, message: '', type: '' });
-        }, 3000);
-        
-        // Refresh data to show the new item
-        setCurrentPage(1); // Go to first page to see the new item
-        // Trigger data refresh by incrementing refresh key
-        setRefreshKey(prev => prev + 1);
-
-        handleView(result.data);
-      } else {
-        return result;
-      }
-      // Return the result so CreateInventoryModal can handle success/error states
-      return result;
-    } catch (err) {
-      setError('Failed to create sales transaction.');
-      // Return error result
-      return {
-        success: false,
-        error: 'Failed to create sales transaction.'
-      };
-    }
-  };
-
-  const handleEditSales = async (itemData) => {
-    try {
-      const result = await updateSalesTransaction(itemData);
-      if (result.success) {
-        setShowEditModal(false);
-        
-        setAlert({
-          show: true,
-          message: 'Sales transaction updated successfully!',
-          type: 'success'
-        });
-        setTimeout(() => {
-          setAlert({ show: false, message: '', type: '' });
-        }, 3000);
-
-        setCurrentPage(1);
-        setRefreshKey(prev => prev + 1); // Trigger data refresh
-      } else {
-        return result;
-      }
-    } catch (err) {
-      setError('Failed to update sales transaction.');
-
-      return {
-        success: false,
-        error: 'Failed to update sales transaction.'
-      };
-    }
   };
 
   const handleSort = (field) => {
@@ -378,13 +208,9 @@ function DailySalesReport({ page_type }) {
                 <FormThead sortOrder={sortOrder} sortField={sortField} handleSort={handleSort} data={
                   [
                     {"title":"ID", "name":"id", "align":"center"},
-                    {"title":"Date", "name":"date", "date":"left"},
-                    {"title":"Gross Sales", "name":"gross_sales", "align":"right"},
-                    {"title":"Returns / Refunds", "returns_refunds":"amount", "align":"right"},
-                    {"title":"Net Sales", "name":"net_sales", "align":"right"},
-                    {"title":"COGS", "name":"cogs", "align":"right"},
-                    {"title":"Net Profit", "name":"net_profit", "align":"right"},
-                    {"title":"Action", "name":"action", "align":"center"},
+                    {"title":"Name", "name":"name", "date":"left"},
+                    {"title":"Date Created", "name":"date_created", "date":"left"},
+                    {"title":"Action", "name":"action", "date":"left"},
                   ]
                 } />
                 <tbody>
@@ -397,12 +223,8 @@ function DailySalesReport({ page_type }) {
                         }`}
                       >
                         <td className="px-3 py-2 border-r text-sm font-semibold text-green-900">{index + 1}</td>
-                        <td className="px-3 py-2 border-r text-sm">{formatLongDate(item.date)}</td>
-                        <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.gross_sales)}</td>
-                        <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.returns_refunds)}</td>
-                        <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.net_sales)}</td>
-                        <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.cogs)}</td>
-                        <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.net_profit)}</td>
+                        <td className="px-3 py-2 border-r text-sm">{item.name}</td>
+                        <td className="px-3 py-2 border-r text-sm">{formatLongDate(item.date_created)}</td>
                         <td className="px-3 py-2 border-0">
                           <div className="flex justify-center space-x-2">
                             <button
@@ -415,40 +237,6 @@ function DailySalesReport({ page_type }) {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                               </svg>
                             </button>
-                            {/* {item.status == "draft" && ( */}
-                              {/* <button
-                                onClick={() => handleEdit(item)}
-                                className="text-green-600 hover:text-green-800 px-2 py-1 rounded hover:bg-green-50 transition-colors"
-                                title="Edit"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                              </button> */}
-                            {/* )} */}
-                            {/* {item.status != "draft" && ( */}
-                              {/* <button
-                                onClick={() => handleVoid(item.id)}
-                                className="text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
-                                title="Void"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <circle cx="12" cy="12" r="9" strokeWidth={2} />
-                                  <line x1="5" y1="5" x2="19" y2="19" strokeWidth={2} />
-                                </svg>
-                              </button> */}
-                            {/* )} */}
-                            {/* {item.status == "draft" && (
-                              <button
-                                onClick={() => handleDelete(item.id)}
-                                className="text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
-                                title="Delete"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                              </button>
-                            )} */}
                           </div>
                         </td>
                       </tr>
@@ -476,33 +264,10 @@ function DailySalesReport({ page_type }) {
           />
         </div>
 
-        {/* <ViewSalesModal
-          show={showViewModal}
-          onClose={() => setShowViewModal(false)}
-          onUpdate={handleShowUpdateFromView}
-          onDelete={handleDelete}
-          onApprove={handleApproveSales}
-          onUpdateTable={() => handleRefresh()}
-          id={selectedItem?.id}
-        />
-        
-        <CreateSalesModal 
-          showCreateModal={showCreateModal}
-          setShowCreateModal={setShowCreateModal}
-          onSave={handleCreateSales}
-        />
-        
-        <UpdateSalesModal 
-          selectedItem={selectedItem}
-          showEditModal={showEditModal}
-          setShowEditModal={setShowEditModal}
-          onSave={handleEditSales}
-        /> */}
-
       </div>
     </div>
   );
 }
 
-export default DailySalesReport;
+export default SuppliersTable;
 

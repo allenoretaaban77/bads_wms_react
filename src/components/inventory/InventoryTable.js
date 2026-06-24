@@ -58,7 +58,7 @@ function InventoryTable({ page_type }) {
         setError(null);
         
         const params = {
-          type: page_type,
+          type: page_type.replace(/_/g, " "),
           page: currentPage,
           pageSize: pageSize,
           search: searchTerm,

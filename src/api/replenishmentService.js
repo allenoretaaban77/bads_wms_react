@@ -97,6 +97,7 @@ export const getReplenishmentView = async (id) => {
     return {
       success: true,
       data: data.data,
+      suppliers: data.suppliers,
     };
   } catch (error) {
     return {

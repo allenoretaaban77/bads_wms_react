@@ -6,6 +6,7 @@ import SalesTable from './sales/SalesTable';
 import ReturnsTable from './returns/ReturnsTable.js';
 import EmployeesTable from './employees/EmployeesTable.tsx';
 import DailySalesReport from './reports/DailySalesReport.js';
+import SuppliersTable from './suppliers/SuppliersTable.js';
 
 const descriptions = {
   profile: 'View your account details, role, and recent activity.',
@@ -22,7 +23,7 @@ function HomeContent() {
   const title = activeMenu.charAt(0).toUpperCase() + activeMenu.slice(1);
   const description = descriptions[activeMenu] || 'Select a menu item to begin.';
 
-  const menuParts = activeMenu.split('_'); 
+  const menuParts = activeMenu.split('|'); 
   const menuParent = menuParts[0];
   const menuChild = menuParts[1] ?? null; 
   
@@ -31,7 +32,7 @@ function HomeContent() {
       return <EmployeesTable />;
       break;
     case 'stocks':
-      return <ReplenishmentTable />;
+      return <ReplenishmentTable page_type={menuChild}/>;
       break;
     case 'sales':
       return <SalesTable />;
@@ -41,6 +42,9 @@ function HomeContent() {
       break;
     case 'inventory':
       return <InventoryTable page_type={menuChild} />;
+      break;
+    case 'suppliers':
+      return <SuppliersTable page_type={menuChild} />;
       break;
     default:
       return <DailySalesReport page_type={menuChild} />;

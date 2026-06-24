@@ -90,10 +90,10 @@ function SidebarMenu() {
               <button
                 onClick={() => {
                   if (sidebarCollapsed) {
-                    selectMenu(item.key, item.title);
+                    selectMenu(item.key, item.title, item.label);
                   } else {
                     if (item.children) toggleExpand(item.key);
-                    else selectMenu(item.key, item.title);
+                    else selectMenu(item.key, item.title, item.label);
                   }
                 }}
                 className={`w-full flex items-center py-3 px-2 text-white transition-colors duration-200 ${
@@ -123,8 +123,8 @@ function SidebarMenu() {
                   {item.children.map(child => (
                     <li key={child.key}>
                       <button
-                        onClick={() => selectMenu(child.key, child.title)}
-                        className={`text-left w-full py-2 pl-10 pr-2 text-sm text-gray-300 hover:text-white ${activeMenu === child.key ? 'bg-white bg-opacity-20' : ''}`}
+                        onClick={() => selectMenu(child.key, child.title, child.label)}
+                        className={`capitalize text-left w-full py-2 pl-10 pr-2 text-sm text-gray-300 hover:text-white ${activeMenu === child.key ? 'bg-white bg-opacity-20' : ''}`}
                       >
                         {child.label}
                       </button>

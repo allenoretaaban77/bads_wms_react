@@ -5,6 +5,7 @@ import { generateTransactionNumber } from '../../api/replenishmentService';
 import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 import ViewStockInHistoryModal from './ViewStockInHistoryModal';
 import { FormButton, FormHeader, FormModalThead } from '../../utils/themes.js';
+import { getSuppliersList } from '../../api/suppliersService.js';
 
 const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
   const userData = useAppViewModel((state) => state.userData);
@@ -29,6 +30,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
 
   const [showStockInHistoryModal, setShowStockInHistoryModal] = useState(false);
   const [selectedStockItem, setSelectedStockItem] = useState(null);
+  const [suppliersData, setSuppliersData] = useState([]);
 
   const getItemsTotal = () => {
     return items.reduce((sum, item) => sum + (Number(item.total) || 0), 0);
@@ -49,14 +51,30 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
 
   useEffect(() => {
     if (showCreateModal) {
-      fetchTransactionNumber();
+      (async () => {
+        try {
+          const [trnxNumber, suppliersResult] = await Promise.all([
+            generateTransactionNumber(),
+            getSuppliersList()
+          ]);
+
+          setFormData(prev => ({
+            ...prev,
+            reference_no: trnxNumber,
+          }));
+
+          if (suppliersResult.success && suppliersResult.data) {
+            const data = suppliersResult.data.data || suppliersResult.data;
+            setSuppliersData(data);
+          } else {
+            setSuppliersData({});
+          }
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
+      })();
     }
   }, [showCreateModal]);
-
-  const showAvailableStocks = (item) => {
-    setSelectedStockItem(item);
-    setShowStockInHistoryModal(true);
-  };
 
   const fetchTransactionNumber = async () => {
     try {
@@ -68,7 +86,12 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
       }));
     } catch (error) {
       console.error("Error fetching transaction number:", error);
-    }
+    } 
+  };
+
+  const showAvailableStocks = (item) => {
+    setSelectedStockItem(item);
+    setShowStockInHistoryModal(true);
   };
 
   const handleBlur = () => {
@@ -323,7 +346,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
 
             <div>
               <label className="block font-semibold text-gray-600 mb-1">Supplier</label>
-              <input
+              {/* <input
                 // required
                 name="supplier"
                 value={formData.supplier}
@@ -332,7 +355,22 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                 className={`w-full px-3 py-1.5 border rounded focus:outline-none focus:ring-1 focus:ring-button focus:border-transparent text-gray-800 ${
                   errors.supplier ? 'border-red-400 bg-red-50/30' : 'border-gray-300'
                 }`}
-              />
+              /> */}
+              <select
+                name="supplier"
+                value={formData.supplier}
+                onChange={handleChange}
+                className={`w-full px-3 py-1.5 border rounded focus:outline-none focus:ring-1 focus:ring-button focus:border-transparent text-gray-800 ${
+                  errors.supplier ? 'border-red-400 bg-red-50/30' : 'border-gray-300'
+                }`}
+              >
+                <option value="">Select...</option>
+                {suppliersData.map((item) => (
+                  <option key={item.id} value={item.name}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
               {errors.supplier && <p className="mt-1 text-[11px] text-red-600">{errors.supplier}</p>}
             </div>
 

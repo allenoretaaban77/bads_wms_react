@@ -28,6 +28,7 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
 
   const [showStockInHistoryModal, setShowStockInHistoryModal] = useState(false);
   const [selectedStockItem, setSelectedStockItem] = useState(null);
+  const [suppliersData, setSuppliersData] = useState([]);
 
   const getItemsTotal = () => {
     return items.reduce((sum, item) => sum + (Number(item.total) || 0), 0);
@@ -68,6 +69,9 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
               };
             });
             setItems(formattedItems);
+
+            const data = result.suppliers;
+            setSuppliersData(result.suppliers);
           } else {
             setErrors(result?.error || {});
           }
@@ -342,7 +346,7 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
 
             <div>
               <label className="block font-semibold text-gray-600 mb-1">Supplier</label>
-              <input
+              {/* <input
                 name="supplier"
                 value={formData.supplier}
                 onChange={handleChange}
@@ -350,7 +354,22 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
                 className={`w-full px-3 py-1.5 border rounded focus:outline-none focus:ring-1 focus:ring-button focus:border-transparent text-gray-800 ${
                   errors.supplier ? 'border-red-400 bg-red-50/30' : 'border-gray-300'
                 }`}
-              />
+              /> */}
+              <select
+                name="supplier"
+                value={formData.supplier}
+                onChange={handleChange}
+                className={`w-full px-3 py-1.5 border rounded focus:outline-none focus:ring-1 focus:ring-button focus:border-transparent text-gray-800 ${
+                  errors.supplier ? 'border-red-400 bg-red-50/30' : 'border-gray-300'
+                }`}
+              >
+                <option value="">Select...</option>
+                {suppliersData.map((item) => (
+                  <option key={item.id} value={item.name}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
               {errors.supplier && <p className="mt-1 text-[11px] text-red-600">{errors.supplier}</p>}
             </div>
 
