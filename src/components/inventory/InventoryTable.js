@@ -17,6 +17,7 @@ function InventoryTable({ page_type }) {
   const [inventoryData, setInventoryData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingSummary, setLoadingSummary] = useState(true);
   const [error, setError] = useState(null);
   
   // Pagination states
@@ -41,12 +42,21 @@ function InventoryTable({ page_type }) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Summary states
+  const [totalProductCount, setTotalProductCount] = useState(0);
+  const [totalInventoryCost, setTotalInventoryCost] = useState(0);
+  const [totalInventoryValue, setTotalInventoryValue] = useState(0);
+  const [totalNoStock, setTotalNoStock] = useState(0);
+  const [totalInStock, setTotalInStock] = useState(0);
+  const [totalLowStock, setTotalLowStock] = useState(0);
   
   // Alert state
   const [alert, setAlert] = useState({ show: false, message: '', type: '' });
 
   // Refresh function to trigger data reload
   const handleRefresh = () => {
+    setLoadingSummary(true);
     setRefreshKey(prev => prev + 1);
   };
 
@@ -58,7 +68,7 @@ function InventoryTable({ page_type }) {
         setError(null);
         
         const params = {
-          type: page_type.replace(/_/g, " "),
+          type: page_type?.replace(/_/g, " "),
           page: currentPage,
           pageSize: pageSize,
           search: searchTerm,
@@ -79,6 +89,12 @@ function InventoryTable({ page_type }) {
           const total = result.data.total || data.length;
           const totalPages = result.data.totalPages || Math.ceil(total / pageSize);
           
+          setTotalProductCount(result.data?.totalProductCount || 0);
+          setTotalInventoryCost(result.data?.totalInventoryCost || 0);
+          setTotalInventoryValue(result.data?.totalInventoryValue || 0);
+          setTotalNoStock(result.data?.totalNoStock || 0);
+          setTotalLowStock(result.data?.totalLowStock || 0);
+          setTotalInStock(result.data?.totalInStock || 0);
           setInventoryData(data);
           setFilteredData(data);
           setTotalItems(total);
@@ -105,6 +121,7 @@ function InventoryTable({ page_type }) {
         setTotalPages(0);
       } finally {
         setLoading(false);
+        setLoadingSummary(false);
       }
     };
 
@@ -255,32 +272,40 @@ function InventoryTable({ page_type }) {
       <div className="flex-shrink-0 space-y-0">
         {/* Inventory Statistics */}
         <div className="bg-white p-2 rounded-custom border border-gray-200 mb-2">
+          {loadingSummary && (
+            <div className="flex justify-center items-center py-2">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-button"></div>
+              <span className="ml-2 text-gray-600">Loading summary data...</span>
+            </div>
+          )}
+          {!loadingSummary && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mb-1">
             <div className="text-center">
-              <div className="text-2xl font-bold text-gray-800">0</div>
+              <div className="text-2xl font-bold text-gray-800">{totalProductCount.toLocaleString()}</div>
               <div className="text-xs text-gray-600">No. of Products</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">0</div>
+              <div className="text-2xl font-bold text-green-600">{formatCurrency(totalInventoryValue)}</div>
               <div className="text-xs text-gray-600">Current Inventory Value</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">0</div>
+              <div className="text-2xl font-bold text-blue-600">{formatCurrency(totalInventoryCost)}</div>
               <div className="text-xs text-gray-600">Current Inventory Cost</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">0</div>
+              <div className="text-2xl font-bold text-green-600">{totalInStock.toLocaleString()}</div>
               <div className="text-xs text-gray-600">In Stock</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-600">0</div>
+              <div className="text-2xl font-bold text-yellow-600">{totalLowStock.toLocaleString()}</div>
               <div className="text-xs text-gray-600">Low Stock</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">0</div>
+              <div className="text-2xl font-bold text-red-600">{totalNoStock.toLocaleString()}</div>
               <div className="text-xs text-gray-600">No Stock</div>
             </div>
           </div>
+          )}
         </div>
 
         {/* Search and Filters */}
@@ -455,11 +480,11 @@ function InventoryTable({ page_type }) {
                             {item.status}
                           </span>
                         </td>
-                        <td className="px-3 py-2 border-0">
-                          <div className="flex justify-center space-x-2">
+                        <td className="px-0 py-2 border-0">
+                          <div className="flex justify-center space-x-1">
                             <button
                               onClick={() => handleView(item)}
-                              className="text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                              className="text-blue-600 hover:text-blue-800 px-0 py-1 rounded hover:bg-blue-50 transition-colors"
                               title="View"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -469,7 +494,7 @@ function InventoryTable({ page_type }) {
                             </button>
                             <button
                               onClick={() => handleEdit(item)}
-                              className="text-green-600 hover:text-green-800 px-2 py-1 rounded hover:bg-green-50 transition-colors"
+                              className="text-green-600 hover:text-green-800 px-0 py-1 rounded hover:bg-green-50 transition-colors"
                               title="Edit"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -478,7 +503,7 @@ function InventoryTable({ page_type }) {
                             </button>
                             <button
                               onClick={() => handleDelete(item.id)}
-                              className="text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                              className="text-red-600 hover:text-red-800 px-0 py-1 rounded hover:bg-red-50 transition-colors"
                               title="Delete"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -32,6 +32,8 @@ function HomeContent() {
       return <EmployeesTable />;
       break;
     case 'stocks':
+    case 'replenishment':
+    case 'replenishment_management':
       return <ReplenishmentTable page_type={menuChild}/>;
       break;
     case 'sales':

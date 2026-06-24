@@ -8,6 +8,7 @@ function HomeView() {
   const logout = useAppViewModel((state) => state.logout);
   const menuItems = useAppViewModel((state) => state.menuItems);
   const activeTitle = useAppViewModel((state) => state.activeTitle);
+  const activeLabel = useAppViewModel((state) => state.activeLabel);
 
   return (
     <div className="flex">

@@ -94,10 +94,10 @@ const menuItems = [
     })),
     title: 'Inventory Management'
   },
-  { key: 'replenishment', label: 'Replenishment', title: 'Replenishment Management',
+  { key: 'replenishment', label: 'Replenishment', title: 'Replenishment',
     children: [
-      { key: 'replenishment_management', label: 'Management', title: 'Replenishment Management' },
-      { key: 'suppliers', label: 'Suppliers', title: 'Suppliers' },
+      { key: 'replenishment_management', label: 'Stock Management', title: 'Replenishment' },
+      { key: 'suppliers', label: 'Suppliers', title: 'Replenishment' },
     ]
   },
   { key: 'sales', label: 'Sales', title: 'Sales Management' },

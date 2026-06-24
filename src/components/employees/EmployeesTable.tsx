@@ -308,11 +308,11 @@ function EmployeesTable({ page_type }: EmployeesTableProps) {
                             {item.status || 'Active'}
                           </span>
                         </td>
-                        <td className="px-3 py-2 border-0">
-                          <div className="flex justify-center space-x-2">
+                        <td className="px-0 py-2 border-0">
+                          <div className="flex justify-center space-x-1">
                             <button
                               onClick={() => handleView(item)}
-                              className="text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                              className="text-blue-600 hover:text-blue-800 px-0 py-1 rounded hover:bg-blue-50 transition-colors"
                               title="View"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -332,7 +332,7 @@ function EmployeesTable({ page_type }: EmployeesTableProps) {
                             {userData?.position_id === 1 && (
                               <button
                                 onClick={() => handleDelete(item.id)}
-                                className="text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                                className="text-red-600 hover:text-red-800 px-0 py-1 rounded hover:bg-red-50 transition-colors"
                                 title="Delete"
                               >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

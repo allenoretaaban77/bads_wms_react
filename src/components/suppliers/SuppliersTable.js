@@ -210,7 +210,7 @@ function SuppliersTable({ page_type }) {
                     {"title":"ID", "name":"id", "align":"center"},
                     {"title":"Name", "name":"name", "date":"left"},
                     {"title":"Date Created", "name":"date_created", "date":"left"},
-                    {"title":"Action", "name":"action", "date":"left"},
+                    {"title":"Action", "name":"action", "default":1},
                   ]
                 } />
                 <tbody>
@@ -225,11 +225,11 @@ function SuppliersTable({ page_type }) {
                         <td className="px-3 py-2 border-r text-sm font-semibold text-green-900">{index + 1}</td>
                         <td className="px-3 py-2 border-r text-sm">{item.name}</td>
                         <td className="px-3 py-2 border-r text-sm">{formatLongDate(item.date_created)}</td>
-                        <td className="px-3 py-2 border-0">
-                          <div className="flex justify-center space-x-2">
+                        <td className="px-0 py-2 border-0">
+                          <div className="flex justify-center space-x-1">
                             <button
                               onClick={() => handleView(item)}
-                              className="text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                              className="text-blue-600 hover:text-blue-800 px-0 py-1 rounded hover:bg-blue-50 transition-colors"
                               title="View"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -36,7 +36,7 @@ export const APP_CONFIG = {
   API_BASE_URL: API_BASE_URL,
   
   // Pagination Defaults
-  DEFAULT_PAGE_SIZE: 10,
+  DEFAULT_PAGE_SIZE: 50,
   MAX_PAGE_SIZE: 100,
   
   // Token Settings

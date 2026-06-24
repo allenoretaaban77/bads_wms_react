@@ -384,7 +384,7 @@ function DailySalesReport({ page_type }) {
                     {"title":"Net Sales", "name":"net_sales", "align":"right"},
                     {"title":"COGS", "name":"cogs", "align":"right"},
                     {"title":"Net Profit", "name":"net_profit", "align":"right"},
-                    {"title":"Action", "name":"action", "align":"center"},
+                    {"title":"Action", "name":"action", "default":1},
                   ]
                 } />
                 <tbody>
@@ -403,11 +403,11 @@ function DailySalesReport({ page_type }) {
                         <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.net_sales)}</td>
                         <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.cogs)}</td>
                         <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.net_profit)}</td>
-                        <td className="px-3 py-2 border-0">
-                          <div className="flex justify-center space-x-2">
+                        <td className="px-0 py-2 border-0">
+                          <div className="flex justify-center space-x-1">
                             <button
                               onClick={() => handleView(item)}
-                              className="text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                              className="text-blue-600 hover:text-blue-800 px-0 py-1 rounded hover:bg-blue-50 transition-colors"
                               title="View"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

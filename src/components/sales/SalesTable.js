@@ -480,11 +480,11 @@ function SalesTable() {
                         <td className="px-3 py-2 border-r text-sm text-center capitalize"><span className={getTablePaidStatus(item.is_paid).color}> {getTablePaidStatus(item.is_paid).text}</span></td>
                         <td className="px-3 py-2 border-r text-sm text-center capitalize"><span className={getTableStatus(item.status).color}> {getTableStatus(item.status).text}</span></td>
                         <td className="px-3 py-2 border-r text-sm">{item.remarks}</td>
-                        <td className="px-3 py-2 border-0">
-                          <div className="flex justify-center space-x-2">
+                        <td className="px-0 py-2 border-0">
+                          <div className="flex justify-center space-x-1">
                             <button
                               onClick={() => handleView(item)}
-                              className="text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                              className="text-blue-600 hover:text-blue-800 px-0 py-1 rounded hover:bg-blue-50 transition-colors"
                               title="View"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -495,7 +495,7 @@ function SalesTable() {
                             {item.status == "draft" && (
                               <button
                                 onClick={() => handleEdit(item)}
-                                className="text-green-600 hover:text-green-800 px-2 py-1 rounded hover:bg-green-50 transition-colors"
+                                className="text-green-600 hover:text-green-800 px-0 py-1 rounded hover:bg-green-50 transition-colors"
                                 title="Edit"
                               >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -506,7 +506,7 @@ function SalesTable() {
                             {item.status != "draft" && (
                               <button
                                 onClick={() => handleVoid(item.id)}
-                                className="text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                                className="text-red-600 hover:text-red-800 px-0 py-1 rounded hover:bg-red-50 transition-colors"
                                 title="Void"
                               >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -518,7 +518,7 @@ function SalesTable() {
                             {item.status == "draft" && (
                               <button
                                 onClick={() => handleDelete(item.id)}
-                                className="text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                                className="text-red-600 hover:text-red-800 px-0 py-1 rounded hover:bg-red-50 transition-colors"
                                 title="Delete"
                               >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
