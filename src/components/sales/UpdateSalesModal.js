@@ -34,9 +34,9 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
   const [showStockBatchesModal, setShowStockBatchesModal] = useState(false);
   const [selectedStockItem, setSelectedStockItem] = useState(null);
 
-  useEffect(() => {
-    console.log('UpdateSalesModal', items);
-  }, [items]);
+  // useEffect(() => {
+  //   console.log('UpdateSalesModal', items);
+  // }, [items]);
 
   useEffect(() => {
     if (showEditModal && selectedItem) {
@@ -213,7 +213,7 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
     const newErrors = {};
 
     setItems(prev => {
-      const exists = prev.some(item => {
+      const exists = items.some(item => {
         return (
           item.inventory_id === suggestion.inventory_id && Number(item.cost) === Number(suggestion.cost_per_unit)
         );

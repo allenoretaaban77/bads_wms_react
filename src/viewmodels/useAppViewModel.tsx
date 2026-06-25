@@ -90,20 +90,20 @@ const menuItems = [
     children: Object.entries(APP_CONFIG.INVENTORY_MENU).map(([key, value]) => ({
       key: `inventory|${value.toLowerCase().replace(/[\s&]+/g, '_')}`, // e.g., 'inventory_nuts_bolts'
       label: value,                                       // e.g., 'Nuts & Bolts'
-      title: `Inventory Management`                        // e.g., 'Nuts & Bolts Management'
+      title: `Inventory Management - `                        // e.g., 'Nuts & Bolts Management'
     })),
     title: 'Inventory Management'
   },
-  { key: 'replenishment', label: 'Replenishment', title: 'Replenishment',
+  { key: 'replenishment', label: 'Replenishment', title: 'Stock Replenishment',
     children: [
-      { key: 'replenishment_management', label: 'Stock Management', title: 'Replenishment' },
-      { key: 'suppliers', label: 'Suppliers', title: 'Replenishment' },
+      { key: 'replenishment_management', label: 'Stock Management', title: 'Stock Management' },
+      { key: 'suppliers', label: 'Suppliers', title: 'Suppliers' },
     ]
   },
   { key: 'sales', label: 'Sales', title: 'Sales Management' },
   { key: 'returns', label: 'Returns', title: 'Returns Management' },
   { key: 'employees', label: 'Employees', title: 'Employees Management' },
-  { key: 'reports', label: 'Reports', title: 'Reports',
+  { key: 'reports', label: 'Reports', title: 'Daily Sales Reports',
     children: [
       { key: 'reports|sales', label: 'Daily Sales Reports', title: 'Daily Sales Reports' },
       // { key: 'reports_generate', label: 'Generate Reeports', title: 'Generate Reeports' }

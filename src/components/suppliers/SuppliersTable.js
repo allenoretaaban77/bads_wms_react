@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { formatCurrency, formatLongDate, getTablePaidStatus, getTableStatus, getTablePaymentStatus } from '../../utils/formatters';
+import { formatLongDate } from '../../utils/formatters';
 import { APP_CONFIG } from '../../config/constants';
 import Alert from '../../utils/alert';
 import { FormButton, FormPagination, FormThead } from '../../utils/themes.js';
@@ -7,7 +7,6 @@ import { getSuppliersList } from '../../api/suppliersService.js';
 
 function SuppliersTable({ page_type }) {
   // Data and loading states
-  const [saleDate, satSalesData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -23,12 +22,10 @@ function SuppliersTable({ page_type }) {
   const [sortOrder, setSortOrder] = useState('desc');
   
   // Filter states
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
   const [quantityFilter, setQuantityFilter] = useState('all');
   const [recordStatusFilter, setRecordStatusFilter] = useState('all');
-  const [paymentStatusFilter, setPaymentStatusFilter] = useState('all');
   const [isPaidFilter, setIsPaidFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
   
   // Modal states
   const [selectedItem, setSelectedItem] = useState(null);
@@ -58,9 +55,7 @@ function SuppliersTable({ page_type }) {
           search: searchTerm,
           sort: sortField,
           order: sortOrder,
-          status: statusFilter !== 'all' ? statusFilter : '',
           record_status: recordStatusFilter !== 'all' ? recordStatusFilter : '',
-          payment_status: paymentStatusFilter !== 'all' ? paymentStatusFilter : '',
           is_paid: isPaidFilter !== 'all' ? isPaidFilter : '',
         };
 
@@ -73,7 +68,6 @@ function SuppliersTable({ page_type }) {
           const total = result.data.total || data.length;
           const totalPages = result.data.totalPages || Math.ceil(total / pageSize);
           
-          satSalesData(data);
           setFilteredData(data);
           setTotalItems(total);
           setTotalPages(totalPages);
@@ -83,7 +77,6 @@ function SuppliersTable({ page_type }) {
           setError(result.error || 'Failed to load inventory data');
           
           // Set empty data on error
-          satSalesData([]);
           setFilteredData([]);
           setTotalItems(0);
           setTotalPages(0);
@@ -93,7 +86,6 @@ function SuppliersTable({ page_type }) {
         setError(`Failed to load inventory data: ${err.message}`);
         
         // Set empty data on error
-        satSalesData([]);
         setFilteredData([]);
         setTotalItems(0);
         setTotalPages(0);
@@ -103,7 +95,7 @@ function SuppliersTable({ page_type }) {
     };
 
     loadsatSalesData();
-  }, [currentPage, pageSize, searchTerm, sortField, sortOrder, statusFilter, quantityFilter, recordStatusFilter, refreshKey, paymentStatusFilter, isPaidFilter]);
+  }, [currentPage, pageSize, searchTerm, sortField, sortOrder, quantityFilter, recordStatusFilter, refreshKey, isPaidFilter]);
 
   const handleView = (item) => {
     setSelectedItem(item);
@@ -192,7 +184,7 @@ function SuppliersTable({ page_type }) {
           {loading && (
             <div className="flex justify-center items-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-button"></div>
-              <span className="ml-2 text-gray-600">Loading inventory data...</span>
+              <span className="ml-2 text-gray-600">Loading suppliers data...</span>
             </div>
           )}
           

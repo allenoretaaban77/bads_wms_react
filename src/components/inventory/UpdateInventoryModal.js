@@ -2,17 +2,18 @@ import React, { useState, useEffect } from 'react';
 import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 import { APP_CONFIG } from '../../config/constants';
 import { FormButton, FormHeader } from '../../utils/themes.js';
+import ViewInventoryStockBatchesModal from './ViewInventoryStockBatchesModal.js';
 
 // Add CSS for loading circle animation
 const style = document.createElement('style');
 style.textContent = `
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-  .animate-spin {
-    animation: spin 1s linear infinite;
-  }
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
 `;
 document.head.appendChild(style);
 
@@ -20,7 +21,9 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
   const userData = useAppViewModel((state) => state.userData);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  
+  const [showStockBatchesModal, setShowStockBatchesModal] = useState(false);
+  const [selectedStockItem, setSelectedStockItem] = useState(null);
+
   const [formData, setFormData] = useState({
     id: '',
     product_name: '',
@@ -73,6 +76,7 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -111,6 +115,14 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
   const handleCancel = () => {
     setErrors({});
     setShowEditModal(false);
+  };
+
+  const handleUpdateCosts = (allocationData) => {
+  };
+
+  const showAvailableStocks = (item) => {
+    setSelectedStockItem(item);
+    setShowStockBatchesModal(true);
   };
 
   if (!showEditModal) return null;
@@ -191,18 +203,51 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
 
               <div className="flex flex-col space-y-1">
                 <label className="text-xs font-semibold text-gray-700">Cost per Unit *</label>
-                <input
-                  type="number"
-                  name="cost_per_unit"
-                  step="0.01"
-                  value={formData.cost_per_unit}
-                  onChange={handleChange}
-                  placeholder="0.00"
-                  className={`w-full px-3 py-1.5 text-xs border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                {/* {formData.tracking_method === APP_CONFIG.TRACKING_METHOD.STANDARD && (
+                  <input
+                    type="number"
+                    name="cost_per_unit"
+                    step="0.01"
+                    value={formData.cost_per_unit}
+                    onChange={handleChange}
+                    placeholder="0.00"
+                    className={`w-full px-3 py-1.5 text-xs border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                      errors.cost_per_unit ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
+                    }`}
+                    required
+                  />
+                )} */}
+                <div
+                  className={`flex items-center w-full pr-0 pl-3 py-1.5 text-xs border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                     errors.cost_per_unit ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                   }`}
-                  required
-                />
+                >
+                  {formData.tracking_method === APP_CONFIG.TRACKING_METHOD.STANDARD && (
+                    <input
+                      type="number"
+                      name="cost_per_unit"
+                      step="0.01"
+                      value={formData.cost_per_unit}
+                      onChange={handleChange}
+                      placeholder="0.00"
+                      required
+                      className="flex-1 focus:outline-none bg-transparent font-medium text-gray-800"
+                    />
+                  )}
+                  {formData.tracking_method === APP_CONFIG.TRACKING_METHOD.BATCH && (
+                    <button 
+                      type="button" 
+                      title="View Stock Batches" 
+                      onClick={() => showAvailableStocks(selectedItem)}
+                      className="text-blue-500 hover:text-blue-700 mr-1.5 focus:outline-none flex-shrink-0"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
                 {errors.cost_per_unit && (
                   <p className="text-xs text-red-600 mt-0.5">{errors.cost_per_unit}</p>
                 )}
@@ -228,7 +273,7 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
               </div>
 
               <div className="flex flex-col space-y-1">
-                <label className="text-xs font-semibold text-gray-700">Reorder Threshold *</label>
+                <label className="text-xs font-semibold text-gray-700">Reorder Level *</label>
                 <input
                   type="number"
                   name="reorder_level"
@@ -352,8 +397,17 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
         </div>
 
       </div>
+
+      {/* Dynamic Allocation Ledger Overlay Modal */}
+      <ViewInventoryStockBatchesModal
+        show={showStockBatchesModal}
+        onClose={() => setShowStockBatchesModal(false)}
+        id={selectedItem?.id}
+        onApply={handleUpdateCosts}
+      />
+
     </div>
   );
-};
+  };
 
 export default UpdateInventoryModal;

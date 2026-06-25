@@ -50,6 +50,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    console.log(name, value);
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -236,7 +237,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
               </div>
 
               <div className="flex flex-col space-y-1">
-                <label className="text-xs font-semibold text-gray-700">Reorder Threshold *</label>
+                <label className="text-xs font-semibold text-gray-700">Reorder Level *</label>
                 <input
                   type="number"
                   name="reorder_level"

@@ -96,7 +96,9 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onUpdate
           setError(result.error.error);
         }
       } catch (error) {
-        console.error("Error saving replenishment:", error);
+        if (error !== undefined) {
+          console.error("Error saving replenishment:", error);
+        }
       } finally {
         setIsSubmitting(false);
       }
@@ -132,7 +134,7 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onUpdate
           {data && (
             <div className="flex-1 flex flex-col min-h-0 space-y-4">
               {/* Reference Meta Information Data Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded flex-shrink-0">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded flex-shrink-0">
                 <div>
                   <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block mb-0.5">Transaction No</span>
                   <span className="font-bold text-gray-800 text-sm font-mono">{data.invoice_no}</span>
@@ -151,20 +153,28 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onUpdate
                     {data.remarks || '-'}
                   </span>
                 </div>
+                <div>
+                  <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block mb-0.5">Item Count</span>
+                  <span className="font-bold text-gray-800 text-sm">{data.items.length}</span>
+                </div>
               </div>
 
               <div className="border border-gray-200 rounded flex-1 overflow-y-auto min-h-0 bg-white shadow-inner">
                   <table className="w-full text-left table-auto border-collapse">
                     <FormModalTheadDefault data={[
-                      {"title":"SKU", "class":"py-2 text-left w-40"},
+                      {"title":"#", "class":"py-2 text-left w-10"},
+                      {"title":"SKU", "class":"py-2 text-left w-28"},
                       {"title":"Product Name", "class":"py-2 text-left"},
-                      {"title":"Quantity", "class":"py-2 text-right w-40"},
+                      {"title":"Quantity", "class":"py-2 text-right w-20"},
                       {"title":"Unit Price", "class":"py-2 text-right w-40"},
                       {"title":"Total", "class":"py-2 pl-5 text-right w-40"},
                     ]} />
                     <tbody className="divide-y divide-gray-100">
-                      {data.items && data.items.map((item) => (
+                      {data.items && data.items.map((item, index) => (
                         <tr key={item.id} className="hover:bg-gray-50/80 transition-colors">
+                          <td className="px-3 py-2 font-mono text-gray-700 font-semibold align-middle">
+                            {index + 1}
+                          </td>
                           <td className="px-3 py-2 font-mono text-gray-700 font-semibold align-middle">
                             {item.sku}
                           </td>
@@ -185,7 +195,7 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onUpdate
                       </tbody>
                       <tfoot className="sticky bottom-0 z-10 bg-gray-50 border-t-2 border-gray-200 font-bold text-gray-800">
                         <tr>
-                          <td colSpan="4" className="px-3 py-2.5 text-right uppercase tracking-wider text-[10px] text-gray-500 align-middle">
+                          <td colSpan="5" className="px-3 py-2.5 text-right uppercase tracking-wider text-[10px] text-gray-500 align-middle">
                             Grand Total
                           </td>
                           <td className="px-3 py-2.5 text-right pr-4 text-base font-extrabold text-gray-900 align-middle bg-gray-100/60">
