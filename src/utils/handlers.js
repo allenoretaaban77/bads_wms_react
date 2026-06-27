@@ -1,13 +1,18 @@
 import { useState, useCallback } from 'react';
-import { usePagination } from './pagination';
+import { usePageControl } from './pagination';
 import { deleteSupplier } from '../api/suppliersService';
 import useAppViewModel from '../viewmodels/useAppViewModel';
 import { useAlertStore } from './alert';
 
-export const useHandlers = () => {
-  const pagination = usePagination();
+export const useHandlerSupplier = () => {
+  const pagination = usePageControl();
   const userData = useAppViewModel((state) => state.userData);
   const alertStore = useAlertStore();
+  
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const handleDelete = async (id, type) => {
     if (window.confirm('Are you sure you want to DELETE this supplier?')) {
@@ -16,7 +21,7 @@ export const useHandlers = () => {
         if (result.success) {
           alertStore.setAlert({
             show: true,
-            message: type + ' record successfully deleted.',
+            message: 'Supplier record successfully deleted.',
             type: 'success'
           });
           
@@ -24,30 +29,34 @@ export const useHandlers = () => {
             alertStore.setAlert({ show: false, message: '', type: '' });
           }, 3000);
           
-          handleRefreshSupplier();
+          handleRefresh();
         } else {
           alertStore.setAlert({
             show: true,
-            message: 'Failed to delete ' + type + ' record.',
+            message: 'Failed to delete supplier record.',
             type: 'error'
           });
         }
       } catch (err) {
         alertStore.setAlert({
           show: true,
-          message: 'Failed to delete ' + type + ' record.',
+          message: 'Failed to delete supplier record.',
           type: 'error'
         });
       }
     }
   };
 
-  const handleRefreshSupplier = () => {
+  const handleRefresh = () => {
     alertStore.setRefreshSupplier(prev => prev + 1)
   }
 
   return {
-    handleRefreshSupplier,
+    selectedItem, setSelectedItem,
+    showViewModal, setShowViewModal,
+    showCreateModal, setShowCreateModal,
+    showEditModal, setShowEditModal,
+    handleRefresh,
     handleDelete,
   };
 }

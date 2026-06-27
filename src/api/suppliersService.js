@@ -75,6 +75,44 @@ export const getSuppliersList = async (params = {}) => {
   }
 };
 
+export const viewSupplier = async (id) => {
+  try {
+    const headers = getApiHeaders();
+    const response = await fetch(`${API_BASE_URL}/api/suppliers/view?id=${id}`, {
+      method: 'GET',
+      headers: headers,
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to fetch supplier details';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch (e) {
+        errorMessage = response.statusText || errorMessage;
+      }
+      
+      return {
+        success: false,
+        error: errorMessage,
+        status: response.status,
+      };
+    }
+
+    const data = await response.json();
+    
+    return {
+      success: true,
+      data: data.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: 'An unexpected error occurred while fetching supplier details',
+    };
+  }
+};
+
 export const deleteSupplier = async (id, employee_id) => {
   try {
     const formData = new URLSearchParams();

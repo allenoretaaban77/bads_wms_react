@@ -2,15 +2,11 @@ import { useState, useCallback } from 'react';
 import { APP_CONFIG } from '../config/constants';
 import { create } from 'zustand';
 
-export const usePagination = (defaultSize = 5) => {
-  const [sortField, setSortField] = useState('id');
-  const [sortOrder, setSortOrder] = useState('desc');
+export const usePageControl = (defaultSize) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(APP_CONFIG.DEFAULT_PAGE_SIZE || 20);
+  const [pageSize, setPageSize] = useState(defaultSize || APP_CONFIG.DEFAULT_PAGE_SIZE);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   const handlePageSizeChange = useCallback((size) => {
     setPageSize(size);
@@ -22,40 +18,14 @@ export const usePagination = (defaultSize = 5) => {
   }, []);  
 
   return {
-    sortField, setSortField,
-    sortOrder, setSortOrder,
     currentPage, setCurrentPage,
     pageSize, setPageSize,
     totalItems, setTotalItems,
     totalPages, setTotalPages,
-    loading, setLoading,
-    error, setError,
     handlePageSizeChange,
     handlePageChange
   };
 }
-
-export const usePaginationStore = create((set,get) => ({
-  sortField: 'id', 
-  sortOrder: 'desc',
-  currentPage: 1,
-  pageSize: APP_CONFIG.DEFAULT_PAGE_SIZE || 20,
-  totalItems: 0,
-  totalPages: 0,
-  setSortField: (field) => set({ sortField: field }),
-  setSortOrder: (order) => set({ sortOrder: order }),
-  setCurrentPage: (page) => set({ currentPage: page }),
-  setPageSize: (size) => set({ pageSize: size, currentPage: 1 }), // Reset to page 1 on size change
-  setTotalItems: (total) => set({ totalItems: total }),
-  setTotalPages: (pages) => set({ totalPages: pages }),
-  handlePageChange: (page) => {
-    get().setCurrentPage(page);
-  },
-  handlePageSizeChange: (newPageSize) => {
-    get().setPageSize(newPageSize);
-    get().setCurrentPage(1);
-  }
-}));
 
 export const FormPagination = ({
   currentPage,
@@ -141,3 +111,25 @@ export const FormPagination = ({
     </div>
   );
 };
+
+export const usePaginationStore = create((set,get) => ({
+  sortField: 'id', 
+  sortOrder: 'desc',
+  currentPage: 1,
+  pageSize: APP_CONFIG.DEFAULT_PAGE_SIZE || 20,
+  totalItems: 0,
+  totalPages: 0,
+  setSortField: (field) => set({ sortField: field }),
+  setSortOrder: (order) => set({ sortOrder: order }),
+  setCurrentPage: (page) => set({ currentPage: page }),
+  setPageSize: (size) => set({ pageSize: size, currentPage: 1 }), // Reset to page 1 on size change
+  setTotalItems: (total) => set({ totalItems: total }),
+  setTotalPages: (pages) => set({ totalPages: pages }),
+  handlePageChange: (page) => {
+    get().setCurrentPage(page);
+  },
+  handlePageSizeChange: (newPageSize) => {
+    get().setPageSize(newPageSize);
+    get().setCurrentPage(1);
+  }
+}));

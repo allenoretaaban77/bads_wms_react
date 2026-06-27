@@ -4,41 +4,39 @@ import Alert, { useAlert } from '../../utils/alert';
 import { FormButton, FormThead } from '../../utils/themes.js';
 import { getSuppliersList, deleteSupplier } from '../../api/suppliersService.js';
 import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
-import { FormPagination, usePaginationStore, usePagination } from '../../utils/pagination.js';
-import { useHandlers } from '../../utils/handlers.js';
+import { FormPagination, usePageControl } from '../../utils/pagination.js';
+import { useTableControl } from '../../utils/table.js';
+import { useHandlerSupplier } from '../../utils/handlers.js';
 import { useAlertStore } from '../../utils/alert';
+import ViewSuppliersModal from './ViewSuppliersModal.js';
+import CreateSupplierModal from './CreateSupplierModal.js';
 
 function SuppliersTable() {
   const userData = useAppViewModel((state) => state.userData);
-  const alertObj = useAlertStore();
-  const pagination = usePagination();
-  const handlers = useHandlers();
+  const alertStore = useAlertStore();
+  const { currentPage, setCurrentPage, pageSize, setPageSize, totalItems, setTotalItems, totalPages, setTotalPages, handlePageSizeChange, handlePageChange } = usePageControl();
+  const { sortField, setSortField, sortOrder, setSortOrder, loading, setLoading, error, setError } = useTableControl();
+  const { selectedItem, setSelectedItem, showViewModal, setShowViewModal, showCreateModal, setShowCreateModal, showEditModal, setShowEditModal, handleRefresh, handleDelete } = useHandlerSupplier();
   
   // Filter states
   const [filteredData, setFilteredData] = useState([]);
   const [recordStatusFilter] = useState('all'); 
   const [isPaidFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  
-  // Modal states
-  const [, setSelectedItem] = useState(null);
-  const [, setShowViewModal] = useState(false);
-  const [, setShowEditModal] = useState(false);
-  const [, setShowCreateModal] = useState(false);
 
   // Fetch suppliers data from API
   useEffect(() => {
     const fetchSuppliers = async () => {
       try {
-        pagination.setLoading(true);
-        pagination.setError(null);
+        setLoading(true);
+        setError(null);
         
         const params = {
-          page: pagination.currentPage,
-          pageSize: pagination.pageSize,
+          page: currentPage,
+          pageSize: pageSize,
           search: searchTerm,
-          sort: pagination.sortField,
-          order: pagination.sortOrder,
+          sort: sortField,
+          order: sortOrder,
           record_status: recordStatusFilter !== 'all' ? recordStatusFilter : '',
           is_paid: isPaidFilter !== 'all' ? isPaidFilter : '',
         };
@@ -48,31 +46,31 @@ function SuppliersTable() {
         if (result.success && result.data) {
           const data = result.data.data || result.data; 
           const total = result.data.total !== undefined ? result.data.total : data.length;
-          const totalPages = result.data.totalPages || Math.ceil(total / pagination.pageSize);
+          const totalPages = result.data.totalPages || Math.ceil(total / pageSize);
           
           setFilteredData(data);
-          pagination.setTotalItems(total);
-          pagination.setTotalPages(totalPages);
+          setTotalItems(total);
+          setTotalPages(totalPages);
         } else {
           console.warn('API returned error:', result.error);
-          pagination.setError(result.error || 'Failed to load suppliers data');
+          setError(result.error || 'Failed to load suppliers data');
           setFilteredData([]);
-          pagination.setTotalItems(0);
-          pagination.setTotalPages(0);
+          setTotalItems(0);
+          setTotalPages(0);
         }
       } catch (err) {
         console.error('Error fetching suppliers:', err);
-        pagination.setError(`Failed to load suppliers data: ${err.message}`);
+        setError(`Failed to load suppliers data: ${err.message}`);
         setFilteredData([]);
-        pagination.setTotalItems(0);
-        pagination.setTotalPages(0);
+        setTotalItems(0);
+        setTotalPages(0);
       } finally {
-        pagination.setLoading(false);
+        setLoading(false);
       }
     };
 
     fetchSuppliers();
-  }, [pagination.currentPage, pagination.pageSize, searchTerm, pagination.sortField, pagination.sortOrder, recordStatusFilter, isPaidFilter, alertObj.refreshSupplier]);
+  }, [currentPage, pageSize, searchTerm, sortField, sortOrder, recordStatusFilter, isPaidFilter, alertStore.refreshSupplier]);
 
   const handleView = (item) => {
     setSelectedItem(item);
@@ -80,18 +78,56 @@ function SuppliersTable() {
   };
 
   const handleSort = (field) => {
-    const newOrder = pagination.sortField === field && pagination.sortOrder === 'asc' ? 'desc' : 'asc';
-    pagination.setSortField(field);
-    pagination.setSortOrder(newOrder);
+    const newOrder = sortField === field && sortOrder === 'asc' ? 'desc' : 'asc';
+    setSortField(field);
+    setSortOrder(newOrder);
+  };
+
+  const handleCreateSupplier = async (itemData) => {
+    // try {
+    //   const result = await createInventoryItem(itemData);
+    //   if (result.success) {
+    //     // Close modal immediately
+    //     setShowCreateModal(false);
+        
+    //     // Show success alert
+    //     setAlert({
+    //       show: true,
+    //       message: 'Inventory item created successfully!',
+    //       type: 'success'
+    //     });
+        
+    //     // Hide alert after 3 seconds
+    //     setTimeout(() => {
+    //       setAlert({ show: false, message: '', type: '' });
+    //     }, 3000);
+        
+    //     // Refresh data to show the new item
+    //     setCurrentPage(1); // Go to first page to see the new item
+    //     // Trigger data refresh by incrementing refresh key
+    //     setRefreshKey(prev => prev + 1);
+    //   } else {
+    //     return result;
+    //   }
+    //   // Return the result so CreateInventoryModal can handle success/error states
+    //   return result;
+    // } catch (err) {
+    //   setError('Failed to create inventory item');
+    //   // Return error result
+    //   return {
+    //     success: false,
+    //     error: 'Failed to create inventory item'
+    //   };
+    // }
   };
 
   return (
     <div className="flex flex-col h-screen">
       <Alert 
-        show={alertObj.alert.show}
-        message={alertObj.alert.message}
-        type={alertObj.alert.type}
-        onDismiss={() => alertObj.setAlert({ show: false, message: '', type: '' })}
+        show={alertStore.alert.show}
+        message={alertStore.alert.message}
+        type={alertStore.alert.type}
+        onDismiss={() => alertStore.setAlert({ show: false, message: '', type: '' })}
       />
 
       <div className="flex-shrink-0 space-y-0 mb-2">
@@ -113,7 +149,7 @@ function SuppliersTable() {
                 btnType="affirm"
                 btnLabel="Refresh"
                 btnIcon="refresh"
-                onClick={() => handlers.handleRefreshSupplier()} 
+                onClick={() => handleRefresh()} 
                 className="mt-3 w-full"
               />
             </div>
@@ -131,32 +167,33 @@ function SuppliersTable() {
             
           <div className="mt-2">
             <div className="text-xs text-gray-600">
-              Showing {filteredData.length} of {pagination.totalItems} items
+              Showing {filteredData.length} of {totalItems} items
             </div>
           </div>
         </div>
       </div>
       
-      {pagination.error && (
+      {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 p-2 my-2 rounded text-center">
-          <strong>Error:</strong> {pagination.error}
+          <strong>Error:</strong> {error}
         </div>
       )}
 
       <div className="bg-white border border-gray-200 rounded-custom shadow-xs overflow-auto flex flex-col h-[calc(100vh-13.5rem)]">
         <table className="w-full text-sm border-collapse">
-          <FormThead sortOrder={pagination.sortOrder} sortField={pagination.sortField} handleSort={handleSort} data={
+          <FormThead sortOrder={sortOrder} sortField={sortField} handleSort={handleSort} data={
             [
-              {"title":"ID", "name":"id", "align":"center"},
-              {"title":"Name", "name":"name", "date":"left"},
-              {"title":"Date Created", "name":"date_created", "date":"left"},
+              {"title":"#", "name":"idx", "align":"center", "class": "w-20"},
+              {"title":"ID", "name":"id", "align":"center", "class": "w-20"},
+              {"title":"Name", "name":"name", "align":"left"},
+              {"title":"Date Created", "name":"date_created", "align":"left"},
               {"title":"Action", "name":"action", "default":1},
             ]
           } />
-          {!pagination.loading && (
+          {!loading && (
             <tbody>
               {filteredData.map((item, index) => {
-                const sequentialRowNumber = ((pagination.currentPage - 1) * pagination.pageSize) + index + 1;
+                const sequentialRowNumber = ((currentPage - 1) * pageSize) + index + 1;
                 
                 return (
                   <tr 
@@ -165,9 +202,10 @@ function SuppliersTable() {
                       index % 2 === 0 ? 'bg-white hover:bg-green-50' : 'bg-row-alt hover:bg-green-100'
                     }`}
                   >
-                    <td className="px-3 py-2 border-r text-sm font-semibold text-green-900">
+                    <td className="px-3 py-2 border-r text-sm font-semibold text-green-900 text-center">
                       {sequentialRowNumber}
                     </td>
+                    <td className="px-3 py-2 border-r text-sm text-center">{item.id}</td>
                     <td className="px-3 py-2 border-r text-sm">{item.name}</td>
                     <td className="px-3 py-2 border-r text-sm">{formatLongDate(item.date_created)}</td>
                     <td className="px-0 py-2 border-0">
@@ -183,7 +221,7 @@ function SuppliersTable() {
                           </svg>
                         </button>
                         <button
-                          onClick={() => handlers.handleDelete(item.id, 'supplier')}
+                          onClick={() => handleDelete(item.id)}
                           className="text-red-600 hover:text-red-800 px-0 py-1 rounded hover:bg-red-50 transition-colors"
                           title="Delete"
                         >
@@ -200,14 +238,14 @@ function SuppliersTable() {
           )}
         </table>
 
-        {pagination.loading && (
+        {loading && (
           <div className="flex justify-center items-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-button"></div>
             <span className="ml-2 text-gray-600">Loading suppliers data...</span>
           </div>
         )}
 
-        {filteredData.length === 0 && !pagination.loading && (
+        {filteredData.length === 0 && !loading && (
           <div className="text-center py-8 text-gray-500">
             No record/s found.
           </div>
@@ -215,12 +253,24 @@ function SuppliersTable() {
       </div>
       
       <FormPagination 
-        currentPage={pagination.currentPage}
-        pageSize={pagination.pageSize}
-        totalItems={pagination.totalItems}
-        totalPages={pagination.totalPages}
-        handlePageSizeChange={pagination.handlePageSizeChange}
-        handlePageChange={pagination.handlePageChange}
+        currentPage={currentPage}
+        pageSize={pageSize}
+        totalItems={totalItems}
+        totalPages={totalPages}
+        handlePageSizeChange={handlePageSizeChange}
+        handlePageChange={handlePageChange}
+      />
+        
+      <ViewSuppliersModal 
+        selectedItem={selectedItem}
+        showViewModal={showViewModal}
+        setShowViewModal={setShowViewModal}
+      />
+      
+      <CreateSupplierModal 
+        showCreateModal={showCreateModal}
+        setShowCreateModal={setShowCreateModal}
+        onSave={handleCreateSupplier}
       />
     </div>
   );
