@@ -13,8 +13,9 @@ import Alert from '../../utils/alert';
 // import ViewSalesModal from './ViewSalesModal';
 // import CreateSalesModal from './CreateSalesModal';
 // import UpdateSalesModal from './UpdateSalesModal';
-import { FormButton, FormPagination, FormThead } from '../../utils/themes.js';
+import { FormButton, FormThead } from '../../utils/themes.js';
 import { getDailyReports } from '../../api/reportsService.js';
+import { FormPagination } from '../../utils/pagination.js';
 
 function DailySalesReport({ page_type }) {
   // Data and loading states

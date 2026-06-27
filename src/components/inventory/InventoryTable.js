@@ -8,10 +8,22 @@ import CreateInventoryModal from './CreateInventoryModal';
 import { formatCurrency } from '../../utils/formatters';
 import Alert from '../../utils/alert';
 import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
-import { FormButton, FormPagination, FormThSort, FormTh, FormThead } from '../../utils/themes.js';
+import { FormButton, FormThSort, FormTh, FormThead } from '../../utils/themes.js';
+import { FormPagination, usePaginationStore } from '../../utils/pagination.js';
 
 function InventoryTable({ page_type }) {
   const userData = useAppViewModel((state) => state.userData);
+
+  const { 
+    sortField, setSortField,
+    sortOrder, setSortOrder,
+    currentPage, setCurrentPage,
+    pageSize, setPageSize,
+    totalItems, setTotalItems,
+    totalPages, setTotalPages,
+    handlePageChange,
+    handlePageSizeChange
+  } = usePaginationStore();
 
   // Data and loading states
   const [inventoryData, setInventoryData] = useState([]);
@@ -19,16 +31,6 @@ function InventoryTable({ page_type }) {
   const [loading, setLoading] = useState(true);
   const [loadingSummary, setLoadingSummary] = useState(true);
   const [error, setError] = useState(null);
-  
-  // Pagination states
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(APP_CONFIG.DEFAULT_PAGE_SIZE);
-  const [totalItems, setTotalItems] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
-  
-  // Sorting states
-  const [sortField, setSortField] = useState('id');
-  const [sortOrder, setSortOrder] = useState('desc');
   
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
@@ -242,15 +244,14 @@ function InventoryTable({ page_type }) {
     setSortOrder(newOrder);
   };
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
+  // const handlePageChange = (page) => {
+  //   setCurrentPage(page);
+  // };
 
-  const handlePageSizeChange = (newPageSize) => {
-    setPageSize(newPageSize);
-    setCurrentPage(1);
-  };
-
+  // const handlePageSizeChange = (newPageSize) => {
+  //   setPageSize(newPageSize);
+  //   setCurrentPage(1);
+  // };
   
   const getQuantityStatus = (current, reorder) => {
     if (current === 0) return { text: 'Out of Stock', color: 'text-red-600' };
@@ -260,7 +261,7 @@ function InventoryTable({ page_type }) {
 
   return (
     <div className="flex flex-col h-screen">
-      {/* Alert Component */}
+
       <Alert 
         show={alert.show}
         message={alert.message}
@@ -268,8 +269,7 @@ function InventoryTable({ page_type }) {
         onDismiss={() => setAlert({ show: false, message: '', type: '' })}
       />
       
-      {/* Fixed Header Sections */}
-      <div className="flex-shrink-0 space-y-0">
+      <div className="flex-shrink-0 space-y-0 mb-2">
         {/* Inventory Statistics */}
         <div className="bg-white p-2 rounded-custom border border-gray-200 mb-2">
           {loadingSummary && (
@@ -279,7 +279,7 @@ function InventoryTable({ page_type }) {
             </div>
           )}
           {!loadingSummary && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mb-1">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mb-0.5">
             <div className="text-center">
               <div className="text-2xl font-bold text-gray-800">{totalProductCount.toLocaleString()}</div>
               <div className="text-xs text-gray-600">No. of Products</div>
@@ -310,31 +310,11 @@ function InventoryTable({ page_type }) {
 
         {/* Search and Filters */}
         <div className="bg-white pl-3 pr-3 pb-2 rounded-custom border border-gray-200">
-          {/* <div className="flex justify-between items-center">
-            <h3 className="text-base font-semibold text-gray-800">Inventory Management</h3>
-            <div className="flex space-x-2 pb-2">
-              <FormButton
-                btnType="affirm"
-                btnLabel="Refresh"
-                btnIcon="refresh"
-                onClick={handleRefresh} 
-                className="mt-3"
-              />
-              <FormButton
-                btnType="success"
-                btnLabel="Create"
-                btnIcon="plus"
-                onClick={() => setShowCreateModal(true)} 
-                className="mt-3"
-              />
-            </div>
-          </div> */}
           
-          {/* Search and Filters */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 pt-2">
-            {/* Search Bar */}
+
             <div className="lg:col-span-9 text-xs">
-              <label className="block font-semibold text-gray-600 mb-1">Search</label>
+              <label className="block font-semibold text-gray-600 mb-0.5">Search</label>
               <input
                 type="text"
                 placeholder="Search product name or SKU..."
@@ -401,163 +381,158 @@ function InventoryTable({ page_type }) {
         </div>
       </div>
 
-      {/* Scrollable Table Container */}
-      <div className="flex-1 overflow-auto mt-2">
-        {/* Inventory Table */}
-        <div className="bg-white border border-gray-200 rounded-custom shadow-xs overflow-hidden">
-          {loading && (
-            <div className="flex justify-center items-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-button"></div>
-              <span className="ml-2 text-gray-600">Loading inventory data...</span>
-            </div>
-          )}
-          
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 m-4 rounded">
-              <strong>Error:</strong> {error}
-            </div>
-          )}
-          
+      <div className="bg-white border border-gray-200 rounded-custom shadow-xs overflow-auto flex flex-col h-[calc(100vh-18.2rem)]">
+        
+        <table className="w-full table-auto border-collapse">
+          <FormThead sortOrder={sortOrder} sortField={sortField} handleSort={handleSort} data={[
+            {"title":"#", "name":"id", "align":"center"},
+            {"title":"Product Name", "name":"product_name", "align":"left"},
+            {"title":"SKU", "name":"sku", "align":"left"},
+            {"title":"Cost per Unit", "name":"cost_per_unit", "align":"right"},
+            {"title":"Price per Unit", "name":"price_per_unit", "align":"right"},
+            {"title":"Current Quantity", "name":"current_qty", "align":"right"},
+            {"title":"Reorder Level", "name":"reorder_level", "align":"right"},
+            {"title":"Total Inventory Cost", "name":"total_inventory_cost", "align":"right"},
+            {"title":"Total Inventory Value", "name":"total_inventory_value", "align":"right"},
+            {"title":"Total Sold", "name":"total_sold", "align":"right"},
+            {"title":"Status", "name":"status", "align":"center"},
+            {"title":"Actions", "name":"status", "default":1},
+          ]} />
           {!loading && !error && (
-            <div className="bg-white border border-gray-200 rounded-custom shadow-sm overflow-hidden">
-              <table className="w-full">
-                <FormThead sortOrder={sortOrder} sortField={sortField} handleSort={handleSort} data={[
-                  {"title":"#", "name":"id", "align":"center"},
-                  {"title":"Product Name", "name":"product_name", "align":"left"},
-                  {"title":"SKU", "name":"sku", "align":"left"},
-                  {"title":"Cost per Unit", "name":"cost_per_unit", "align":"right"},
-                  {"title":"Price per Unit", "name":"price_per_unit", "align":"right"},
-                  {"title":"Current Quantity", "name":"current_qty", "align":"right"},
-                  {"title":"Reorder Level", "name":"reorder_level", "align":"right"},
-                  {"title":"Total Inventory Cost", "name":"total_inventory_cost", "align":"right"},
-                  {"title":"Total Inventory Value", "name":"total_inventory_value", "align":"right"},
-                  {"title":"Total Sold", "name":"total_sold", "align":"right"},
-                  {"title":"Status", "name":"status", "align":"center"},
-                  {"title":"Actions", "name":"status", "default":1},
-                ]} />
-                <tbody>
-                  {filteredData.map((item, index) => {
-                    const quantityStatus = getQuantityStatus(item.current_qty, item.reorder_level);
-                    return (
-                      <tr 
-                        key={item.id}
-                        className={`border-0 transition-colors duration-200 ${
-                          index % 2 === 0 ? 'bg-white hover:bg-green-50' : 'bg-row-alt hover:bg-green-100'
-                        }`}
-                      >
-                        <td className="px-3 py-2 border-r text-xs font-semibold text-green-900">{item.id}</td>
-                        <td className="px-3 py-2 border-r text-xs font-semibold text-green-900">{item.product_name}</td>
-                        <td className="px-3 py-2 border-r text-xs">{item.sku}</td>
-                        {item && item.tracking_method === APP_CONFIG.TRACKING_METHOD.BATCH && (
-                          <td className="px-4 border-r text-sxsm text-center">
-                            <button
-                              onClick={() => handleView(item)}
-                              className="text-yellow-600 hover:text-yellow-800 px-2 py-1 rounded hover:bg-yellow-50 transition-colors"
-                              title="View"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                              </svg>
-                            </button>
-                          </td>
-                        )}
-                        {item && item.tracking_method === APP_CONFIG.TRACKING_METHOD.STANDARD && (
-                          <td className="px-4 py-3 border-r text-sm text-right">{formatCurrency(item.cost_per_unit)}</td>
-                        )}
-                        <td className="px-4 py-3 border-r text-sm text-right">{formatCurrency(item.price_per_unit)}</td>
-                        <td className="px-4 py-3 border-r text-sm text-right">
-                          <span className={`font-medium ${quantityStatus.color}`}>
-                            {item.current_qty}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 border-r text-sm text-right">{item.reorder_level}</td>
-                        <td className="px-4 py-3 border-r text-sm text-blue-600 font-medium text-right">{formatCurrency(item.total_inventory_cost)}</td>
-                        <td className="px-4 py-3 border-r text-sm text-green-600 font-medium text-right">{formatCurrency(item.total_inventory_value)}</td>
-                        <td className="px-4 py-3 border-r text-sm text-right">{item.total_sold}</td>
-                        <td className="px-3 py-2 border-r text-right justify-center">
-                          <span className={`py-1 text-xs font-medium text-center ${getStatusColor(item.status)}`}>
-                            {item.status}
-                          </span>
-                        </td>
-                        <td className="px-0 py-2 border-0">
-                          <div className="flex justify-center space-x-1">
-                            <button
-                              onClick={() => handleView(item)}
-                              className="text-blue-600 hover:text-blue-800 px-0 py-1 rounded hover:bg-blue-50 transition-colors"
-                              title="View"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                              </svg>
-                            </button>
-                            <button
-                              onClick={() => handleEdit(item)}
-                              className="text-green-600 hover:text-green-800 px-0 py-1 rounded hover:bg-green-50 transition-colors"
-                              title="Edit"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                              </svg>
-                            </button>
-                            <button
-                              onClick={() => handleDelete(item.id)}
-                              className="text-red-600 hover:text-red-800 px-0 py-1 rounded hover:bg-red-50 transition-colors"
-                              title="Delete"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <tbody className="divide-y">
+              {filteredData.map((item, index) => {
+                const quantityStatus = getQuantityStatus(item.current_qty, item.reorder_level);
+                return (
+                  <tr 
+                    key={item.id}
+                    className={`border-0 transition-colors duration-200 ${
+                      index % 2 === 0 ? 'bg-white hover:bg-green-50' : 'bg-row-alt hover:bg-green-100'
+                    }`}
+                  >
+                    <td className="px-3 py-2 border-r text-xs font-semibold text-green-900">{item.id}</td>
+                    <td className="px-3 py-2 border-r text-xs font-semibold text-green-900">{item.product_name}</td>
+                    <td className="px-3 py-2 border-r text-xs">{item.sku}</td>
+                    {item && item.tracking_method === APP_CONFIG.TRACKING_METHOD.BATCH && (
+                      <td className="px-4 border-r text-sxsm text-center">
+                        <button
+                          onClick={() => handleView(item)}
+                          className="text-yellow-600 hover:text-yellow-800 px-2 py-1 rounded hover:bg-yellow-50 transition-colors"
+                          title="View"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        </button>
+                      </td>
+                    )}
+                    {item && item.tracking_method === APP_CONFIG.TRACKING_METHOD.STANDARD && (
+                      <td className="px-4 py-3 border-r text-sm text-right">{formatCurrency(item.cost_per_unit)}</td>
+                    )}
+                    <td className="px-4 py-3 border-r text-sm text-right">{formatCurrency(item.price_per_unit)}</td>
+                    <td className="px-4 py-3 border-r text-sm text-right">
+                      <span className={`font-medium ${quantityStatus.color}`}>
+                        {item.current_qty}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 border-r text-sm text-right">{item.reorder_level}</td>
+                    <td className="px-4 py-3 border-r text-sm text-blue-600 font-medium text-right">{formatCurrency(item.total_inventory_cost)}</td>
+                    <td className="px-4 py-3 border-r text-sm text-green-600 font-medium text-right">{formatCurrency(item.total_inventory_value)}</td>
+                    <td className="px-4 py-3 border-r text-sm text-right">{item.total_sold}</td>
+                    <td className="px-3 py-2 border-r text-right justify-center">
+                      <span className={`py-1 text-xs font-medium text-center ${getStatusColor(item.status)}`}>
+                        {item.status}
+                      </span>
+                    </td>
+                    <td className="px-0 py-2 border-0">
+                      <div className="flex justify-center space-x-1">
+                        <button
+                          onClick={() => handleView(item)}
+                          className="text-blue-600 hover:text-blue-800 px-0 py-1 rounded hover:bg-blue-50 transition-colors"
+                          title="View"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleEdit(item)}
+                          className="text-green-600 hover:text-green-800 px-0 py-1 rounded hover:bg-green-50 transition-colors"
+                          title="Edit"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="text-red-600 hover:text-red-800 px-0 py-1 rounded hover:bg-red-50 transition-colors"
+                          title="Delete"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
           )}
-
-          {filteredData.length === 0 && !loading && (
-            <div className="text-center py-8 text-gray-500">
-              No record/s found.
-            </div>
-          )}
-          
-          {/* Pagination Controls */}
-          <FormPagination 
-            currentPage={currentPage}
-            pageSize={pageSize}
-            totalItems={totalItems}
-            totalPages={totalPages}
-            handlePageSizeChange={handlePageSizeChange}
-            handlePageChange={handlePageChange}
-          />
-        </div>
-
-        {/* New Modal Components */}
-        <ViewInventoryModal 
-          selectedItem={selectedItem}
-          showViewModal={showViewModal}
-          setShowViewModal={setShowViewModal}
-        />
         
-        <CreateInventoryModal 
-          showCreateModal={showCreateModal}
-          setShowCreateModal={setShowCreateModal}
-          onSave={handleCreateItem}
-        />
-        
-        <UpdateInventoryModal 
-          selectedItem={selectedItem}
-          showEditModal={showEditModal}
-          setShowEditModal={setShowEditModal}
-          onSave={handleEditItem}
-        />
+        </table>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 m-4 rounded">
+            <strong>Error:</strong> {error}
+          </div>
+        )}
+
+        {loading && (
+          <div className="flex justify-center items-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-button"></div>
+            <span className="ml-2 text-gray-600">Loading inventory data...</span>
+          </div>
+        )}
+
+        {filteredData.length === 0 && !loading && (
+          <div className="text-center py-8 text-gray-500">
+            No record/s found.
+          </div>
+        )}
         
       </div>
+
+      <FormPagination 
+        currentPage={currentPage}
+        pageSize={pageSize}
+        totalItems={totalItems}
+        totalPages={totalPages}
+        handlePageSizeChange={handlePageSizeChange}
+        handlePageChange={handlePageChange}
+      />
+        
+      <ViewInventoryModal 
+        selectedItem={selectedItem}
+        showViewModal={showViewModal}
+        setShowViewModal={setShowViewModal}
+      />
+      
+      <CreateInventoryModal 
+        showCreateModal={showCreateModal}
+        setShowCreateModal={setShowCreateModal}
+        onSave={handleCreateItem}
+      />
+      
+      <UpdateInventoryModal 
+        selectedItem={selectedItem}
+        showEditModal={showEditModal}
+        setShowEditModal={setShowEditModal}
+        onSave={handleEditItem}
+      />
+
     </div>
   );
 }

@@ -1,16 +1,34 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
+import { create } from 'zustand';
+
+export const useAlert = () => {
+  const [alert, setAlert] = useState({ show: false, message: '', type: '' });
+
+  return {
+    alert, setAlert
+  };
+}
+
+export const useAlertStore = create((set,get) => ({
+  alert: { show: false, message: '', type: '' }, 
+  setAlert: (data) => set({ alert: data }),
+  refreshSupplier: 0,
+  setRefreshSupplier: (updater) => set((state) => ({
+    refreshSupplier: typeof updater === 'function' ? updater(state.refreshSupplier) : updater
+  })),
+}));
 
 const Alert = ({ show, message, type, onDismiss }) => {
   if (!show) return null;
 
   const alertStyles = {
-    success: 'bg-green-500',
-    error: 'bg-red-500',
-    warning: 'bg-yellow-500'
+    success: 'bg-green-400',
+    error: 'bg-red-400',
+    warning: 'bg-yellow-400'
   };
 
   return (
-    <div className={`fixed top-15 right-4 z-50 p-4 rounded-md shadow-lg max-w-sm w-full ${alertStyles[type]}`}>
+    <div className={`fixed top-1 mt-1 right-2 z-50 p-4 rounded-md shadow-lg max-w-sm w-full ${alertStyles[type]}`}>
       <div className="flex">
         <div className="flex-shrink-0">
           {type === 'success' ? (
@@ -24,7 +42,7 @@ const Alert = ({ show, message, type, onDismiss }) => {
           )}
         </div>
         <div className="ml-3">
-          <p className="text-sm font-medium text-white">
+          <p className="text-sm font-medium text-white first-letter:uppercase">
             {message}
           </p>
         </div>

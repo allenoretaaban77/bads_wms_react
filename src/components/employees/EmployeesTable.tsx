@@ -6,9 +6,10 @@ import ViewEmployeesModal from './ViewEmployeesModal.tsx';
 import UpdateEmployeesModal from './UpdateEmployeesModal.tsx';
 import CreateEmployeesModal from './CreateEmployeesModal.tsx';
 import Alert from '../../utils/alert';
-import { FormButton, FormPagination, FormThead } from '../../utils/themes.js';
+import { FormButton, FormThead } from '../../utils/themes.js';
 import { EmployeesTableProps, Employee, AlertState, FetchParams, initialFormState } from '../../interface/employee.tsx';
 import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
+import { FormPagination } from '../../utils/pagination.js';
 
 function EmployeesTable({ page_type }: EmployeesTableProps) {
   const userData = useAppViewModel((state) => state.userData);
@@ -210,7 +211,7 @@ function EmployeesTable({ page_type }: EmployeesTableProps) {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 pt-2">
             {/* Search Input mapping to names/username */}
             <div className="lg:col-span-9 text-xs">
-              <label className="block font-semibold text-gray-600 mb-1">Search</label>
+              <label className="block font-semibold text-gray-600 mb-0.5">Search</label>
               <input
                 type="text"
                 placeholder="Search by name, employee number, or username..."

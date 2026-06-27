@@ -139,9 +139,9 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
         );
       });
       if (exists) {
-        newErrors['items'] = `Item "${name}" with this specific unit cost is already listed.`;
-        setErrors(newErrors);
-        return prev;
+        // newErrors['items'] = `Item "${name}" with this specific unit cost is already listed.`;
+        // setErrors(newErrors);
+        // return prev;
       } else {
         setErrors(newErrors);
       }
@@ -328,7 +328,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
           {/* Transaction Fields Metadata Block */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-2 flex-shrink-0 text-xs">
             <div>
-              <label className="block font-semibold text-gray-600 mb-1">Sales Transaction Number</label>
+              <label className="block font-semibold text-gray-600 mb-0.5">Sales Transaction Number</label>
               <div 
                 className={`flex items-center gap-2 px-3 py-1.5 border rounded bg-gray-50 focus-within:ring-1 focus-within:ring-button focus-within:border-transparent ${errors.invoice_no ? 'border-red-400 bg-red-50/30' : 'border-gray-300'}`}
               >
@@ -355,7 +355,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
             </div>
 
             <div>
-              <label className="block font-semibold text-gray-600 mb-1">Date Sold</label>
+              <label className="block font-semibold text-gray-600 mb-0.5">Date Sold</label>
               <input
                 type="date"
                 name="date_sold"
@@ -369,7 +369,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
             </div>
 
             <div>
-              <label className="block font-semibold text-gray-600 mb-1">Customer Name</label>
+              <label className="block font-semibold text-gray-600 mb-0.5">Customer Name</label>
               <input
                 // required
                 name="customer_name"
@@ -384,7 +384,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
             </div>
 
             <div>
-              <label className="block font-semibold text-gray-600 mb-1">Remarks / Notes</label>
+              <label className="block font-semibold text-gray-600 mb-0.5">Remarks / Notes</label>
               <textarea
                 name="remarks"
                 value={formData.remarks}
@@ -399,7 +399,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
           {/* Autocomplete Real-time Search Processing Block */}
           <div className="flex-shrink-0 relative text-xs grid-cols-1 md:grid-cols-4 grid gap-2">
             <div className="md:col-span-3">
-              <label className="block font-semibold text-gray-600 mb-1">Search Item</label>
+              <label className="block font-semibold text-gray-600 mb-0.5">Search Item</label>
               <div className="relative">
                 <input
                   type="text"
@@ -457,7 +457,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
               )}
               </div>
               <div className="md:col-span-1">
-                <label className="block font-semibold text-gray-600 mb-1">Payment Type</label>
+                <label className="block font-semibold text-gray-600 mb-0.5">Payment Type</label>
                 <select
                   name="payment_status"
                   value={formData.payment_status}

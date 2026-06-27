@@ -11,14 +11,15 @@ function HomeView() {
   const activeLabel = useAppViewModel((state) => state.activeLabel);
 
   return (
-    <div className="flex">
+    <div className="flex h-full">
       <SidebarMenu />
-      <main className="flex-1 min-h-screen bg-white">
-        <header className="bg-header shadow-sm">
-          <div className="flex items-center justify-between px-4 py-3">
+      <main className="flex-1 flex-col bg-white h-full">
+
+        <header className="bg-header shadow-sm h-14">
+          <div className="flex items-center justify-between px-2 py-1">
             <div>
               <p className="text-white text-sm">Badong's Hardware Inventory System</p>
-              <h1 className="text-white text-xl font-semibold capitalize">{activeTitle} {activeTitle === 'Inventory Management - ' ? activeLabel : ''} </h1>
+              <h1 className="text-white text-xl font-semibold capitalize">{activeTitle || 'Inventory Management'} {activeTitle === 'Inventory Management - ' ? activeLabel : ''} </h1>
             </div>
             <div className="flex items-center text-white text-sm">
               <span>Welcome, <strong>{userData?.firstname} {userData?.middlename} {userData?.lastname} [{userData?.employee_number}]</strong> | {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} {new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase()}</span>
@@ -33,9 +34,10 @@ function HomeView() {
           </div>
         </header>
 
-        <div className="w-full py-4 px-3">
+        <div className="flex-1 px-3 py-4 h-[calc(100vh-3.5rem)]">
           <HomeContent />
         </div>
+
       </main>
     </div>
   );

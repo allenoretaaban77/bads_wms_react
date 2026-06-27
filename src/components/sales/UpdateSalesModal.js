@@ -219,9 +219,9 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
         );
       });
       if (exists) {
-        newErrors['items'] = `Item "${name}" with this specific unit cost is already listed.`;
-        setErrors(newErrors);
-        return prev;
+        // newErrors['items'] = `Item "${name}" with this specific unit cost is already listed.`;
+        // setErrors(newErrors);
+        // return prev;
       } else {
         setErrors(newErrors);
       }
@@ -387,7 +387,7 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
           {/* Transaction Fields Metadata Block */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-2 flex-shrink-0 text-xs">
             <div>
-              <label className="block font-semibold text-gray-600 mb-1">Sales Transaction Number</label>
+              <label className="block font-semibold text-gray-600 mb-0.5">Sales Transaction Number</label>
               <input
                 name="invoice_no"
                 value={formData.invoice_no}
@@ -401,7 +401,7 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
             </div>
 
             <div>
-              <label className="block font-semibold text-gray-600 mb-1">Date Sold</label>
+              <label className="block font-semibold text-gray-600 mb-0.5">Date Sold</label>
               <input
                 type="date"
                 name="date_sold"
@@ -415,7 +415,7 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
             </div>
 
             <div>
-              <label className="block font-semibold text-gray-600 mb-1">Customer Name</label>
+              <label className="block font-semibold text-gray-600 mb-0.5">Customer Name</label>
               <input
                 // required
                 name="customer_name"
@@ -430,7 +430,7 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
             </div>
 
             <div>
-              <label className="block font-semibold text-gray-600 mb-1">Remarks / Notes</label>
+              <label className="block font-semibold text-gray-600 mb-0.5">Remarks / Notes</label>
               <textarea
                 name="remarks"
                 value={formData.remarks}
@@ -445,7 +445,7 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
           {/* Autocomplete Real-time Search Processing Block */}
           <div className="flex-shrink-0 relative text-xs grid-cols-1 md:grid-cols-4 grid gap-2">
             <div className="md:col-span-3">
-              <label className="block font-semibold text-gray-600 mb-1">Search Item</label>
+              <label className="block font-semibold text-gray-600 mb-0.5">Search Item</label>
               <div className="relative">
                 <input
                   type="text"
@@ -503,7 +503,7 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
               )}
               </div>
               <div className="md:col-span-1">
-                <label className="block font-semibold text-gray-600 mb-1">Payment Type</label>
+                <label className="block font-semibold text-gray-600 mb-0.5">Payment Type</label>
                 <select
                   name="payment_status"
                   value={formData.payment_status}

@@ -13,7 +13,8 @@ import Alert from '../../utils/alert';
 import ViewReplenishmentModal from './ViewReplenishmentModal';
 import CreateReplenishmentModal from './CreateReplenishmentModal';
 import UpdateReplenishmentModal from './UpdateReplenishmentModal';
-import { FormButton, FormPagination, FormThead } from '../../utils/themes.js';
+import { FormButton, FormThead } from '../../utils/themes.js';
+import { FormPagination } from '../../utils/pagination.js';
 
 function ReplenishmentTable({ page_type }) {
   // Data and loading states

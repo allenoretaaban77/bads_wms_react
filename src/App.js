@@ -11,7 +11,7 @@ function App() {
   const isLoggedIn = useAppViewModel((state) => state.isLoggedIn);
 
   return (
-    <div className="min-h-screen w-full bg-white">
+    <div className="h-screen w-full bg-white">
       <Suspense fallback={<LoadingSpinner />}>
         {isLoggedIn ? <HomeView /> : <LoginView />}
       </Suspense>

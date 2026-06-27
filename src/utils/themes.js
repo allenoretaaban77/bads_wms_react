@@ -161,84 +161,6 @@ export const FormHeader = ({
   );
 };
 
-export const FormPagination = ({
-  currentPage,
-  pageSize,
-  totalItems,
-  totalPages,
-  handlePageSizeChange,
-  handlePageChange,
-}) => {
-  return (
-    <div className="px-2 py-2 border-t border-gray-200 bg-gray-50">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <span className="text-xs text-gray-700">
-            Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalItems)} of {totalItems} results
-          </span>
-        </div>
-        <div className="flex items-center space-x-2">
-          <select
-            value={pageSize}
-            onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-            className="px-3 py-1 border border-gray-300 rounded-custom text-sm focus:outline-none focus:ring-2 focus:ring-button text-xs"
-          >
-            <option value={5}>5 per page</option>
-            <option value={10}>10 per page</option>
-            <option value={25}>25 per page</option>
-            <option value={50}>50 per page</option>
-          </select>
-          
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="px-3 py-1 border border-gray-300 rounded-custom text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 text-xs"
-          >
-            Previous
-          </button>
-          
-          <div className="flex space-x-1">
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              let pageNum;
-              if (totalPages <= 5) {
-                pageNum = i + 1;
-              } else if (currentPage <= 3) {
-                pageNum = i + 1;
-              } else if (currentPage >= totalPages - 2) {
-                pageNum = totalPages - 4 + i;
-              } else {
-                pageNum = currentPage - 2 + i;
-              }
-              
-              return (
-                <button
-                  key={pageNum}
-                  onClick={() => handlePageChange(pageNum)}
-                  className={`px-3 py-1 border rounded-custom text-xs ${
-                    currentPage === pageNum
-                      ? 'bg-button text-white border-button'
-                      : 'border-gray-300 hover:bg-gray-100'
-                  }`}
-                >
-                  {pageNum}
-                </button>
-              );
-            })}
-          </div>
-          
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="px-3 py-1 border border-gray-300 rounded-custom text-xs disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
-          >
-            Next
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 export const FormTh = ({
   columnTitle,
 }) => {
@@ -278,7 +200,7 @@ export const FormThead = ({
   handleSort
 }) => {
   return (
-    <thead className="bg-header text-white">
+    <thead className="bg-header text-white sticky top-0 z-10">
       <tr>
           {data.map((item, index) => {
             if (item.default === 1) {

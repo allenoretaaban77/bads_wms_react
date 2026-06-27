@@ -122,7 +122,7 @@ const ViewInventoryModal = ({ selectedItem, showViewModal, setShowViewModal }) =
           {/* Remarks Entry Line display content block */}
           {selectedItem.remarks && selectedItem.remarks.trim() !== "" && (
             <div className="border-t border-gray-100 pt-3">
-              <span className="block text-xs font-semibold text-gray-500 mb-1">Internal Remarks / Notes</span>
+              <span className="block text-xs font-semibold text-gray-500 mb-0.5">Internal Remarks / Notes</span>
               <div className="bg-amber-50/50 border border-amber-200/60 text-xs text-gray-700 p-3 rounded-custom whitespace-pre-wrap leading-relaxed">
                 {selectedItem.remarks}
               </div>

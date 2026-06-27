@@ -183,8 +183,6 @@ export const getInventoryTableListSearch = async (params = {}) => {
   }
 };
 
-
-
 export const getInventoryListsearch = async (params = {}) => {
   try {
     // Validate and build query parameters

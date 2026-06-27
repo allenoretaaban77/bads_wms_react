@@ -13,7 +13,8 @@ import Alert from '../../utils/alert';
 import ViewReturnsModal from './ViewReturnsModal';
 import CreateReturnsModal from './CreateReturnsModal';
 import UpdateReturnsModal from './UpdateReturnsModal';
-import { FormButton, FormPagination, FormThead } from '../../utils/themes.js';
+import { FormButton, FormThead } from '../../utils/themes.js';
+import { FormPagination } from '../../utils/pagination.js';
 
 function ReturnsTable() {
   // Data and loading states

@@ -227,7 +227,7 @@ const CreateReturnsModal = ({ showCreateModal, setShowCreateModal, onSave }) => 
           {/* Form Header Parameters Metadata Section */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-2 flex-shrink-0 text-xs">
             <div>
-              <label className="block font-semibold text-gray-600 mb-1">Return Reference ID</label>
+              <label className="block font-semibold text-gray-600 mb-0.5">Return Reference ID</label>
               <input
                 disabled
                 name="return_no"
@@ -237,7 +237,7 @@ const CreateReturnsModal = ({ showCreateModal, setShowCreateModal, onSave }) => 
             </div>
 
             <div>
-              <label className="block font-semibold text-gray-600 mb-1">Date Returned</label>
+              <label className="block font-semibold text-gray-600 mb-0.5">Date Returned</label>
               <input
                 type="date"
                 name="date_received"
@@ -250,7 +250,7 @@ const CreateReturnsModal = ({ showCreateModal, setShowCreateModal, onSave }) => 
             </div>
 
             <div>
-              <label className="block font-semibold text-gray-600 mb-1">Customer Name</label>
+              <label className="block font-semibold text-gray-600 mb-0.5">Customer Name</label>
               <input
                 disabled
                 name="customer_name"
@@ -261,7 +261,7 @@ const CreateReturnsModal = ({ showCreateModal, setShowCreateModal, onSave }) => 
             </div>
 
             <div>
-              <label className="block font-semibold text-gray-600 mb-1">Remarks / Notes</label>
+              <label className="block font-semibold text-gray-600 mb-0.5">Remarks / Notes</label>
               <textarea
                 name="remarks"
                 value={formData.remarks}
@@ -276,7 +276,7 @@ const CreateReturnsModal = ({ showCreateModal, setShowCreateModal, onSave }) => 
           {/* Two-Step Verification Lookup Row */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-shrink-0 text-xs bg-white p-3 border border-gray-200 rounded shadow-sm">
             <div>
-              <label className="block font-semibold text-gray-700 mb-1">Step 1: Input Original Invoice Target</label>
+              <label className="block font-semibold text-gray-700 mb-0.5">Step 1: Input Original Invoice Target</label>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -304,7 +304,7 @@ const CreateReturnsModal = ({ showCreateModal, setShowCreateModal, onSave }) => 
             </div>
 
             <div>
-              <label className="block font-semibold text-gray-700 mb-1">Step 2: Append Sold Items to Return List</label>
+              <label className="block font-semibold text-gray-700 mb-0.5">Step 2: Append Sold Items to Return List</label>
               <select
                 disabled={allowedInvoiceItems.length === 0}
                 onChange={handleSelectProductLine}

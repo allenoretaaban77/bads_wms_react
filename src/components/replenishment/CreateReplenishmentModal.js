@@ -304,7 +304,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
           {/* Transaction Fields Metadata Block */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-2 flex-shrink-0 text-xs">
             <div>
-              <label className="block font-semibold text-gray-600 mb-1">Reference Number</label>
+              <label className="block font-semibold text-gray-600 mb-0.5">Reference Number</label>
               <div 
                 className={`flex items-center gap-2 px-3 py-1.5 border rounded bg-gray-50 focus-within:ring-1 focus-within:ring-button focus-within:border-transparent ${errors.reference_no ? 'border-red-400 bg-red-50/30' : 'border-gray-300'}`}
               >
@@ -331,7 +331,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
             </div>
 
             <div>
-              <label className="block font-semibold text-gray-600 mb-1">Date Received</label>
+              <label className="block font-semibold text-gray-600 mb-0.5">Date Received</label>
               <input
                 type="date"
                 name="date_received"
@@ -345,7 +345,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
             </div>
 
             <div>
-              <label className="block font-semibold text-gray-600 mb-1">Supplier</label>
+              <label className="block font-semibold text-gray-600 mb-0.5">Supplier</label>
               {/* <input
                 // required
                 name="supplier"
@@ -375,7 +375,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
             </div>
 
             <div>
-              <label className="block font-semibold text-gray-600 mb-1">Remarks / Notes</label>
+              <label className="block font-semibold text-gray-600 mb-0.5">Remarks / Notes</label>
               <textarea
                 name="remarks"
                 value={formData.remarks}
@@ -389,7 +389,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
 
           {/* Autocomplete Real-time Search Processing Block */}
           <div className="flex-shrink-0 relative text-xs">
-            <label className="block font-semibold text-gray-600 mb-1">Search Item</label>
+            <label className="block font-semibold text-gray-600 mb-0.5">Search Item</label>
             <div className="relative">
               <input
                 type="text"
