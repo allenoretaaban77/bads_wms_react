@@ -35,7 +35,7 @@ export const getEmployeeList = async (params = {}) => {
     const headers = getApiHeaders();
 
     // Make API call using fetch
-    const response = await fetch(`${API_BASE_URL}/api/employee/list?${queryParams.toString()}`, {
+    const response = await fetch(`${API_BASE_URL}/employee/list?${queryParams.toString()}`, {
       method: 'GET',
       headers: headers,
     });
@@ -85,7 +85,7 @@ export const getEmployeeList = async (params = {}) => {
 export const viewEmployee = async (id) => {
   try {
     const headers = getApiHeaders();
-    const response = await fetch(`${API_BASE_URL}/api/employee/view?id=${id}`, {
+    const response = await fetch(`${API_BASE_URL}/employee/view?id=${id}`, {
       method: 'GET',
       headers: headers,
     });
@@ -128,7 +128,7 @@ export const createEmployee = async (itemData) => {
       formData.append(key, itemData[key]);
     });
 
-    const response = await fetch(`${API_BASE_URL}/api/employee/register`, {
+    const response = await fetch(`${API_BASE_URL}/employee/register`, {
       method: 'POST',
       headers: getApiHeadersPost(),
       body: formData,
@@ -204,7 +204,7 @@ export const deleteEmployee = async (id) => {
     const formData = new URLSearchParams();
     formData.append('id', id);
 
-    const response = await fetch(`${API_BASE_URL}/api/employee/delete`, {
+    const response = await fetch(`${API_BASE_URL}/employee/delete`, {
       method: 'DELETE',
       headers: getApiHeadersPost(),
       body: formData,

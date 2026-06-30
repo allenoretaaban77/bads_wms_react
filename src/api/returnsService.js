@@ -23,7 +23,7 @@ export const getReturnsList = async (params = {}) => {
     
     const headers = getApiHeaders();
 
-    const response = await fetch(`${API_BASE_URL}/api/returns/list?${queryParams.toString()}`, {
+    const response = await fetch(`${API_BASE_URL}/returns/list?${queryParams.toString()}`, {
       method: 'GET',
       headers: headers,
     });
@@ -68,7 +68,7 @@ export const getReturnsList = async (params = {}) => {
 export const getReturnsView = async (id) => {
   try {
     const headers = getApiHeaders();
-    const response = await fetch(`${API_BASE_URL}/api/returns/view?id=${id}`, {
+    const response = await fetch(`${API_BASE_URL}/returns/view?id=${id}`, {
       method: 'GET',
       headers: headers,
     });
@@ -105,7 +105,7 @@ export const getReturnsView = async (id) => {
 
 export const createReturnsTransaction = async (itemData) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/returns/create`, {
+    const response = await fetch(`${API_BASE_URL}/returns/create`, {
       method: 'POST',
       headers: getApiHeaders(),
       body: JSON.stringify(itemData),
@@ -159,7 +159,7 @@ export const approveReturnsTransaction = async (itemData) => {
       formData.append(key, itemData[key]);
     });
 
-    const response = await fetch(`${API_BASE_URL}/api/returns/approve`, {
+    const response = await fetch(`${API_BASE_URL}/returns/approve`, {
       method: 'PUT',
       headers: getApiHeaders(),
       body: JSON.stringify(itemData),
@@ -213,7 +213,7 @@ export const deleteReturnsTransaction = async (params = {}) => {
 export const getInvoiceItems = async (id) => {
   try {
     const headers = getApiHeaders();
-    const response = await fetch(`${API_BASE_URL}/api/returns/getinvoiceitems?id=${id}`, {
+    const response = await fetch(`${API_BASE_URL}/returns/getinvoiceitems?id=${id}`, {
       method: 'GET',
       headers: headers,
     });

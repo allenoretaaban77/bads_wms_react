@@ -8,11 +8,8 @@ import { FormPagination, usePageControl } from '../../utils/pagination.js';
 import { useTableControl } from '../../utils/table.js';
 import { useHandlerSupplier } from '../../utils/handlers.js';
 import { useAlertStore } from '../../utils/alert';
-import ViewSuppliersModal from './ViewSuppliersModal.js';
-import CreateSupplierModal from './CreateSupplierModal.js';
-import UpdateSupplierModal from './UpdateSupplierModal.js';
 
-function SuppliersTable() {
+function StockInPurchasesLog() {
   const userData = useAppViewModel((state) => state.userData);
   const alertStore = useAlertStore();
   const { currentPage, setCurrentPage, pageSize, setPageSize, totalItems, setTotalItems, totalPages, setTotalPages, handlePageSizeChange, handlePageChange } = usePageControl();
@@ -156,7 +153,6 @@ function SuppliersTable() {
         <div className="bg-white pl-3 pr-3 pb-2 rounded-custom border border-gray-200">
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 pt-2">
-            
             <div className="lg:col-span-10 text-xs">
               <label className="block font-semibold text-gray-600 mb-0.5">Search</label>
               <input
@@ -295,7 +291,7 @@ function SuppliersTable() {
         handlePageChange={handlePageChange}
       />
         
-      <ViewSuppliersModal 
+      {/* <ViewSuppliersModal 
         selectedItem={selectedItem}
         showViewModal={showViewModal}
         setShowViewModal={setShowViewModal}
@@ -312,7 +308,7 @@ function SuppliersTable() {
         showEditModal={showEditModal}
         setShowEditModal={setShowEditModal}
         onSave={handleUpdateSupplier}
-      />
+      /> */}
 
       <Alert 
         show={alertStore.alert.show}
@@ -325,4 +321,4 @@ function SuppliersTable() {
   );
 }
 
-export default SuppliersTable;
+export default StockInPurchasesLog;

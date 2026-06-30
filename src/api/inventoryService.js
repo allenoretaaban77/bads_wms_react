@@ -45,7 +45,7 @@ export const getInventoryList = async (params = {}) => {
     const headers = getApiHeaders();
 
     // Make API call using fetch
-    const response = await fetch(`${API_BASE_URL}/api/inventory/list?${queryParams.toString()}`, {
+    const response = await fetch(`${API_BASE_URL}/inventory/list?${queryParams.toString()}`, {
       method: 'GET',
       headers: headers,
     });
@@ -136,7 +136,7 @@ export const getInventoryTableListSearch = async (params = {}) => {
     const headers = getApiHeaders();
 
     // Make API call using fetch
-    const response = await fetch(`${API_BASE_URL}/api/inventory/tablelistsearch?${queryParams.toString()}`, {
+    const response = await fetch(`${API_BASE_URL}/inventory/tablelistsearch?${queryParams.toString()}`, {
       method: 'GET',
       headers: headers,
     });
@@ -227,7 +227,7 @@ export const getInventoryListsearch = async (params = {}) => {
     const headers = getApiHeaders();
 
     // Make API call using fetch
-    const response = await fetch(`${API_BASE_URL}/api/inventory/listsearch?${queryParams.toString()}`, {
+    const response = await fetch(`${API_BASE_URL}/inventory/listsearch?${queryParams.toString()}`, {
       method: 'GET',
       headers: headers,
     });
@@ -318,7 +318,7 @@ export const getInventoryReplenishmentListsearch = async (params = {}) => {
     const headers = getApiHeaders();
 
     // Make API call using fetch
-    const response = await fetch(`${API_BASE_URL}/api/inventory/replenishmentlistsearch?${queryParams.toString()}`, {
+    const response = await fetch(`${API_BASE_URL}/inventory/replenishmentlistsearch?${queryParams.toString()}`, {
       method: 'GET',
       headers: headers,
     });
@@ -409,7 +409,7 @@ export const getInventoryBatchesListSearch = async (params = {}) => {
     const headers = getApiHeaders();
 
     // Make API call using fetch
-    const response = await fetch(`${API_BASE_URL}/api/inventory/batcheslistsearch?${queryParams.toString()}`, {
+    const response = await fetch(`${API_BASE_URL}/inventory/batcheslistsearch?${queryParams.toString()}`, {
       method: 'GET',
       headers: headers,
     });
@@ -464,7 +464,7 @@ export const createInventoryItem = async (itemData) => {
       formData.append(key, itemData[key]);
     });
 
-    const response = await fetch(`${API_BASE_URL}/api/inventory/create`, {
+    const response = await fetch(`${API_BASE_URL}/inventory/create`, {
       method: 'POST',
       headers: getApiHeadersPost(),
       body: formData,
@@ -514,7 +514,7 @@ export const updateInventoryItem = async (itemData) => {
       formData.append(key, itemData[key]);
     });
 
-    const response = await fetch(`${API_BASE_URL}/api/inventory/update`, {
+    const response = await fetch(`${API_BASE_URL}/inventory/update`, {
       method: 'PUT',
       headers: getApiHeadersPost(),
       body: formData,
@@ -563,7 +563,7 @@ export const deleteInventoryItem = async (id, employee_id) => {
     formData.append('id', id);
     formData.append('employee_id', employee_id);
 
-    const response = await fetch(`${API_BASE_URL}/api/inventory/delete`, {
+    const response = await fetch(`${API_BASE_URL}/inventory/delete`, {
       method: 'DELETE',
       headers: getApiHeadersPost(),
       body: formData,
@@ -650,7 +650,7 @@ export const getInventoryReturnsListsearch = async (params = {}) => {
     const headers = getApiHeaders();
 
     // Make API call using fetch
-    const response = await fetch(`${API_BASE_URL}/api/inventory/replenishmentlistsearch?${queryParams.toString()}`, {
+    const response = await fetch(`${API_BASE_URL}/inventory/replenishmentlistsearch?${queryParams.toString()}`, {
       method: 'GET',
       headers: headers,
     });
@@ -692,6 +692,57 @@ export const getInventoryReturnsListsearch = async (params = {}) => {
       return {
         success: false,
         error: 'An unexpected error occurred while fetching inventory data',
+      };
+    }
+  }
+};
+
+export const updateBatchCosts = async (itemData) => {
+  try {
+    const formData = new URLSearchParams();
+    Object.keys(itemData).forEach(key => {
+      formData.append(key, itemData[key]);
+    });
+    
+    const response = await fetch(`${API_BASE_URL}/inventory/updatebatchcosts`, {
+      method: 'PUT',
+      headers: getApiHeaders(),
+      body: JSON.stringify(itemData),
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to update item.';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData;
+      } catch (e) {
+        errorMessage = response.statusText || errorMessage;
+      }
+      
+      return {
+        success: false,
+        error: errorMessage,
+        status: response.status,
+      };
+    }
+
+    const data = await response.json();
+    
+    return {
+      success: true,
+      data: data,
+    };
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      return {
+        success: false,
+        error: 'Network error. Please check if the server is running.',
+      };
+    } else {
+      console.log(error);
+      return {
+        success: false,
+        error: 'An unexpected error occurred while updating item.',
       };
     }
   }

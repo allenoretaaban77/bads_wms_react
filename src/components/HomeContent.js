@@ -7,6 +7,7 @@ import ReturnsTable from './returns/ReturnsTable.js';
 import EmployeesTable from './employees/EmployeesTable.tsx';
 import DailySalesReport from './reports/DailySalesReport.js';
 import SuppliersTable from './suppliers/SuppliersTable.js';
+import StockInPurchasesLog from './reports/StockInPurchasesLog.js';
 
 const descriptions = {
   profile: 'View your account details, role, and recent activity.',
@@ -35,23 +36,20 @@ function HomeContent() {
     case 'replenishment':
     case 'replenishment_management':
       return <ReplenishmentTable page_type={menuChild}/>;
-      break;
     case 'sales':
       return <SalesTable />;
-      break;
     case 'returns':
       return <ReturnsTable />;
-      break;
     case 'inventory':
       return <InventoryTable page_type={menuChild} />;
-      break;
     case 'suppliers':
       return <SuppliersTable page_type={menuChild} />;
-      break;
-    default:
+    case 'reports':
       return <DailySalesReport page_type={menuChild} />;
-      break;
-      // return <InventoryTable page_type={''}/>;
+    case 'stockin':
+      return <StockInPurchasesLog page_type={menuChild} />;
+    default:
+      // return <DailySalesReport page_type={menuChild} />;
   }
 
   // Render placeholder content for other menus

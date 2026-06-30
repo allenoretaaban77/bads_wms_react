@@ -21,27 +21,9 @@ function ViewInventoryStockBatchesModal({ show, onClose, id, onApply }) {
         try {
           const result = await getStockBatches(id);
           if (result.success) {
-            // Guarantee target_quantity defaults to an empty string or 0 if not present
-            const normalizedItems = (result.data.items || []).map(item => ({
-              ...item,
-              quantity_out: item.quantity_out ?? ''
-            }));
-
-            // console.log('allocatedBatches', allocatedBatches[0]);
-            // const updatedNormalizedItems = normalizedItems.map(item => ({
-            //   ...item,
-            //   quantity_out: allocatedBatches.find(b => b.inventory_id === item.inventory_id && +b.cost_per_unit === +item.cost_per_unit)?.quantity_out ?? item.quantity_out
-            // }));
-            // console.log('updatedNormalizedItems', updatedNormalizedItems);
-
-            // const totalTargetQuantity = updatedNormalizedItems.reduce(
-            //   (sum, item) => sum + (Number(item.quantity_out) || 0),
-            //   0
-            // );
-
             setData({
               ...result.data,
-              items: normalizedItems, //updatedNormalizedItems,
+              items: result.data.items //normalizedItems, //updatedNormalizedItems,
               // total_target_quantity: totalTargetQuantity
             });
           } else {
@@ -108,58 +90,26 @@ function ViewInventoryStockBatchesModal({ show, onClose, id, onApply }) {
   };
 
   const handleUpdateCost = async () => {
-    console.log(data);
     if (!validateFormForEmpty()) return;
     setIsSubmitting(true);
 
     try {
-      const jsonParams = {
+      const jsonData = {
         inventory_id: id,
         items: data.items.map(item => ({
+          inventory_id: item.inventory_id,
+          id: item.id,
           cost_per_unit: Number(item.cost_per_unit) || 0,
           date_received: item.date_received,
-        })),
-      }
-      console.log(jsonParams, data.items);
-      const result = await onApply(jsonParams);
+        }))
+      };
+      const result = await onApply(jsonData);
       
     } catch (error) {
       console.error("Error updating batch costs:", error);
     } finally {
       setIsSubmitting(false);
     }
-    
-    // if (!data || !data.items) return;
-
-    // const newErrors = {};
-    // data.items.forEach((item) => {
-    //   const targetQty = Number(item.quantity_out);
-    //   if (item.quantity_out === "" || item.quantity_out === null || isNaN(targetQty) || targetQty < 0) {
-    //     newErrors[`quantity_out_${item.id}`] = "Invalid quantity.";
-    //   }
-    //   if (targetQty > Number(item.current_qty)) {
-    //     newErrors[`quantity_out_${item.id}`] = "Insufficient stock.";
-    //   }
-    // });
-
-    // if (Object.keys(newErrors).length > 0) {
-    //   setErrors(newErrors);
-    //   return;
-    // }
-
-    // // Filter out only the batches the user explicitly assigned values to
-    // const allocatedBatches = data.items.filter(item => (Number(item.quantity_out) || 0) > 0);
-
-    // // Bubble up data arrays to parent
-    // if (onApply) {
-    //   onApply({
-    //     inventory_id: id,
-    //     total_allocated: data.total_target_quantity, // Set as row quantity string
-    //     batches: allocatedBatches                    // Detailed batch breakdown list
-    //   });
-    // }
-
-    // onClose();
   };
 
   if (!show) return null;
@@ -280,12 +230,6 @@ function ViewInventoryStockBatchesModal({ show, onClose, id, onApply }) {
             btnLabel="Close"
             btnIcon="cross"
             onClick={handleClose} 
-          />
-          <FormButton
-            btnType="success"
-            btnLabel="Update"
-            btnIcon="check"
-            onClick={() => handleUpdateCost()} 
           />
           <FormButton
             btnType="success"

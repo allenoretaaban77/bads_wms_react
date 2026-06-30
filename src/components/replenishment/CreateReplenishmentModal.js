@@ -55,7 +55,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
         try {
           const [trnxNumber, suppliersResult] = await Promise.all([
             generateTransactionNumber(),
-            getSuppliersList()
+            getSuppliersList({ pageSize: 100, order: 'asc', sort: 'name' })
           ]);
 
           setFormData(prev => ({

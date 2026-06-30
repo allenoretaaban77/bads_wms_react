@@ -106,7 +106,7 @@ const menuItems = [
   { key: 'reports', label: 'Reports', title: 'Daily Sales Reports',
     children: [
       { key: 'reports|sales', label: 'Daily Sales Reports', title: 'Daily Sales Reports' },
-      // { key: 'reports_generate', label: 'Generate Reeports', title: 'Generate Reeports' }
+      { key: 'reports|stockin', label: 'Stock In (Purchases) Log', title: 'Stock In (Purchases) Log' },
     ] 
   },
   { 

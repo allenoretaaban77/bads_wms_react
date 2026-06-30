@@ -332,7 +332,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                 name="remarks"
                 value={formData.remarks}
                 onChange={handleChange}
-                placeholder="Enter any initial storage tracking constraints or handling updates context..."
+                placeholder="Enter remarks or inventory notes here..."
                 rows="2"
                 className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
               />

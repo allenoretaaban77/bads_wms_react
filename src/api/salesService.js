@@ -32,7 +32,7 @@ export const getSalesList = async (params = {}) => {
     
     const headers = getApiHeaders();
 
-    const response = await fetch(`${API_BASE_URL}/api/sales/list?${queryParams.toString()}`, {
+    const response = await fetch(`${API_BASE_URL}/sales/list?${queryParams.toString()}`, {
       method: 'GET',
       headers: headers,
     });
@@ -77,7 +77,7 @@ export const getSalesList = async (params = {}) => {
 export const getSalesView = async (id) => {
   try {
     const headers = getApiHeaders();
-    const response = await fetch(`${API_BASE_URL}/api/sales/view?id=${id}`, {
+    const response = await fetch(`${API_BASE_URL}/sales/view?id=${id}`, {
       method: 'GET',
       headers: headers,
     });
@@ -115,7 +115,7 @@ export const getSalesView = async (id) => {
 export const getSalesViewSales = async (id) => {
   try {
     const headers = getApiHeaders();
-    const response = await fetch(`${API_BASE_URL}/api/sales/viewsales?id=${id}`, {
+    const response = await fetch(`${API_BASE_URL}/sales/viewsales?id=${id}`, {
       method: 'GET',
       headers: headers,
     });
@@ -153,7 +153,7 @@ export const getSalesViewSales = async (id) => {
 export const getSalesViewUpdate = async (id) => {
   try {
     const headers = getApiHeaders();
-    const response = await fetch(`${API_BASE_URL}/api/sales/viewupdate?id=${id}`, {
+    const response = await fetch(`${API_BASE_URL}/sales/viewupdate?id=${id}`, {
       method: 'GET',
       headers: headers,
     });
@@ -191,7 +191,7 @@ export const getSalesViewUpdate = async (id) => {
 export const createSalesTransaction = async (itemData) => {
   try {
 
-    const response = await fetch(`${API_BASE_URL}/api/sales/create`, {
+    const response = await fetch(`${API_BASE_URL}/sales/create`, {
       method: 'POST',
       headers: getApiHeaders(),
       body: JSON.stringify(itemData),
@@ -243,7 +243,7 @@ export const updateSalesTransaction = async (itemData) => {
       formData.append(key, itemData[key]);
     });
 
-    const response = await fetch(`${API_BASE_URL}/api/sales/update`, {
+    const response = await fetch(`${API_BASE_URL}/sales/update`, {
       method: 'PUT',
       headers: getApiHeaders(),
       body: JSON.stringify(itemData),
@@ -293,7 +293,7 @@ export const approveSalesTransaction = async (itemData) => {
       formData.append(key, itemData[key]);
     });
 
-    const response = await fetch(`${API_BASE_URL}/api/sales/approve`, {
+    const response = await fetch(`${API_BASE_URL}/sales/approve`, {
       method: 'PUT',
       headers: getApiHeaders(),
       body: JSON.stringify(itemData),
@@ -341,7 +341,7 @@ export const voidSalesTransaction = async (id) => {
     const formData = new URLSearchParams();
     formData.append('id', id);
 
-    const response = await fetch(`${API_BASE_URL}/api/sales/void`, {
+    const response = await fetch(`${API_BASE_URL}/sales/void`, {
       method: 'DELETE',
       headers: getApiHeadersPost(),
       body: formData,
@@ -389,7 +389,7 @@ export const deleteSalesTransaction = async (id) => {
     const formData = new URLSearchParams();
     formData.append('id', id);
 
-    const response = await fetch(`${API_BASE_URL}/api/sales/delete`, {
+    const response = await fetch(`${API_BASE_URL}/sales/delete`, {
       method: 'DELETE',
       headers: getApiHeadersPost(),
       body: formData,
@@ -456,7 +456,7 @@ export const generateTransactionNumber = async () => {
 export const getStockBatches = async (id) => {
   try {
     const headers = getApiHeaders();
-    const response = await fetch(`${API_BASE_URL}/api/sales/stockbatches?id=${id}`, {
+    const response = await fetch(`${API_BASE_URL}/sales/stockbatches?id=${id}`, {
       method: 'GET',
       headers: headers,
     });
@@ -498,7 +498,7 @@ export const setPaidUnpaid = async (itemData) => {
       formData.append(key, itemData[key]);
     });
 
-    const response = await fetch(`${API_BASE_URL}/api/sales/setpaidunpaid`, {
+    const response = await fetch(`${API_BASE_URL}/sales/setpaidunpaid`, {
       method: 'PUT',
       headers: getApiHeaders(),
       body: JSON.stringify(itemData),

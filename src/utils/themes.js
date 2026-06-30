@@ -197,7 +197,8 @@ export const FormThead = ({
   data = {},
   sortField,
   sortOrder,
-  handleSort
+  handleSort,
+  customClass
 }) => {
   return (
     <thead className="bg-header text-white sticky top-0 z-10">
@@ -212,7 +213,7 @@ export const FormThead = ({
                 <th 
                   key={index} 
                   onClick={() => handleSort(item.name)}
-                  className={`border-r px-3 py-2 text-white text-xs font-semibold border-0 cursor-pointer hover:bg-green-700 text-` + item.align}
+                  className={`border-r px-3 py-2 text-white text-xs font-semibold border-0 cursor-pointer hover:bg-green-700 text-${item.align} ${item?.class || ""}`}
                 >
                   <div>
                     {item.title}
@@ -240,7 +241,7 @@ export const FormModalThead = ({
           <th className="py-2 pl-2 w-10 text-center bg-header"></th>
           {data.map((item, index) => {
             return (
-              <th key={index} className={`px-3 bg-header ` + item.class}>{item.title}</th>
+              <th key={index} className={`px-3 bg-header ${item?.class || ""}`}>{item.title}</th>
             )
           })}
       </tr>
@@ -256,7 +257,7 @@ export const FormModalTheadDefault = ({
       <tr>
           {data.map((item, index) => {
             return (
-              <th key={index} className={`px-3 bg-header ` + item.class}>{item.title}</th>
+              <th key={index} className={`px-3 bg-header ${item?.class || ""}`}>{item.title}</th>
             )
           })}
       </tr>

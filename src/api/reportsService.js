@@ -32,7 +32,7 @@ export const getDailyReports = async (params = {}) => {
     
     const headers = getApiHeaders();
 
-    const response = await fetch(`${API_BASE_URL}/api/reports/list?${queryParams.toString()}`, {
+    const response = await fetch(`${API_BASE_URL}/reports/list?${queryParams.toString()}`, {
       method: 'GET',
       headers: headers,
     });
@@ -69,6 +69,54 @@ export const getDailyReports = async (params = {}) => {
       return {
         success: false,
         error: 'An unexpected error occurred while fetching reports data',
+      };
+    }
+  }
+};
+
+export const updateReport = async (date) => {
+  try {
+    const formData = new URLSearchParams();
+    formData.append('date', date);
+
+    const response = await fetch(`${API_BASE_URL}/reports/updatereport`, {
+      method: 'POST',
+      headers: getApiHeadersPost(),
+      body: formData,
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to update report.';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData; // errorMessage || errorData.message || errorData.error;
+      } catch (e) {
+        errorMessage = response.statusText || errorMessage;
+      }
+      
+      return {
+        success: false,
+        error: errorMessage,
+        status: response.status,
+      };
+    }
+
+    const data = await response.json();
+    
+    return {
+      success: true,
+      data: data,
+    };
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      return {
+        success: false,
+        error: 'Network error. Please check if the server is running.',
+      };
+    } else {
+      return {
+        success: false,
+        error: 'An unexpected error occurred while updating report.',
       };
     }
   }

@@ -28,7 +28,7 @@ const Alert = ({ show, message, type, onDismiss }) => {
   };
 
   return (
-    <div className={`fixed top-1 mt-1 right-2 z-50 p-4 rounded-md shadow-lg max-w-sm w-full ${alertStyles[type]}`}>
+    <div className={`fixed top-1 mt-1 right-2 z-50 p-4 rounded-md shadow-lg max-w-lg w-full ${alertStyles[type]}`}>
       <div className="flex">
         <div className="flex-shrink-0">
           {type === 'success' ? (

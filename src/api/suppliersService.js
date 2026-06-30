@@ -33,7 +33,7 @@ export const getSuppliersList = async (params = {}) => {
     
     const headers = getApiHeaders();
 
-    const response = await fetch(`${API_BASE_URL}/api/suppliers/list?${queryParams.toString()}`, {
+    const response = await fetch(`${API_BASE_URL}/suppliers/list?${queryParams.toString()}`, {
       method: 'GET',
       headers: headers,
     });
@@ -78,7 +78,7 @@ export const getSuppliersList = async (params = {}) => {
 export const viewSupplier = async (id) => {
   try {
     const headers = getApiHeaders();
-    const response = await fetch(`${API_BASE_URL}/api/suppliers/view?id=${id}`, {
+    const response = await fetch(`${API_BASE_URL}/suppliers/view?id=${id}`, {
       method: 'GET',
       headers: headers,
     });
@@ -113,20 +113,121 @@ export const viewSupplier = async (id) => {
   }
 };
 
+export const createSupplier = async (itemData) => {
+  try {
+    // Create URL-encoded form data like login system
+    const formData = new URLSearchParams();
+    Object.keys(itemData).forEach(key => {
+      formData.append(key, itemData[key]);
+    });
+
+    const response = await fetch(`${API_BASE_URL}/suppliers/create`, {
+      method: 'POST',
+      headers: getApiHeadersPost(),
+      body: formData,
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to create supplier record';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData; // errorMessage || errorData.message || errorData.error;
+      } catch (e) {
+        errorMessage = response.statusText || errorMessage;
+      }
+      
+      return {
+        success: false,
+        error: errorMessage,
+        status: response.status,
+      };
+    }
+
+    const data = await response.json();
+    
+    return {
+      success: true,
+      data: data,
+    };
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      return {
+        success: false,
+        error: 'Network error. Please check if the server is running.',
+      };
+    } else {
+      return {
+        success: false,
+        error: 'An unexpected error occurred while creating supplier record.',
+      };
+    }
+  }
+};
+
+export const updateSupplier = async (itemData) => {
+  try {
+    const formData = new URLSearchParams();
+    Object.keys(itemData).forEach(key => {
+      formData.append(key, itemData[key]);
+    });
+
+    const response = await fetch(`${API_BASE_URL}/suppliers/update`, {
+      method: 'PUT',
+      headers: getApiHeadersPost(),
+      body: formData,
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to update supplier record.';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData;
+      } catch (e) {
+        errorMessage = response.statusText || errorMessage;
+      }
+      
+      return {
+        success: false,
+        error: errorMessage,
+        status: response.status,
+      };
+    }
+
+    const data = await response.json();
+    
+    return {
+      success: true,
+      data: data,
+    };
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      return {
+        success: false,
+        error: 'Network error. Please check if the server is running.',
+      };
+    } else {
+      return {
+        success: false,
+        error: 'An unexpected error occurred while updating replenishment transaction',
+      };
+    }
+  }
+};
+
 export const deleteSupplier = async (id, employee_id) => {
   try {
     const formData = new URLSearchParams();
     formData.append('id', id);
     formData.append('employee_id', employee_id);
 
-    const response = await fetch(`${API_BASE_URL}/api/suppliers/delete`, {
+    const response = await fetch(`${API_BASE_URL}/suppliers/delete`, {
       method: 'DELETE',
       headers: getApiHeadersPost(),
       body: formData,
     });
 
     if (!response.ok) {
-      let errorMessage = 'Failed to delete inventory item';
+      let errorMessage = 'Failed to delete supplier record.';
       try {
         const errorData = await response.json();
         errorMessage = errorData.message || errorData.error || errorMessage;
@@ -156,7 +257,7 @@ export const deleteSupplier = async (id, employee_id) => {
     } else {
       return {
         success: false,
-        error: 'An unexpected error occurred while deleting inventory item',
+        error: 'An unexpected error occurred while deleting supplier record',
       };
     }
   }

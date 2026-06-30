@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { formatCurrency, formatPostingDate } from '../../utils/formatters';
-import { generateTransactionNumber } from '../../api/returnsService.js';
-import { getInvoiceItems } from '../../api/returnsService'; // Connected your native service file here
+import { generateTransactionNumber, getInvoiceItems } from '../../api/returnsService.js';
 import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 import { FormButton, FormHeader, FormModalThead } from '../../utils/themes.js';
 

@@ -26,7 +26,7 @@ export const getReplenishmentList = async (params = {}) => {
     
     const headers = getApiHeaders();
 
-    const response = await fetch(`${API_BASE_URL}/api/replenishment/list?${queryParams.toString()}`, {
+    const response = await fetch(`${API_BASE_URL}/replenishment/list?${queryParams.toString()}`, {
       method: 'GET',
       headers: headers,
     });
@@ -71,7 +71,7 @@ export const getReplenishmentList = async (params = {}) => {
 export const getReplenishmentView = async (id) => {
   try {
     const headers = getApiHeaders();
-    const response = await fetch(`${API_BASE_URL}/api/replenishment/view?id=${id}`, {
+    const response = await fetch(`${API_BASE_URL}/replenishment/view?id=${id}`, {
       method: 'GET',
       headers: headers,
     });
@@ -110,7 +110,7 @@ export const getReplenishmentView = async (id) => {
 export const createReplenishmentTransaction = async (itemData) => {
   try {
 
-    const response = await fetch(`${API_BASE_URL}/api/replenishment/create`, {
+    const response = await fetch(`${API_BASE_URL}/replenishment/create`, {
       method: 'POST',
       headers: getApiHeaders(),
       body: JSON.stringify(itemData),
@@ -162,7 +162,7 @@ export const updateReplenishmentTransaction = async (itemData) => {
       formData.append(key, itemData[key]);
     });
 
-    const response = await fetch(`${API_BASE_URL}/api/replenishment/update`, {
+    const response = await fetch(`${API_BASE_URL}/replenishment/update`, {
       method: 'PUT',
       headers: getApiHeaders(),
       body: JSON.stringify(itemData),
@@ -212,7 +212,7 @@ export const approveReplenishmentTransaction = async (itemData) => {
       formData.append(key, itemData[key]);
     });
 
-    const response = await fetch(`${API_BASE_URL}/api/replenishment/approve`, {
+    const response = await fetch(`${API_BASE_URL}/replenishment/approve`, {
       method: 'PUT',
       headers: getApiHeaders(),
       body: JSON.stringify(itemData),
@@ -260,7 +260,7 @@ export const deleteReplenishmentTransaction = async (id) => {
     const formData = new URLSearchParams();
     formData.append('id', id);
 
-    const response = await fetch(`${API_BASE_URL}/api/replenishment/delete`, {
+    const response = await fetch(`${API_BASE_URL}/replenishment/delete`, {
       method: 'DELETE',
       headers: getApiHeadersPost(),
       body: formData,
@@ -327,7 +327,7 @@ export const generateTransactionNumber = async () => {
 export const getStockInTransactions = async (id, cost) => {
   try {
     const headers = getApiHeaders();
-    const response = await fetch(`${API_BASE_URL}/api/replenishment/stockintrnxs?id=${id}&cost=${cost}`, {
+    const response = await fetch(`${API_BASE_URL}/replenishment/stockintrnxs?id=${id}&cost=${cost}`, {
       method: 'GET',
       headers: headers,
     });

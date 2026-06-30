@@ -1,6 +1,7 @@
 import { getAccessToken } from '../api/tokenService';
 
-export const API_BASE_URL = 'http://his.local';
+// export const API_BASE_URL = 'http://his.local';
+export const API_BASE_URL = 'http://badongs.hardware.inventory.system/api';
 
 export const getApiHeaders = () => {
   const headers = {

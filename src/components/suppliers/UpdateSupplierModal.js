@@ -2,27 +2,33 @@
 
 
 import React, { useEffect, useState } from 'react';
-import { getStatusTextColor } from '../../utils/statusColors.js';
 import { FormButton, FormHeader } from '../../utils/themes.js';
-import { viewSupplier } from '../../api/suppliersService.js';
-import { formatLongDate } from '../../utils/formatters.js';
 import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
-import APP_CONFIG from '../../config/constants.js';
 
-const CreateSupplierModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
+const UpdateSupplierModal = ({ selectedItem, showEditModal, setShowEditModal, onSave }) => {
   const userData = useAppViewModel((state) => state.userData);
   const [errors, setErrors] = useState({});
-  const [data, setData] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     created_by: userData?.employee_id || '',
   });
 
+  useEffect(() => {
+    if (selectedItem && showEditModal) {
+      setFormData({
+        id: selectedItem.id || '',
+        name: selectedItem.name || '',
+        remarks: selectedItem.remarks || '',
+        updated_by: userData?.employee_id || '',
+        tracking_method: selectedItem.tracking_method || ''
+      });
+    }
+  }, [selectedItem, showEditModal, userData?.employee_id]);
+
   const handleCancel = () => {
     setErrors({});
-    setShowCreateModal(false);
+    setShowEditModal(false);
     setFormData({
       name: '',
       created_by: userData?.employee_id || '',
@@ -32,6 +38,7 @@ const CreateSupplierModal = ({ showCreateModal, setShowCreateModal, onSave }) =>
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -64,6 +71,7 @@ const CreateSupplierModal = ({ showCreateModal, setShowCreateModal, onSave }) =>
     
     try {
       const result = await onSave(formData);
+      console.log(result);
       
       if (result.success) {
         const refData = {
@@ -73,7 +81,7 @@ const CreateSupplierModal = ({ showCreateModal, setShowCreateModal, onSave }) =>
         setFormData(refData);
 
         setErrors({});
-        setShowCreateModal(false);
+        setShowEditModal(false);
       } else {
         validateForm(result);
       }
@@ -84,17 +92,17 @@ const CreateSupplierModal = ({ showCreateModal, setShowCreateModal, onSave }) =>
     }
   };
 
-  if (!showCreateModal) return null;
+  if (!showEditModal) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3">
       <div className="bg-white rounded-custom shadow-xl border border-gray-200 w-full max-w-sm flex flex-col">
         
         {/* Header Section */}
-        <FormHeader headerTitle="Create Supplier Record" onClick={() => handleCancel()} />
+        <FormHeader headerTitle="Modify Supplier Record" onClick={() => handleCancel()} />
 
         <div className="p-4 overflow-y-auto flex-1">
-          <form id="create-supplier-form" onSubmit={handleSubmit} className="space-y-4">
+          <form id="update-supplier-form" onSubmit={handleSubmit} className="space-y-4">
             
             {/* Product Name - Full Width with standardized subtle text-xs sizing */}
             <div className="flex flex-col space-y-1">
@@ -140,12 +148,12 @@ const CreateSupplierModal = ({ showCreateModal, setShowCreateModal, onSave }) =>
           />
           <FormButton
             btnType="success"
-            btnLabel="Create"
+            btnLabel="Update"
             btnIcon="check" 
             isProcessing={isLoading}
             type="submit"
-            disabled={isLoading}
-            form="create-supplier-form"
+            // disabled={isLoading}
+            form="update-supplier-form"
           />
         </div>
 
@@ -154,4 +162,4 @@ const CreateSupplierModal = ({ showCreateModal, setShowCreateModal, onSave }) =>
   );
 };
 
-export default CreateSupplierModal;
+export default UpdateSupplierModal;

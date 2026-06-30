@@ -7,10 +7,17 @@ export const useTableControl = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const handleSort = (field) => {
+    const newOrder = sortField === field && sortOrder === 'asc' ? 'desc' : 'asc';
+    setSortField(field);
+    setSortOrder(newOrder);
+  };
+
   return {
     sortField, setSortField,
     sortOrder, setSortOrder,
     loading, setLoading,
-    error, setError
+    error, setError,
+    handleSort
   };
 }

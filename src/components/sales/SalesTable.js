@@ -313,15 +313,7 @@ function SalesTable() {
 
   return (
     <div className="flex flex-col h-screen">
-      {/* Alert Component */}
-      <Alert 
-        show={alert.show}
-        message={alert.message}
-        type={alert.type}
-        onDismiss={() => setAlert({ show: false, message: '', type: '' })}
-      />
       
-      {/* Fixed Header Sections */}
       <div className="flex-shrink-0 space-y-0 mb-2">
 
         {/* Search and Filters */}
@@ -409,8 +401,13 @@ function SalesTable() {
           </div>
         </div>
       </div>
+      
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 p-2 mb-1.5 rounded text-center">
+          <strong>Error:</strong> {error}
+        </div>
+      )}
 
-      {/* Scrollable Table Container */}
       <div className="bg-white border border-gray-200 rounded-custom shadow-xs overflow-auto flex flex-col h-[calc(100vh-13.5rem)]">
 
         <table className="w-full text-sm border-collapse">
@@ -508,12 +505,6 @@ function SalesTable() {
             <span className="ml-2 text-gray-600">Loading sales data...</span>
           </div>
         )}
-        
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 m-4 rounded">
-            <strong>Error:</strong> {error}
-          </div>
-        )}
 
         {filteredData.length === 0 && !loading && (
           <div className="text-center py-8 text-gray-500">
@@ -553,6 +544,13 @@ function SalesTable() {
         showEditModal={showEditModal}
         setShowEditModal={setShowEditModal}
         onSave={handleEditSales}
+      />
+
+      <Alert 
+        show={alert.show}
+        message={alert.message}
+        type={alert.type}
+        onDismiss={() => setAlert({ show: false, message: '', type: '' })}
       />
 
     </div>

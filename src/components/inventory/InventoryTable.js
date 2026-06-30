@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getStatusColor } from '../../utils/statusColors';
-import { getInventoryList, createInventoryItem, updateInventoryItem, deleteInventoryItem, getInventoryTableListSearch } from '../../api/inventoryService';
+import { getInventoryList, createInventoryItem, updateInventoryItem, deleteInventoryItem } from '../../api/inventoryService';
 import { APP_CONFIG } from '../../config/constants';
 import ViewInventoryModal from './ViewInventoryModal';
 import UpdateInventoryModal from './UpdateInventoryModal';
@@ -55,6 +55,7 @@ function InventoryTable({ page_type }) {
   
   // Alert state
   const [alert, setAlert] = useState({ show: false, message: '', type: '' });
+  useEffect(() => { if (alert.show == true) { setTimeout(() => { setAlert({ show: false, message: '', type: '' })}, 3000); }}, [alert]);
 
   // Refresh function to trigger data reload
   const handleRefresh = () => {
@@ -102,9 +103,7 @@ function InventoryTable({ page_type }) {
           setTotalItems(total);
           setTotalPages(totalPages);
         } else {
-          // Handle API error response
-          console.warn('API returned error:', result.error);
-          setError(result.error || 'Failed to load inventory data');
+          setAlert({ show: true, message: result.error || 'Failed to load inventory data', type: 'error' });
           
           // Set empty data on error
           setInventoryData([]);
@@ -113,8 +112,7 @@ function InventoryTable({ page_type }) {
           setTotalPages(0);
         }
       } catch (err) {
-        console.error('Error fetching inventory:', err);
-        setError(`Failed to load inventory data: ${err.message}`);
+        setAlert({ show: true, message: 'Error fetching inventory:', type: 'error' });
         
         // Set empty data on error
         setInventoryData([]);
@@ -152,11 +150,6 @@ function InventoryTable({ page_type }) {
             type: 'success'
           });
           
-          // Hide alert after 3 seconds
-          setTimeout(() => {
-            setAlert({ show: false, message: '', type: '' });
-          }, 3000);
-          
           // Refresh data to show updated list
           setRefreshKey(prev => prev + 1);
         } else {
@@ -182,19 +175,12 @@ function InventoryTable({ page_type }) {
           type: 'success'
         });
         
-        // Hide alert after 3 seconds
-        setTimeout(() => {
-          setAlert({ show: false, message: '', type: '' });
-        }, 3000);
-        
         // Refresh data to show the new item
         setCurrentPage(1); // Go to first page to see the new item
         // Trigger data refresh by incrementing refresh key
         setRefreshKey(prev => prev + 1);
-      } else {
-        return result;
-      }
-      // Return the result so CreateInventoryModal can handle success/error states
+      } 
+      
       return result;
     } catch (err) {
       setError('Failed to create inventory item');
@@ -214,20 +200,15 @@ function InventoryTable({ page_type }) {
         
         setAlert({
           show: true,
-          message: 'Inventory item updated successfully!',
+          message: 'Inventory item updated successfullyx!',
           type: 'success'
         });
 
-        setTimeout(() => {
-          setAlert({ show: false, message: '', type: '' });
-        }, 3000);
-
         setCurrentPage(1);
         setRefreshKey(prev => prev + 1); // Trigger data refresh
-      } else {
-        // setError(result.error || 'Failed to update item');
-        return result;
-      }
+      } 
+      
+      return result;
     } catch (err) {
       setError('Failed to update inventory item');
 
@@ -261,16 +242,9 @@ function InventoryTable({ page_type }) {
 
   return (
     <div className="flex flex-col h-screen">
-
-      <Alert 
-        show={alert.show}
-        message={alert.message}
-        type={alert.type}
-        onDismiss={() => setAlert({ show: false, message: '', type: '' })}
-      />
       
       <div className="flex-shrink-0 space-y-0 mb-2">
-        {/* Inventory Statistics */}
+        
         <div className="bg-white p-2 rounded-custom border border-gray-200 mb-2">
           {loadingSummary && (
             <div className="flex justify-center items-center py-2">
@@ -308,7 +282,6 @@ function InventoryTable({ page_type }) {
           )}
         </div>
 
-        {/* Search and Filters */}
         <div className="bg-white pl-3 pr-3 pb-2 rounded-custom border border-gray-200">
           
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 pt-2">
@@ -380,12 +353,18 @@ function InventoryTable({ page_type }) {
           </div>
         </div>
       </div>
+      
+      {/* {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 p-2 mb-1.5 rounded text-center">
+          <strong>Error:</strong> {error}
+        </div>
+      )} */}
 
       <div className="bg-white border border-gray-200 rounded-custom shadow-xs overflow-auto flex flex-col h-[calc(100vh-18.2rem)]">
         
         <table className="w-full table-auto border-collapse">
           <FormThead sortOrder={sortOrder} sortField={sortField} handleSort={handleSort} data={[
-            {"title":"#", "name":"id", "align":"center"},
+            {"title":"#", "name":"id", "align":"right"},
             {"title":"Product Name", "name":"product_name", "align":"left"},
             {"title":"SKU", "name":"sku", "align":"left"},
             {"title":"Cost per Unit", "name":"cost_per_unit", "align":"right"},
@@ -409,7 +388,7 @@ function InventoryTable({ page_type }) {
                       index % 2 === 0 ? 'bg-white hover:bg-green-50' : 'bg-row-alt hover:bg-green-100'
                     }`}
                   >
-                    <td className="px-3 py-2 border-r text-xs font-semibold text-green-900">{item.id}</td>
+                    <td className="px-3 py-2 border-r text-xs font-semibold text-green-900 text-right">{item.id}</td>
                     <td className="px-3 py-2 border-r text-xs font-semibold text-green-900">{item.product_name}</td>
                     <td className="px-3 py-2 border-r text-xs">{item.sku}</td>
                     {item && item.tracking_method === APP_CONFIG.TRACKING_METHOD.BATCH && (
@@ -484,12 +463,6 @@ function InventoryTable({ page_type }) {
         
         </table>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 m-4 rounded">
-            <strong>Error:</strong> {error}
-          </div>
-        )}
-
         {loading && (
           <div className="flex justify-center items-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-button"></div>
@@ -531,6 +504,13 @@ function InventoryTable({ page_type }) {
         showEditModal={showEditModal}
         setShowEditModal={setShowEditModal}
         onSave={handleEditItem}
+      />
+
+      <Alert 
+        show={alert.show}
+        message={alert.message}
+        type={alert.type}
+        onDismiss={() => setAlert({ show: false, message: '', type: '' })}
       />
 
     </div>

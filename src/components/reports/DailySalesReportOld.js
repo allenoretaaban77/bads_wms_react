@@ -8,13 +8,13 @@ import {
   approveSalesTransaction,
   voidSalesTransaction,
   deleteSalesTransaction,
-} from '../../api/salesService.js';
+} from '../../salesService.js';
 import Alert from '../../utils/alert.js';
 // import ViewSalesModal from './ViewSalesModal';
 // import CreateSalesModal from './CreateSalesModal';
 // import UpdateSalesModal from './UpdateSalesModal';
 import { FormButton, FormPagination, FormThead } from '../../utils/themes.js';
-import { getDailyReports } from '../../api/reportsService.js';
+import { getDailyReports } from '../../reportsService.js';
 
 function DailySalesReport() {
   // Data and loading states

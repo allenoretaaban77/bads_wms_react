@@ -24,7 +24,7 @@ export const login = async (username, password) => {
     formData.append('password', password.trim());
 
     // Make API call using fetch
-    const response = await fetch(`${API_BASE_URL}/api/employee/login`, {
+    const response = await fetch(`${API_BASE_URL}/employee/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',

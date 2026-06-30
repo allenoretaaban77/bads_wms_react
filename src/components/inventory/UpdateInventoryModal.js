@@ -3,6 +3,8 @@ import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 import { APP_CONFIG } from '../../config/constants';
 import { FormButton, FormHeader } from '../../utils/themes.js';
 import ViewInventoryStockBatchesModal from './ViewInventoryStockBatchesModal.js';
+import { updateBatchCosts } from '../../api/inventoryService.js';
+import Alert from '../../utils/alert.js';
 
 // Add CSS for loading circle animation
 const style = document.createElement('style');
@@ -23,6 +25,7 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
   const [errors, setErrors] = useState({});
   const [showStockBatchesModal, setShowStockBatchesModal] = useState(false);
   const [selectedStockItem, setSelectedStockItem] = useState(null);
+  const [alert, setAlert] = useState({ show: false, message: '', type: '' });
 
   const [formData, setFormData] = useState({
     id: '',
@@ -117,7 +120,37 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
     setShowEditModal(false);
   };
 
-  const handleUpdateCosts = (allocationData) => {
+  const handleUpdateCosts = async (params = {}) => {
+    try {
+      const result = await updateBatchCosts(params);
+      console.log('handleUpdateCosts result', result);
+      if (result.success) {
+        setShowStockBatchesModal(false);
+        
+        setAlert({
+          show: true,
+          message: 'Batch costs updated successfully!',
+          type: 'success'
+        });
+
+        setTimeout(() => {
+          setAlert({ show: false, message: '', type: '' });
+        }, 3000);
+
+        // setCurrentPage(1);
+        // setRefreshKey(prev => prev + 1); // Trigger data refresh
+      } 
+      
+      // return result;
+    } catch (err) {
+      console.log('handleUpdateCosts error', err);
+      // setError('Failed to update inventory item');
+
+      return {
+        success: false,
+        error: 'Failed to update inventory item'
+      };
+    }
   };
 
   const showAvailableStocks = (item) => {
@@ -129,6 +162,7 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+
       <div className="bg-white rounded-custom shadow-xl border border-gray-200 w-full max-w-2xl flex flex-col max-h-[90vh]">
         
         {/* Header Section - Matches top brand system definitions */}
@@ -218,9 +252,7 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
                   />
                 )} */}
                 <div
-                  className={`flex items-center w-full pr-0 pl-3 py-1.5 text-xs border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
-                    errors.cost_per_unit ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
-                  }`}
+                  className={`flex items-center w-full px-3 text-xs border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${errors.cost_per_unit ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'} ${formData.tracking_method === APP_CONFIG.TRACKING_METHOD.STANDARD ? 'py-1.5' : 'py-1 justify-center'}`}
                 >
                   {formData.tracking_method === APP_CONFIG.TRACKING_METHOD.STANDARD && (
                     <input
@@ -231,7 +263,7 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
                       onChange={handleChange}
                       placeholder="0.00"
                       required
-                      className="flex-1 focus:outline-none bg-transparent font-medium text-gray-800"
+                      className="flex-1 focus:outline-none bg-transparent font-medium text-gray-800 text-right"
                     />
                   )}
                   {formData.tracking_method === APP_CONFIG.TRACKING_METHOD.BATCH && (
@@ -239,12 +271,9 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
                       type="button" 
                       title="View Stock Batches" 
                       onClick={() => showAvailableStocks(selectedItem)}
-                      className="text-blue-500 hover:text-blue-700 mr-1.5 focus:outline-none flex-shrink-0"
+                      className="hover:text-white mr-1.5 focus:outline-none flex-shrink-0 border bg-blue-900 text-[10px] text-white px-2 pb-[1px]"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
+                      View Stock Batches
                     </button>
                   )}
                 </div>
@@ -262,7 +291,7 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
                   value={formData.price_per_unit}
                   onChange={handleChange}
                   placeholder="0.00"
-                  className={`w-full px-3 py-1.5 text-xs border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                  className={`text-right w-full px-3 py-1.5 text-xs border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                     errors.price_per_unit ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                   }`}
                   required
@@ -280,7 +309,7 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
                   value={formData.reorder_level}
                   onChange={handleChange}
                   placeholder="0"
-                  className={`w-full px-3 py-1.5 text-xs border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                  className={`text-right w-full px-3 py-1.5 text-xs border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                     errors.reorder_level ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                   }`}
                   required
@@ -368,7 +397,7 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
                 name="remarks"
                 value={formData.remarks}
                 onChange={handleChange}
-                placeholder="Log tracking modification updates..."
+                placeholder="Enter remarks or inventory notes here..."
                 rows="2"
                 className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
               />
@@ -404,6 +433,13 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
         onClose={() => setShowStockBatchesModal(false)}
         id={selectedItem?.id}
         onApply={handleUpdateCosts}
+      />
+
+      <Alert 
+        show={alert.show}
+        message={alert.message}
+        type={alert.type}
+        onDismiss={() => setAlert({ show: false, message: '', type: '' })}
       />
 
     </div>
