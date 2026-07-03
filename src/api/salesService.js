@@ -339,10 +339,10 @@ export const approveSalesTransaction = async (itemData) => {
 export const voidSalesTransaction = async (id) => {
   try {
     const formData = new URLSearchParams();
-    formData.append('id', id);
+    formData.append('invoice_no', id);
 
-    const response = await fetch(`${API_BASE_URL}/sales/void`, {
-      method: 'DELETE',
+    const response = await fetch(`${API_BASE_URL}/sales/revert`, {
+      method: 'PUT',
       headers: getApiHeadersPost(),
       body: formData,
     });

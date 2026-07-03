@@ -2,25 +2,26 @@ import React, { useState, useEffect } from 'react';
 import { formatCurrency, formatLongDate } from '../../utils/formatters';
 import Alert from '../../utils/alert';
 import { FormButton, FormThead } from '../../utils/themes.js';
-import { getDailyBusinessLedger, updateReport } from '../../api/reportsService.js';
+import { getDailyBusinessLedger, updateReport, updateLedgerValue } from '../../api/reportsService.js';
 import { FormPagination } from '../../utils/pagination.js';
 import { useAlertStore } from '../../utils/alert';
 import { usePageControl } from '../../utils/pagination.js';
 import { useTableControl } from '../../utils/table.js';
 import { useHandlerDailyBusinessLedger } from '../../utils/handlers.js';
 import ViewDailySalesItemsModal from './ViewDailySalesItemsModal.js';
-import UpdateHardwareModal from './UpdateHardwareModal.js';
+import UpdateLedgerValueModal from './UpdateLedgerValueModal.js';
 
 function DailyBusinessLedger({ page_type }) {
   const alertStore = useAlertStore();
   const { currentPage, setCurrentPage, pageSize, setPageSize, totalItems, setTotalItems, totalPages, setTotalPages, handlePageSizeChange, handlePageChange } = usePageControl();
   const { sortField, setSortField, sortOrder, setSortOrder, loading, setLoading, error, setError, handleSort } = useTableControl();
-  const { selectedItem, setSelectedItem, showViewModal, setShowViewModal, showCreateModal, setShowCreateModal, showEditModal, setShowEditModal, showHardwareModal, setShowHardwareModal, showBahayModal, setShowBahayModal, handleRefresh, handleDelete, handleView } = useHandlerDailyBusinessLedger();
+  const { selectedItem, setSelectedItem, showViewModal, setShowViewModal, showCreateModal, setShowCreateModal, showEditModal, setShowEditModal, showHardwareModal, setShowHardwareModal, showBahayModal, setShowBahayModal, showLedgerValueModal, setShowLedgerValueModal, handleRefresh, handleDelete, handleView } = useHandlerDailyBusinessLedger();
   const [saleDate, satSalesData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [tableHeader, setTableHeader] = useState([]);
   const [monitoredItems, setMonitoredItems] = useState([]);
+  const [monitoredIds, setMonitoredIds] = useState([]);
   
   useEffect(() => { if (alertStore.alert.show == true) { setTimeout(() => { alertStore.setAlert({ show: false, message: '', type: '' })}, 3000); }}, [alertStore.alert]);
 
@@ -47,13 +48,16 @@ function DailyBusinessLedger({ page_type }) {
           const total = result.data.total || data.length;
           const totalPages = result.data.totalPages || Math.ceil(total / pageSize);
           const header = JSON.parse(result.data?.headers);
+          const monitored_items = result.data.monitored_items || [];
+          const mids = result.data.mids || [];
           
           satSalesData(data);
+          setMonitoredItems(monitored_items);
+          setMonitoredIds(mids);
           setFilteredData(data);
           setTotalItems(total);
           setTotalPages(totalPages);
           setTableHeader(header);
-          setMonitoredItems(result.data.monitoredItems);
         } else {
           // Handle API error response
           console.warn('API returned error:', result.error);
@@ -82,39 +86,79 @@ function DailyBusinessLedger({ page_type }) {
     loadsatSalesData();
   }, [currentPage, pageSize, searchTerm, sortField, sortOrder, alertStore.refreshDailySalesReport]);
 
-  const hanldeUpdate = async (date) => {
+  const hanldeUpdate = (date) => {
     if (window.confirm('Are you sure you want to UPDATE this report?')) {
-      try {
-        const result = await updateReport(date);
-        if (result.success) {
-          alertStore.setAlert({
-            show: true,
-            message: formatLongDate(date) + ' report successfully updated.',
-            type: 'success'
-          });
-          
-          handleRefresh();
-          setTimeout(() => {handleRefresh()}, 1000);
-        } else {
-          alertStore.setAlert({
-            show: true,
-            message: 'Failed to update report.',
-            type: 'error'
-          });
-        }
-      } catch (err) {
-        alertStore.setAlert({
-          show: true,
-          message: 'Error on updating report.',
-          type: 'error'
-        });
-      }
+      triggerUpdate(date);
     }
   };
 
-  const handleUpdateHardware = (item) => {
-    setSelectedItem(item);
-    setShowHardwareModal(true);
+  const triggerUpdate = async (date) => {
+    try {
+      const result = await updateReport(date);
+      if (result.success) {
+        alertStore.setAlert({
+          show: true,
+          message: formatLongDate(date) + ' report successfully updated.',
+          type: 'success'
+        });
+        
+        handleRefresh();
+        setTimeout(() => {handleRefresh()}, 1000);
+      } else {
+        alertStore.setAlert({
+          show: true,
+          message: 'Failed to update report.',
+          type: 'error'
+        });
+      }
+    } catch (err) {
+      alertStore.setAlert({
+        show: true,
+        message: 'Error on updating report.',
+        type: 'error'
+      });
+    }
+  }
+
+  const handleUpdateValue = (item, valueType) => {
+    setSelectedItem({
+      ...item,
+      ledgerValueToUpdate: valueType
+    });
+    setShowLedgerValueModal(true);
+  }
+
+  const handleSaveLedgerValue = async (data) => {
+    console.log("handleSaveLedgerValue", data);
+    try {
+      const result = await updateLedgerValue(data);
+      if (result.success) {
+        alertStore.setAlert({
+          show: true,
+          message: 'Report successfully updated.',
+          type: 'success'
+        });
+        
+        handleRefresh();
+        setTimeout(() => {handleRefresh()}, 1000);
+      } else {
+        alertStore.setAlert({
+          show: true,
+          message: 'Failed to update report.',
+          type: 'error'
+        });
+      }
+
+      setShowLedgerValueModal(false);
+    } catch (err) {
+      alertStore.setAlert({
+        show: true,
+        message: 'Error on updating report.',
+        type: 'error'
+      });
+
+      setShowLedgerValueModal(false);
+    }
   }
 
   return (
@@ -153,7 +197,7 @@ function DailyBusinessLedger({ page_type }) {
 
       <div className="block bg-white border border-gray-200 rounded-custom shadow-sm h-[calc(100vh-10.7rem)] w-[calc(100vw-13.5rem)] overflow-auto scrollbar-thin flex-shrink-0">
 
-        <table className="text-sm border-collapse min-w-[2100px] w-full">
+        <table className="text-sm border-collapse min-w-[3000px] w-full">
           <FormThead sortOrder={sortOrder} sortField={sortField} handleSort={handleSort} data={tableHeader} />
           <tbody>
             {filteredData.map((item, index) => {
@@ -169,25 +213,37 @@ function DailyBusinessLedger({ page_type }) {
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.puhunan) }</td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.tubo)}</td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.total_sales)}</td>
-                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.p_21 || 0)}</td>
-                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.t_21 || 0)}</td>
-                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.ex_21 || 0)}</td>
-                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.p_1421 || 0)}</td>
-                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.t_1421 || 0)}</td>
-                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.ex_1421 || 0)}</td>
-                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.p_1422 || 0)}</td>
-                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.t_1422 || 0)}</td>
-                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.ex_1422 || 0)}</td>
-                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.p_1423 || 0)}</td>
-                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.t_1423 || 0)}</td>
-                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.ex_1423 || 0)}</td>
+                  
+                  {monitoredIds.map((value) => {
+                    return (
+                      <>
+                        <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item[`p_${value.id}`] || 0)}</td>
+                        <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item[`t_${value.id}`] || 0)}</td>
+                        <td 
+                          title={`Expenses for ${value.product_name} (${value.date_created.slice(0, 10)})`}
+                          onClick={() => handleUpdateValue(value.id, value.product_name)}
+                          className="px-3 py-2 border-r text-sm text-right font-bold cursor-pointer hover:text-orange-100 hover:bg-green-500"
+                        >
+                          {formatCurrency(item[`ex_${value.id}`] || 0)}
+                        </td>
+                      </>
+                    )
+                  })}
+
                   <td 
-                    onClick={() => handleUpdateHardware(item)}
+                    title={item.hardware_details}
+                    onClick={() => handleUpdateValue(item, "hardware")}
                     className="px-3 py-2 border-r text-sm text-right font-bold cursor-pointer hover:text-orange-100 hover:bg-green-500"
                   >
                     {formatCurrency(item.hardware || 0)}
                   </td>
-                  <td className="px-3 py-2 border-r text-sm text-right font-bold cursor-pointer hover:text-orange-100 hover:bg-green-500">{formatCurrency(item.bahay || 0)}</td>
+                  <td 
+                    title={item.bahay_details}
+                    onClick={() => handleUpdateValue(item, "bahay")}
+                    className="px-3 py-2 border-r text-sm text-right font-bold cursor-pointer hover:text-orange-100 hover:bg-green-500"
+                  >
+                    {formatCurrency(item.bahay || 0)}
+                  </td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.total_amount || 0)}</td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.money_on_hand || 0)}</td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.total_puhunan || 0)}</td>
@@ -247,10 +303,11 @@ function DailyBusinessLedger({ page_type }) {
         item={selectedItem}
       />
       
-      <UpdateHardwareModal 
+      <UpdateLedgerValueModal 
         selectedItem={selectedItem}
-        showHardwareModal={showHardwareModal}
-        setShowHardwareModal={setShowHardwareModal}
+        showLedgerValueModal={showLedgerValueModal}
+        setShowLedgerValueModal={setShowLedgerValueModal}
+        onUpdate={handleSaveLedgerValue}
       />
 
       <Alert 

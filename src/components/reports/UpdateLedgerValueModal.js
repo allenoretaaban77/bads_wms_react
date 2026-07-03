@@ -1,38 +1,38 @@
-
-
-
 import React, { useEffect, useState } from 'react';
 import { FormButton, FormHeader } from '../../utils/themes.js';
-import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 
-const UpdateHardwareModal = ({ selectedItem, showHardwareModal, setShowHardwareModal, onSave }) => {
-  const userData = useAppViewModel((state) => state.userData);
+const UpdateLedgerValueModal = ({ selectedItem, showLedgerValueModal, setShowLedgerValueModal, onUpdate }) => {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    created_by: userData?.employee_id || '',
+    amount: '',
+    details: '',
   });
 
   useEffect(() => {
-    console.log(selectedItem);
-    if (selectedItem && showHardwareModal) {
+    if (selectedItem && showLedgerValueModal) {
+      let value = 0;
+      let details = "";
+      switch(selectedItem?.ledgerValueToUpdate) {
+        case "hardware": value = selectedItem.hardware; details = selectedItem.hardware_details; break;
+        case "bahay": value = selectedItem.bahay; details = selectedItem.bahay_details; break;
+      }
+
       setFormData({
         id: selectedItem.id || '',
-        name: selectedItem.name || '',
-        remarks: selectedItem.remarks || '',
-        updated_by: userData?.employee_id || '',
-        tracking_method: selectedItem.tracking_method || ''
+        amount: value || '',
+        details: details || '',
+        save_type: selectedItem?.ledgerValueToUpdate
       });
     }
-  }, [selectedItem, showHardwareModal, userData?.employee_id]);
+  }, [selectedItem, showLedgerValueModal]);
 
   const handleCancel = () => {
     setErrors({});
-    setShowHardwareModal(false);
+    setShowLedgerValueModal(false);
     setFormData({
-      name: '',
-      created_by: userData?.employee_id || '',
+      amount: '',
+      details: '',
     });
     setIsLoading(false);
   };
@@ -71,18 +71,38 @@ const UpdateHardwareModal = ({ selectedItem, showHardwareModal, setShowHardwareM
     setIsLoading(true);
     
     try {
-      const result = await onSave(formData);
-      console.log(result);
+      let updateData = {};
+      // switch(formData?.save_type) {
+      //   case "hardware": 
+      //     updateData = {
+      //       id: formData.id || '',
+      //       hardware: formData.amount || '',
+      //       hardware_details: formData.details || '',
+      //       save_type: formData.save_type
+      //     }; 
+      //     break;
+      //   case "bahay":  
+      //     updateData = {
+      //       id: formData.id || '',
+      //       bahay: formData.amount || '',
+      //       bahay_details: formData.details || '',
+      //       save_type: formData.save_type
+      //     }; 
+      //     break;
+      // }
+
+      const result = await onUpdate(formData);
+      console.log('UpdateLedgerValueModal handleSubmit result', result);
       
       if (result.success) {
         const refData = {
-          name: '',
-          created_by: userData?.employee_id || '',
+          amount: '',
+          details: '',
         };
         setFormData(refData);
 
         setErrors({});
-        setShowHardwareModal(false);
+        setShowLedgerValueModal(false);
       } else {
         validateForm(result);
       }
@@ -93,17 +113,17 @@ const UpdateHardwareModal = ({ selectedItem, showHardwareModal, setShowHardwareM
     }
   };
 
-  if (!showHardwareModal) return null;
+  if (!showLedgerValueModal) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3">
       <div className="bg-white rounded-custom shadow-xl border border-gray-200 w-full max-w-sm flex flex-col">
         
         {/* Header Section */}
-        <FormHeader headerTitle="Modify Hardware Details" onClick={() => handleCancel()} />
+        <FormHeader headerTitle={`Modify ${formData.save_type} Details`} onClick={() => handleCancel()} />
 
         <div className="p-4 overflow-y-auto flex-1">
-          <form id="update-supplier-form" onSubmit={handleSubmit} className="space-y-4">
+          <form id="update-ledger-values-form" onSubmit={handleSubmit} className="space-y-4">
             
             {/* Product Name - Full Width with standardized subtle text-xs sizing */}
             <div className="flex flex-col space-y-1">
@@ -115,7 +135,7 @@ const UpdateHardwareModal = ({ selectedItem, showHardwareModal, setShowHardwareM
                 value={formData.amount}
                 onChange={handleChange}
                 placeholder="0.00"
-                className={`w-full px-3 py-1.5 text-xs border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                className={`text-right w-full px-3 py-1.5 text-xs border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                   errors.amount ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                 }`}
                 required
@@ -133,7 +153,7 @@ const UpdateHardwareModal = ({ selectedItem, showHardwareModal, setShowHardwareM
                 value={formData.details}
                 onChange={handleChange}
                 placeholder="Enter details here..."
-                rows="4"
+                rows="7"
                 className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
               />
             </div>
@@ -154,8 +174,8 @@ const UpdateHardwareModal = ({ selectedItem, showHardwareModal, setShowHardwareM
             btnIcon="check" 
             isProcessing={isLoading}
             type="submit"
-            // disabled={isLoading}
-            form="update-supplier-form"
+            disabled={isLoading}
+            form="update-ledger-values-form"
           />
         </div>
 
@@ -164,4 +184,4 @@ const UpdateHardwareModal = ({ selectedItem, showHardwareModal, setShowHardwareM
   );
 };
 
-export default UpdateHardwareModal;
+export default UpdateLedgerValueModal;

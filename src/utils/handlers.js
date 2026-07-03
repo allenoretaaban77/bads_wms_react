@@ -135,6 +135,7 @@ export const useHandlerDailyBusinessLedger = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showHardwareModal, setShowHardwareModal] = useState(false);
   const [showBahayModal, setShowBahayModal] = useState(false);
+  const [showLedgerValueModal, setShowLedgerValueModal] = useState(false);
 
   const handleDelete = async (id, type) => {
     if (window.confirm('Are you sure you want to DELETE this supplier?')) {
@@ -185,6 +186,7 @@ export const useHandlerDailyBusinessLedger = () => {
     showEditModal, setShowEditModal,
     showHardwareModal, setShowHardwareModal,
     showBahayModal, setShowBahayModal,
+    showLedgerValueModal, setShowLedgerValueModal,
     handleRefresh,
     handleDelete,
     handleView

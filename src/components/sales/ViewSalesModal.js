@@ -195,10 +195,15 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onUpdate
                       </tbody>
                       <tfoot className="sticky bottom-0 z-10 bg-gray-50 border-t-2 border-gray-200 font-bold text-gray-800">
                         <tr>
-                          <td colSpan="5" className="px-3 py-2.5 text-right uppercase tracking-wider text-[10px] text-gray-500 align-middle">
+                          <td colSpan="3" className="px-3 py-2.5 text-left uppercase tracking-wider text-[10px] text-gray-500 align-middle">
                             Grand Total
                           </td>
+                          <td className="px-3 py-2.5 text-right pr-3 text-base font-extrabold text-gray-900 align-middle bg-gray-100/60">
+                            {Number(data.total_quantity).toFixed(2)}
+                          </td>
                           <td className="px-3 py-2.5 text-right pr-4 text-base font-extrabold text-gray-900 align-middle bg-gray-100/60">
+                          </td>
+                          <td className="px-3 py-2.5 text-right pr-3 text-base font-extrabold text-gray-900 align-middle bg-gray-100/60">
                             {formatCurrency(data.amount)}
                           </td>
                         </tr>

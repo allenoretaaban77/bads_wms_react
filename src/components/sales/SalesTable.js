@@ -135,14 +135,14 @@ function SalesTable() {
   };
 
   const handleVoid = async (id) => {
-    if (window.confirm('Are you sure you want to VOID this transaction?')) {
+    if (window.confirm('Are you sure you want to REVERT this transaction?')) {
       try {
         const result = await voidSalesTransaction(id);
         if (result.success) {
           // Show success alert
           setAlert({
             show: true,
-            message: 'Item successfully deleted',
+            message: 'Transaction REVERTED successfully.',
             type: 'success'
           });
           
@@ -154,10 +154,10 @@ function SalesTable() {
           // Refresh data to show updated list
           setRefreshKey(prev => prev + 1);
         } else {
-          setError(result.error || 'Failed to void sales transaction.');
+          setError(result.error || 'Failed to revert sales transaction.');
         }
       } catch (err) {
-        setError('Failed to void sales transaction.');
+        setError('Failed to revert sales transaction.');
       }
     }
   };
@@ -425,6 +425,7 @@ function SalesTable() {
               {"title":"Paid?", "name":"is_paid", "align":"center"},
               {"title":"Status", "name":"status", "align":"center"},
               {"title":"Remarks", "name":"remarks", "align":"center"},
+              {"title":"Item Count", "name":"item_count", "align":"right", "class":"w-28"},
               {"title":"Actions", "name":"status", "default":1},
             ]
           } />
@@ -447,6 +448,7 @@ function SalesTable() {
                   <td className="px-3 py-2 border-r text-sm text-center capitalize"><span className={getTablePaidStatus(item.is_paid).color}> {getTablePaidStatus(item.is_paid).text}</span></td>
                   <td className="px-3 py-2 border-r text-sm text-center capitalize"><span className={getTableStatus(item.status).color}> {getTableStatus(item.status).text}</span></td>
                   <td className="px-3 py-2 border-r text-sm">{item.remarks}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{item.item_count}</td>
                   <td className="px-0 py-2 border-0">
                     <div className="flex justify-center space-x-1">
                       <button
@@ -472,7 +474,7 @@ function SalesTable() {
                       )}
                       {item.status != "draft" && (
                         <button
-                          onClick={() => handleVoid(item.id)}
+                          onClick={() => handleVoid(item.invoice_no)}
                           className="text-red-600 hover:text-red-800 px-0 py-1 rounded hover:bg-red-50 transition-colors"
                           title="Void"
                         >
