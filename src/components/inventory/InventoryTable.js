@@ -360,7 +360,7 @@ function InventoryTable({ page_type }) {
         </div>
       )} */}
 
-      <div className="bg-white border border-gray-200 rounded-custom shadow-xs overflow-auto flex flex-col h-[calc(100vh-18.2rem)]">
+      <div className="bg-white border border-gray-200 rounded-custom shadow-xs overflow-auto flex flex-col h-[calc(100vh-18.2rem)] scrollbar-thin">
         
         <table className="w-full table-auto border-collapse">
           <FormThead sortOrder={sortOrder} sortField={sortField} handleSort={handleSort} data={[

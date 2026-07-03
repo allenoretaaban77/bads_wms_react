@@ -91,7 +91,7 @@ function SidebarMenu() {
         </button>
       </div>
 
-      <nav className="overflow-auto">
+      <nav className="overflow-auto h-[calc(100vh-4.5rem)] no-scrollbar">
         <ul>
           {menuItems.map((item) => (
             <li key={item.key}>

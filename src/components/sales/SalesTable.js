@@ -13,7 +13,7 @@ import Alert from '../../utils/alert';
 import ViewSalesModal from './ViewSalesModal';
 import CreateSalesModal from './CreateSalesModal';
 import UpdateSalesModal from './UpdateSalesModal';
-import { FormButton, FormThead } from '../../utils/themes.js';
+import { FormButton, FormThead, FormHeaderLoader } from '../../utils/themes.js';
 import { FormPagination } from '../../utils/pagination.js';
 
 function SalesTable() {
@@ -59,6 +59,8 @@ function SalesTable() {
   // Fetch inventory data from API
   useEffect(() => {
     const loadsatSalesData = async () => {
+      console.log([currentPage, pageSize, searchTerm, sortField, sortOrder, statusFilter, quantityFilter, recordStatusFilter, refreshKey, paymentStatusFilter, isPaidFilter]);
+
       try {
         setLoading(true);
         setError(null);
@@ -368,7 +370,7 @@ function SalesTable() {
               >
                 <option value="all">All</option>
                 <option value="yes">Paid</option>
-                <option value="no">No Paid</option>
+                <option value="no">Not Paid</option>
               </select>
             </div>
 
@@ -403,7 +405,7 @@ function SalesTable() {
       </div>
       
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 p-2 mb-1.5 rounded text-center">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-2 py-0 mb-1.5 rounded text-left">
           <strong>Error:</strong> {error}
         </div>
       )}
@@ -411,6 +413,7 @@ function SalesTable() {
       <div className="bg-white border border-gray-200 rounded-custom shadow-xs overflow-auto flex flex-col h-[calc(100vh-13.5rem)]">
 
         <table className="w-full text-sm border-collapse">
+
           <FormThead sortOrder={sortOrder} sortField={sortField} handleSort={handleSort} data={
             [
               {"title":"ID", "name":"id", "align":"center"},
@@ -425,86 +428,79 @@ function SalesTable() {
               {"title":"Actions", "name":"status", "default":1},
             ]
           } />
-          {!loading && !error && (
-            <tbody>
-              {filteredData.map((item, index) => {
-                return (
-                  <tr 
-                    key={item.id}
-                    className={`border-0 transition-colors duration-200 ${
-                      index % 2 === 0 ? 'bg-white hover:bg-green-50' : 'bg-row-alt hover:bg-green-100'
-                    }`}
-                  >
-                    <td className="px-3 py-2 border-r text-sm font-semibold text-green-900">{item.id}</td>
-                    <td className="px-3 py-2 border-r text-sm">{item.invoice_no}</td>
-                    <td className="px-3 py-2 border-r text-sm">{formatLongDate(item.date_sold)}</td>
-                    <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.amount)}</td>
-                    <td className="px-3 py-2 border-r text-sm">{item.customer_name}</td>
-                    <td className="px-3 py-2 border-r text-sm text-center capitalize"><span className={getTablePaymentStatus(item.payment_status).color}>{getTablePaymentStatus(item.payment_status).text}</span></td>
-                    <td className="px-3 py-2 border-r text-sm text-center capitalize"><span className={getTablePaidStatus(item.is_paid).color}> {getTablePaidStatus(item.is_paid).text}</span></td>
-                    <td className="px-3 py-2 border-r text-sm text-center capitalize"><span className={getTableStatus(item.status).color}> {getTableStatus(item.status).text}</span></td>
-                    <td className="px-3 py-2 border-r text-sm">{item.remarks}</td>
-                    <td className="px-0 py-2 border-0">
-                      <div className="flex justify-center space-x-1">
+
+          <tbody>
+            {filteredData.map((item, index) => {
+              return (
+                <tr 
+                  key={item.id}
+                  className={`border-0 transition-colors duration-200 ${
+                    index % 2 === 0 ? 'bg-white hover:bg-green-50' : 'bg-row-alt hover:bg-green-100'
+                  }`}
+                >
+                  <td className="px-3 py-2 border-r text-sm font-semibold text-green-900">{item.id}</td>
+                  <td className="px-3 py-2 border-r text-sm">{item.invoice_no}</td>
+                  <td className="px-3 py-2 border-r text-sm">{formatLongDate(item.date_sold)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.amount)}</td>
+                  <td className="px-3 py-2 border-r text-sm">{item.customer_name}</td>
+                  <td className="px-3 py-2 border-r text-sm text-center capitalize"><span className={getTablePaymentStatus(item.payment_status).color}>{getTablePaymentStatus(item.payment_status).text}</span></td>
+                  <td className="px-3 py-2 border-r text-sm text-center capitalize"><span className={getTablePaidStatus(item.is_paid).color}> {getTablePaidStatus(item.is_paid).text}</span></td>
+                  <td className="px-3 py-2 border-r text-sm text-center capitalize"><span className={getTableStatus(item.status).color}> {getTableStatus(item.status).text}</span></td>
+                  <td className="px-3 py-2 border-r text-sm">{item.remarks}</td>
+                  <td className="px-0 py-2 border-0">
+                    <div className="flex justify-center space-x-1">
+                      <button
+                        onClick={() => handleView(item)}
+                        className="text-blue-600 hover:text-blue-800 px-0 py-1 rounded hover:bg-blue-50 transition-colors"
+                        title="View"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      </button>
+                      {item.status == "draft" && (
                         <button
-                          onClick={() => handleView(item)}
-                          className="text-blue-600 hover:text-blue-800 px-0 py-1 rounded hover:bg-blue-50 transition-colors"
-                          title="View"
+                          onClick={() => handleEdit(item)}
+                          className="text-green-600 hover:text-green-800 px-0 py-1 rounded hover:bg-green-50 transition-colors"
+                          title="Edit"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
                         </button>
-                        {item.status == "draft" && (
-                          <button
-                            onClick={() => handleEdit(item)}
-                            className="text-green-600 hover:text-green-800 px-0 py-1 rounded hover:bg-green-50 transition-colors"
-                            title="Edit"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                          </button>
-                        )}
-                        {item.status != "draft" && (
-                          <button
-                            onClick={() => handleVoid(item.id)}
-                            className="text-red-600 hover:text-red-800 px-0 py-1 rounded hover:bg-red-50 transition-colors"
-                            title="Void"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <circle cx="12" cy="12" r="9" strokeWidth={2} />
-                              <line x1="5" y1="5" x2="19" y2="19" strokeWidth={2} />
-                            </svg>
-                          </button>
-                        )}
-                        {item.status == "draft" && (
-                          <button
-                            onClick={() => handleDelete(item.id)}
-                            className="text-red-600 hover:text-red-800 px-0 py-1 rounded hover:bg-red-50 transition-colors"
-                            title="Delete"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          )}
-        </table>
+                      )}
+                      {item.status != "draft" && (
+                        <button
+                          onClick={() => handleVoid(item.id)}
+                          className="text-red-600 hover:text-red-800 px-0 py-1 rounded hover:bg-red-50 transition-colors"
+                          title="Void"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="9" strokeWidth={2} />
+                            <line x1="5" y1="5" x2="19" y2="19" strokeWidth={2} />
+                          </svg>
+                        </button>
+                      )}
+                      {item.status == "draft" && (
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="text-red-600 hover:text-red-800 px-0 py-1 rounded hover:bg-red-50 transition-colors"
+                          title="Delete"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
 
-        {loading && (
-          <div className="flex justify-center items-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-button"></div>
-            <span className="ml-2 text-gray-600">Loading sales data...</span>
-          </div>
-        )}
+        </table>
 
         {filteredData.length === 0 && !loading && (
           <div className="text-center py-8 text-gray-500">
@@ -521,6 +517,7 @@ function SalesTable() {
         totalPages={totalPages}
         handlePageSizeChange={handlePageSizeChange}
         handlePageChange={handlePageChange}
+        loading={loading}
       />
 
       <ViewSalesModal

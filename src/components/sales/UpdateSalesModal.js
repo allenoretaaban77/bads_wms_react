@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getInventoryBatchesListSearch } from '../../api/inventoryService';
-import { formatCurrency, formatDate, tocapitalize } from '../../utils/formatters';
+import { formatCurrency, formatDate } from '../../utils/formatters';
 import { getSalesViewUpdate } from '../../api/salesService';
 import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 import { APP_CONFIG } from '../../config/constants';
@@ -28,7 +28,6 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const searchInputRef = useRef(null);
   const [errors, setErrors] = useState({});
     
   const [showStockBatchesModal, setShowStockBatchesModal] = useState(false);
@@ -154,6 +153,7 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
   const handleBlur = () => {
     setTimeout(() => {
       setShowSuggestions(false);
+      inputRefs.current[6].focus();
     }, 200);
   };
 
@@ -369,9 +369,19 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
     }
   };
 
-  const getStatusRow = (current) => {
-    if (current === "draft") return { text: 'Draft', color: 'text-yellow-600' };
-    return { text: 'Approved', color: 'text-green-600' };
+  const inputRefs = useRef([]);
+
+  const handleKeyDown = (e, index) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // Prevent form submission
+      
+      const nextInput = inputRefs.current[index + 1];
+      if (nextInput) {
+        nextInput.focus();
+      } else {
+        e.target.blur();
+      }
+    }
   };
 
   if (!showEditModal) return null;
@@ -396,6 +406,8 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
                 className={`w-full px-3 py-1.5 border rounded focus:outline-none focus:ring-1 focus:ring-button focus:border-transparent text-gray-800 ${
                   errors.invoice_no ? 'border-red-400 bg-red-50/30' : 'border-gray-300'
                 }`}
+                ref={(el) => (inputRefs.current[0] = el)}
+                onKeyDown={(e) => handleKeyDown(e, 0)}
               />
               {errors.invoice_no && <p className="mt-1 text-[11px] text-red-600">{errors.invoice_no}</p>}
             </div>
@@ -410,6 +422,8 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
                 className={`w-full px-3 py-1.5 border rounded focus:outline-none focus:ring-1 focus:ring-button focus:border-transparent text-gray-800 ${
                   errors.date_sold ? 'border-red-400 bg-red-50/30' : 'border-gray-300'
                 }`}
+                ref={(el) => (inputRefs.current[1] = el)}
+                onKeyDown={(e) => handleKeyDown(e, 1)}
               />
               {errors.date_sold && <p className="mt-1 text-[11px] text-red-600">{errors.date_sold}</p>}
             </div>
@@ -425,6 +439,8 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
                 className={`w-full px-3 py-1.5 border rounded focus:outline-none focus:ring-1 focus:ring-button focus:border-transparent text-gray-800 ${
                   errors.customer_name ? 'border-red-400 bg-red-50/30' : 'border-gray-300'
                 }`}
+                ref={(el) => (inputRefs.current[2] = el)}
+                onKeyDown={(e) => handleKeyDown(e, 2)}
               />
               {errors.customer_name && <p className="mt-1 text-[11px] text-red-600">{errors.customer_name}</p>}
             </div>
@@ -438,6 +454,8 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
                 rows={1}
                 placeholder="Log transaction details..."
                 className="w-full px-3 py-1.5 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-button focus:border-transparent text-gray-800 resize-none"
+                ref={(el) => (inputRefs.current[3] = el)}
+                onKeyDown={(e) => handleKeyDown(e, 3)}
               />
             </div>
           </div>
@@ -449,7 +467,8 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
               <div className="relative">
                 <input
                   type="text"
-                  ref={searchInputRef}
+                  ref={(el) => (inputRefs.current[4] = el)}
+                  onKeyDown={(e) => handleKeyDown(e, 4)}
                   value={itemSearchTerm}
                   onBlur={handleBlur}
                   onChange={(e) => {
@@ -511,6 +530,8 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
                   className={`w-full px-3 py-1.5 border rounded focus:outline-none focus:ring-1 focus:ring-button focus:border-transparent text-gray-800 ${
                     errors.payment_status ? 'border-red-400 bg-red-50/30' : 'border-gray-300'
                   }`}
+                  ref={(el) => (inputRefs.current[5] = el)}
+                  onKeyDown={(e) => handleKeyDown(e, 5)}
                 >
                   <option value="">Select Payment Type</option>
                   {APP_CONFIG?.PAYMENT_STATUS && Object.entries(APP_CONFIG.PAYMENT_STATUS).map(([key, value]) => (
@@ -594,7 +615,10 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
                             onChange={(e) => updateItemField(item.id, 'quantity', e.target.value)}
                             onFocus={(e) => e.target.select()}
                             placeholder="0"
+                            readOnly={item && item.tracking_method === APP_CONFIG.TRACKING_METHOD.BATCH ? 1 : 0}
                             className="w-full focus:outline-none text-right bg-transparent text-gray-800"
+                            ref={(el) => (inputRefs.current[(index + 3) * 2] = el)}
+                            onKeyDown={(e) => handleKeyDown(e, (index + 3) * 2)}
                           />
                         </div>
                         {errors[`quantity_${item.id}`] && (
@@ -614,6 +638,8 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
                             onFocus={(e) => e.target.select()}
                             placeholder="0.00"
                             className="w-full focus:outline-none text-right bg-transparent font-semibold text-gray-800"
+                            ref={(el) => (inputRefs.current[(index + 3) * 2 + 1] = el)}
+                            onKeyDown={(e) => handleKeyDown(e, (index + 3) * 2 + 1)}
                           />
                         </div>
                         {errors[`price_${item.id}`] && (

@@ -14,6 +14,7 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
     reference_no: '',
     date_received: new Date().toISOString().split('T')[0],
     remarks: '',
+    record_count: 0,
     added_by: userData?.employee_id || ''
   });
   
@@ -41,6 +42,7 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
         reference_no: selectedItem.reference_no || '',
         supplier: selectedItem.supplier || '',
         remarks: selectedItem.remarks || '',
+        record_count: selectedItem.length || 0,
         status: selectedItem.status || '',
         date_received: formatReplinishmentDate(selectedItem.date_received) || '',
         updated_by: userData?.employee_id || ''
@@ -228,6 +230,7 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
       reference_no: '',
       date_received: new Date().toISOString().split('T')[0],
       remarks: '',
+      record_count: 0,
       added_by: userData?.employee_id || '',
     });
     setItems([]);
@@ -268,6 +271,7 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
         date_received: formatPostingDate(formData.date_received),
         amount: getItemsTotal(),
         remarks: formData.remarks,
+        record_count: items.length,
         updated_by: userData?.employee_id || '',
         items: items.map(item => ({
           inventory_id: item.inventory_id,
@@ -286,6 +290,7 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
           reference_no: '',
           date_received: new Date().toISOString().split('T')[0],
           remarks: '',
+          record_count: 0,
           added_by: userData?.employee_id || '',
         });
         setItems([]);

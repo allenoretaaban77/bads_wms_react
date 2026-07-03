@@ -360,6 +360,7 @@ function ReplenishmentTable({ page_type }) {
             {"title":"Amount", "name":"amount", "align":"right"},
             {"title":"Supplier", "name":"supplier", "align":"left"},
             {"title":"Remarks", "name":"remarks", "align":"left"},
+            {"title":"Count", "name":"remarks", "align":"right", "class":"w-10"},
             {"title":"Status", "name":"status", "align":"center"},
             {"title":"Actions", "name":"status", "default":1},
           ]} />
@@ -379,6 +380,7 @@ function ReplenishmentTable({ page_type }) {
                 <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.amount)}</td>
                 <td className="px-3 py-2 border-r text-sm">{item.supplier}</td>
                 <td className="px-3 py-2 border-r text-sm">{item.remarks}</td>
+                <td className="px-3 py-2 border-r text-sm text-right">{item.record_count || 0}</td>
                 <td className="px-3 py-2 border-r text-sm capitalize text-center"><span className={getTableStatusColor(item.status)}>{item.status}</span></td>
                 <td className="px-0 py-2 border-0">
                   <div className="flex justify-center space-x-1">

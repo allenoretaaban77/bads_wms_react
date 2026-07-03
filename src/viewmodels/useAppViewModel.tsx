@@ -105,8 +105,10 @@ const menuItems = [
   { key: 'employees', label: 'Employees', title: 'Employees Management' },
   { key: 'reports', label: 'Reports', title: 'Daily Sales Reports',
     children: [
-      { key: 'reports|sales', label: 'Daily Sales Reports', title: 'Daily Sales Reports' },
-      { key: 'reports|stockin', label: 'Stock In (Purchases) Log', title: 'Stock In (Purchases) Log' },
+      { key: 'reports|sales', label: 'Daily Sales Report', title: 'Daily Sales Report' },
+      { key: 'ledger', label: 'Daily Business Ledger', title: 'Daily Business Ledger' },
+      { key: 'stockin', label: 'Stock-In (Purchases) Log', title: 'Stock-In (Purchases) Log' },
+      { key: 'monthly', label: 'Monthly Sales Report', title: 'Monthly Sales Report' },
     ] 
   },
   { 

@@ -16,6 +16,10 @@ export const useAlertStore = create((set,get) => ({
   setRefreshSupplier: (updater) => set((state) => ({
     refreshSupplier: typeof updater === 'function' ? updater(state.refreshSupplier) : updater
   })),
+  refreshDailySalesReport: 0,
+  setRefreshDailySalesReport: (updater) => set((state) => ({
+    refreshDailySalesReport: typeof updater === 'function' ? updater(state.refreshDailySalesReport) : updater
+  })),
 }));
 
 const Alert = ({ show, message, type, onDismiss }) => {

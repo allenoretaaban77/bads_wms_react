@@ -206,7 +206,7 @@ export const FormThead = ({
           {data.map((item, index) => {
             if (item.default === 1) {
               return (
-                <th key={index} className="border-0 px-0 py-2 text-center text-white font-semibold border-0 text-xs w-24">{item.title}</th>
+                <th key={index} className={`border-0 px-0 py-2 text-center text-white font-semibold border-0 text-xs ${item?.class || "w-24"}`}>{item.title}</th>
               )
             } else {
               return (
@@ -246,6 +246,17 @@ export const FormModalThead = ({
           })}
       </tr>
     </thead>
+  );
+};
+
+export const FormHeaderLoader = ({}) => {
+  return (
+    <div className="bg-blue-50 border border-blue-200 text-blue-700 px-2 py-0 mb-1.5 rounded text-left">
+      <div className="flex justify-center items-center py-2">
+        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black"></div>
+        <span className="ml-2 text-white-600">Loading data...</span>
+      </div>
+    </div>
   );
 };
 

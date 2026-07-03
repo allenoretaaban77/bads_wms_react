@@ -1,26 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { formatCurrency, formatLongDate, getTablePaidStatus, getTableStatus, getTablePaymentStatus } from '../../utils/formatters';
-import { APP_CONFIG } from '../../config/constants';
+import { formatCurrency, formatLongDate } from '../../utils/formatters';
 import Alert from '../../utils/alert';
 import { FormButton, FormThead } from '../../utils/themes.js';
-import { getDailyReports, updateReport } from '../../api/reportsService.js';
+import { getDailyBusinessLedger, updateReport } from '../../api/reportsService.js';
 import { FormPagination } from '../../utils/pagination.js';
 import { useAlertStore } from '../../utils/alert';
 import { usePageControl } from '../../utils/pagination.js';
 import { useTableControl } from '../../utils/table.js';
-import { useHandlerDailySalesReport } from '../../utils/handlers.js';
+import { useHandlerDailyBusinessLedger } from '../../utils/handlers.js';
 import ViewDailySalesItemsModal from './ViewDailySalesItemsModal.js';
+import UpdateHardwareModal from './UpdateHardwareModal.js';
 
-function DailySalesReport({ page_type }) {
+function DailyBusinessLedger({ page_type }) {
   const alertStore = useAlertStore();
   const { currentPage, setCurrentPage, pageSize, setPageSize, totalItems, setTotalItems, totalPages, setTotalPages, handlePageSizeChange, handlePageChange } = usePageControl();
   const { sortField, setSortField, sortOrder, setSortOrder, loading, setLoading, error, setError, handleSort } = useTableControl();
-  const { selectedItem, setSelectedItem, showViewModal, setShowViewModal, showCreateModal, setShowCreateModal, showEditModal, setShowEditModal, handleRefresh, handleDelete, handleView } = useHandlerDailySalesReport();
+  const { selectedItem, setSelectedItem, showViewModal, setShowViewModal, showCreateModal, setShowCreateModal, showEditModal, setShowEditModal, showHardwareModal, setShowHardwareModal, showBahayModal, setShowBahayModal, handleRefresh, handleDelete, handleView } = useHandlerDailyBusinessLedger();
   const [saleDate, satSalesData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-
   const [tableHeader, setTableHeader] = useState([]);
+  const [monitoredItems, setMonitoredItems] = useState([]);
   
   useEffect(() => { if (alertStore.alert.show == true) { setTimeout(() => { alertStore.setAlert({ show: false, message: '', type: '' })}, 3000); }}, [alertStore.alert]);
 
@@ -38,7 +38,7 @@ function DailySalesReport({ page_type }) {
           order: sortOrder,
         };
 
-        const result = await getDailyReports(params);
+        const result = await getDailyBusinessLedger(params);
         
         // Check if API call was successful and returned data
         if (result.success && result.data) {
@@ -53,6 +53,7 @@ function DailySalesReport({ page_type }) {
           setTotalItems(total);
           setTotalPages(totalPages);
           setTableHeader(header);
+          setMonitoredItems(result.data.monitoredItems);
         } else {
           // Handle API error response
           console.warn('API returned error:', result.error);
@@ -93,6 +94,7 @@ function DailySalesReport({ page_type }) {
           });
           
           handleRefresh();
+          setTimeout(() => {handleRefresh()}, 1000);
         } else {
           alertStore.setAlert({
             show: true,
@@ -110,8 +112,14 @@ function DailySalesReport({ page_type }) {
     }
   };
 
+  const handleUpdateHardware = (item) => {
+    setSelectedItem(item);
+    setShowHardwareModal(true);
+  }
+
   return (
     <div className="flex flex-col h-screen">
+
 
       <div className="flex-shrink-0 space-y-0 mb-2">
 
@@ -142,10 +150,10 @@ function DailySalesReport({ page_type }) {
           <strong>Error:</strong> {error}
         </div>
       )}
-      
-      <div className="bg-white border border-gray-200 rounded-custom shadow-xs overflow-auto flex flex-col h-[calc(100vh-10.7rem)]">
-        
-        <table className="w-full text-sm border-collapse">
+
+      <div className="block bg-white border border-gray-200 rounded-custom shadow-sm h-[calc(100vh-10.7rem)] w-[calc(100vw-13.5rem)] overflow-auto scrollbar-thin flex-shrink-0">
+
+        <table className="text-sm border-collapse min-w-[2100px] w-full">
           <FormThead sortOrder={sortOrder} sortField={sortField} handleSort={handleSort} data={tableHeader} />
           <tbody>
             {filteredData.map((item, index) => {
@@ -161,11 +169,32 @@ function DailySalesReport({ page_type }) {
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.puhunan) }</td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.tubo)}</td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.total_sales)}</td>
-                  {/* <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.cogs)}</td> */}
-                  {/* <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.net_profit)}</td> */}
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.p_21 || 0)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.t_21 || 0)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.ex_21 || 0)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.p_1421 || 0)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.t_1421 || 0)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.ex_1421 || 0)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.p_1422 || 0)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.t_1422 || 0)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.ex_1422 || 0)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.p_1423 || 0)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.t_1423 || 0)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.ex_1423 || 0)}</td>
+                  <td 
+                    onClick={() => handleUpdateHardware(item)}
+                    className="px-3 py-2 border-r text-sm text-right font-bold cursor-pointer hover:text-orange-100 hover:bg-green-500"
+                  >
+                    {formatCurrency(item.hardware || 0)}
+                  </td>
+                  <td className="px-3 py-2 border-r text-sm text-right font-bold cursor-pointer hover:text-orange-100 hover:bg-green-500">{formatCurrency(item.bahay || 0)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.total_amount || 0)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.money_on_hand || 0)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.total_puhunan || 0)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.total_tubo || 0)}</td>
                   <td className="px-0 py-2 border-0">
                     <div className="flex justify-center space-x-1">
-                      <button
+                      {/* <button
                         onClick={() => handleView(item)}
                         className="text-blue-600 hover:text-blue-800 px-0 py-1 rounded hover:bg-blue-50 transition-colors"
                         title="View"
@@ -174,7 +203,7 @@ function DailySalesReport({ page_type }) {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
-                      </button>
+                      </button> */}
                       <button
                         onClick={() => hanldeUpdate(item.date)}
                         className="text-orange-600 hover:text-orange-800 px-0 py-1 rounded hover:bg-orange-50 transition-colors"
@@ -191,14 +220,15 @@ function DailySalesReport({ page_type }) {
             })}
           </tbody>
         </table>
-
+        
         {filteredData.length === 0 && !loading && (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-gray-500 min-w-[1700px] w-full">
             No record/s found.
           </div>
         )}
+
       </div>
-            
+
       <FormPagination 
         currentPage={currentPage}
         pageSize={pageSize}
@@ -216,6 +246,12 @@ function DailySalesReport({ page_type }) {
         onUpdateTable={() => handleRefresh()}
         item={selectedItem}
       />
+      
+      <UpdateHardwareModal 
+        selectedItem={selectedItem}
+        showHardwareModal={showHardwareModal}
+        setShowHardwareModal={setShowHardwareModal}
+      />
 
       <Alert 
         show={alertStore.alert.show}
@@ -227,5 +263,5 @@ function DailySalesReport({ page_type }) {
   );
 }
 
-export default DailySalesReport;
+export default DailyBusinessLedger;
 

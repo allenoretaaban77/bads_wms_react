@@ -8,6 +8,8 @@ import EmployeesTable from './employees/EmployeesTable.tsx';
 import DailySalesReport from './reports/DailySalesReport.js';
 import SuppliersTable from './suppliers/SuppliersTable.js';
 import StockInPurchasesLog from './reports/StockInPurchasesLog.js';
+import MonthlySalesReport from './reports/MonthlySalesReport.js';
+import DailyBusinessLedger from './reports/DailyBusinessLedger.js';
 
 const descriptions = {
   profile: 'View your account details, role, and recent activity.',
@@ -48,6 +50,10 @@ function HomeContent() {
       return <DailySalesReport page_type={menuChild} />;
     case 'stockin':
       return <StockInPurchasesLog page_type={menuChild} />;
+    case 'monthly':
+      return <MonthlySalesReport page_type={menuChild} />;
+    case 'ledger':
+      return <DailyBusinessLedger page_type={menuChild} />;
     default:
       // return <DailySalesReport page_type={menuChild} />;
   }

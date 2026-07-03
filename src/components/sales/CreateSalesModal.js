@@ -26,7 +26,6 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
   const [isSearching, setIsSearching] = useState(false);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const searchInputRef = useRef(null);
   
   const [showStockBatchesModal, setShowStockBatchesModal] = useState(false);
   const [selectedStockItem, setSelectedStockItem] = useState(null);
@@ -75,6 +74,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
   const handleBlur = () => {
     setTimeout(() => {
       setShowSuggestions(false);
+      inputRefs.current[6].focus();
     }, 200);
   };
 
@@ -165,6 +165,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
           allocated_batches: suggestion.batches || []
         },
       ];
+
     });
 
     setNextItemId(prev => prev + 1);
@@ -313,7 +314,22 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
         [`quantity_${selectedStockItem.id}`]: ''
       }));
     }
-  };
+};
+
+const inputRefs = useRef([]);
+
+const handleKeyDown = (e, index) => {
+  if (e.key === 'Enter') {
+    e.preventDefault(); // Prevent form submission
+    
+    const nextInput = inputRefs.current[index + 1];
+    if (nextInput) {
+      nextInput.focus();
+    } else {
+      e.target.blur();
+    }
+  }
+};
 
   if (!showCreateModal) return null;
 
@@ -338,6 +354,8 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
                   onChange={handleChange}
                   placeholder="Generating reference..."
                   className="flex-1 focus:outline-none bg-transparent font-medium text-gray-800"
+                  ref={(el) => (inputRefs.current[0] = el)}
+                  onKeyDown={(e) => handleKeyDown(e, 0)}
                 />
                 <button 
                   type="button" 
@@ -364,6 +382,8 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
                 className={`w-full px-3 py-1.5 border rounded focus:outline-none focus:ring-1 focus:ring-button focus:border-transparent text-gray-800 ${
                   errors.date_sold ? 'border-red-400 bg-red-50/30' : 'border-gray-300'
                 }`}
+                ref={(el) => (inputRefs.current[1] = el)}
+                onKeyDown={(e) => handleKeyDown(e, 1)}
               />
               {errors.date_sold && <p className="mt-1 text-[11px] text-red-600">{errors.date_sold}</p>}
             </div>
@@ -379,6 +399,8 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
                 className={`w-full px-3 py-1.5 border rounded focus:outline-none focus:ring-1 focus:ring-button focus:border-transparent text-gray-800 ${
                   errors.customer_name ? 'border-red-400 bg-red-50/30' : 'border-gray-300'
                 }`}
+                ref={(el) => (inputRefs.current[2] = el)}
+                onKeyDown={(e) => handleKeyDown(e, 2)}
               />
               {errors.customer_name && <p className="mt-1 text-[11px] text-red-600">{errors.customer_name}</p>}
             </div>
@@ -392,6 +414,8 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
                 rows={1}
                 placeholder="Log transaction details..."
                 className="w-full px-3 py-1.5 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-button focus:border-transparent text-gray-800 resize-none"
+                ref={(el) => (inputRefs.current[3] = el)}
+                onKeyDown={(e) => handleKeyDown(e, 3)}
               />
             </div>
           </div>
@@ -403,7 +427,8 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
               <div className="relative">
                 <input
                   type="text"
-                  ref={searchInputRef}
+                  ref={(el) => (inputRefs.current[4] = el)}
+                  onKeyDown={(e) => handleKeyDown(e, 4)}
                   value={itemSearchTerm}
                   onBlur={handleBlur}
                   onChange={(e) => {
@@ -465,6 +490,8 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
                   className={`w-full px-3 py-1.5 border rounded focus:outline-none focus:ring-1 focus:ring-button focus:border-transparent text-gray-800 ${
                     errors.payment_status ? 'border-red-400 bg-red-50/30' : 'border-gray-300'
                   }`}
+                  ref={(el) => (inputRefs.current[5] = el)}
+                  onKeyDown={(e) => handleKeyDown(e, 5)}
                 >
                   <option value="">Select Payment Type</option>
                   {APP_CONFIG?.PAYMENT_STATUS && Object.entries(APP_CONFIG.PAYMENT_STATUS).map(([key, value]) => (
@@ -548,6 +575,8 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
                             onChange={(e) => updateItemField(item.id, 'quantity', e.target.value)}
                             onFocus={(e) => e.target.select()}
                             placeholder="0"
+                            ref={(el) => (inputRefs.current[(index + 3) * 2] = el)}
+                            onKeyDown={(e) => handleKeyDown(e, (index + 3) * 2)}
                             readOnly={item && item.tracking_method === APP_CONFIG.TRACKING_METHOD.BATCH ? 1 : 0}
                             className="w-full focus:outline-none text-right bg-transparent text-gray-800"
                           />
@@ -567,6 +596,8 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
                             value={item.price}
                             onChange={(e) => updateItemField(item.id, 'price', e.target.value)}
                             onFocus={(e) => e.target.select()}
+                            ref={(el) => (inputRefs.current[(index + 3) * 2 + 1] = el)}
+                            onKeyDown={(e) => handleKeyDown(e, (index + 3) * 2 + 1)}
                             placeholder="0.00"
                             className="w-full focus:outline-none text-right bg-transparent font-semibold text-gray-800"
                           />

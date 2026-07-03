@@ -38,6 +38,25 @@ export const formatLongDate = (dateString) =>  {
   });
 }
 
+export const formatLongMonth = (dateStr) =>  {
+  if (!dateStr || !dateStr.includes('-')) return '';
+
+  const [year, month] = dateStr.split('-');
+  
+  const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+
+  // Convert "07" to 7, then subtract 1 for the zero-indexed array
+  const monthIndex = parseInt(month, 10) - 1;
+  
+  // Safety check in case the input month is out of bounds
+  if (monthIndex < 0 || monthIndex > 11) return '';
+
+  return `${months[monthIndex]}, ${year}`;
+}
+
 export const getStatusColor = (current) => {
   if (current === "draft") return 'text-gray-300 font-bold capitalize';
   return 'text-green-300 font-bold';

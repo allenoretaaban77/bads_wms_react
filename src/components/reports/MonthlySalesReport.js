@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { formatCurrency, formatLongDate, getTablePaidStatus, getTableStatus, getTablePaymentStatus } from '../../utils/formatters';
+import { formatCurrency, formatLongDate, getTablePaidStatus, getTableStatus, getTablePaymentStatus, formatLongMonth } from '../../utils/formatters';
 import { APP_CONFIG } from '../../config/constants';
 import Alert from '../../utils/alert';
 import { FormButton, FormThead } from '../../utils/themes.js';
-import { getDailyReports, updateReport } from '../../api/reportsService.js';
+import { getMonthlyReports, updateReport } from '../../api/reportsService.js';
 import { FormPagination } from '../../utils/pagination.js';
 import { useAlertStore } from '../../utils/alert';
 import { usePageControl } from '../../utils/pagination.js';
@@ -11,7 +11,7 @@ import { useTableControl } from '../../utils/table.js';
 import { useHandlerDailySalesReport } from '../../utils/handlers.js';
 import ViewDailySalesItemsModal from './ViewDailySalesItemsModal.js';
 
-function DailySalesReport({ page_type }) {
+function MonthlySalesReport({ page_type }) {
   const alertStore = useAlertStore();
   const { currentPage, setCurrentPage, pageSize, setPageSize, totalItems, setTotalItems, totalPages, setTotalPages, handlePageSizeChange, handlePageChange } = usePageControl();
   const { sortField, setSortField, sortOrder, setSortOrder, loading, setLoading, error, setError, handleSort } = useTableControl();
@@ -38,7 +38,7 @@ function DailySalesReport({ page_type }) {
           order: sortOrder,
         };
 
-        const result = await getDailyReports(params);
+        const result = await getMonthlyReports(params);
         
         // Check if API call was successful and returned data
         if (result.success && result.data) {
@@ -120,7 +120,7 @@ function DailySalesReport({ page_type }) {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 pt-2">
             
             <div className="lg:col-span-11 text-xs mt-2">
-              Showing {filteredData.length} of {totalItems} items
+              Showing {filteredData.length} of {totalItems} itemsc
             </div>
                         
             <div className="text-xs lg:col-span-1">
@@ -157,9 +157,9 @@ function DailySalesReport({ page_type }) {
                   }`}
                 >
                   <td className="px-3 py-2 border-r text-sm font-semibold text-green-900 text-right">{index + 1}</td>
-                  <td className="px-3 py-2 border-r text-sm">{formatLongDate(item.date)}</td>
-                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.puhunan) }</td>
-                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.tubo)}</td>
+                  <td className="px-3 py-2 border-r text-sm">{formatLongMonth(item.month)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.total_puhunan) }</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.total_tubo)}</td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.total_sales)}</td>
                   {/* <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.cogs)}</td> */}
                   {/* <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.net_profit)}</td> */}
@@ -227,5 +227,5 @@ function DailySalesReport({ page_type }) {
   );
 }
 
-export default DailySalesReport;
+export default MonthlySalesReport;
 

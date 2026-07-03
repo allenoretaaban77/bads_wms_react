@@ -6,11 +6,11 @@ import { getSuppliersList, deleteSupplier, createSupplier, updateSupplier } from
 import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 import { FormPagination, usePageControl } from '../../utils/pagination.js';
 import { useTableControl } from '../../utils/table.js';
-import { useHandlerSupplier } from '../../utils/handlers.js';
 import { useAlertStore } from '../../utils/alert';
 import ViewSuppliersModal from './ViewSuppliersModal.js';
 import CreateSupplierModal from './CreateSupplierModal.js';
 import UpdateSupplierModal from './UpdateSupplierModal.js';
+import { useHandlerSupplier } from '../../utils/handlers.js';
 
 function SuppliersTable() {
   const userData = useAppViewModel((state) => state.userData);
@@ -29,7 +29,7 @@ function SuppliersTable() {
   useEffect(() => {
     const fetchSuppliers = async () => {
       try {
-        setLoading(true);
+        if (!sortOrder) setLoading(true);
         setError(null);
         
         const params = {
@@ -216,6 +216,16 @@ function SuppliersTable() {
               {"title":"Action", "name":"action", "default":1},
             ]
           } />
+
+          {loading && (
+            <tr><td colSpan={30}>
+            <div className="flex justify-center items-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-button"></div>
+              <span className="ml-2 text-gray-600">Loading suppliers data...</span>
+            </div>
+            </td></tr>
+          )}
+
           <tbody>
             {filteredData.map((item, index) => {
               const sequentialRowNumber = ((currentPage - 1) * pageSize) + index + 1;
@@ -271,13 +281,6 @@ function SuppliersTable() {
             })}
           </tbody>
         </table>
-
-        {loading && (
-          <div className="flex justify-center items-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-button"></div>
-            <span className="ml-2 text-gray-600">Loading suppliers data...</span>
-          </div>
-        )}
 
         {filteredData.length === 0 && !loading && (
           <div className="text-center py-8 text-gray-500">

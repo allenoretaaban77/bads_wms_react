@@ -14,7 +14,8 @@ const CreateReturnsModal = ({ showCreateModal, setShowCreateModal, onSave }) => 
     customer_name: '',
     date_received: new Date().toISOString().split('T')[0],
     remarks: '',
-    added_by: userData?.employee_id || ''
+    record_count: 0,
+    added_by: userData?.employee_id || '',
   });
 
   const [items, setItems] = useState([]);
@@ -150,6 +151,7 @@ const CreateReturnsModal = ({ showCreateModal, setShowCreateModal, onSave }) => 
       customer_name: '',
       date_received: new Date().toISOString().split('T')[0],
       remarks: '',
+      record_count: 0,
       added_by: userData?.employee_id || '',
     });
   };
@@ -191,6 +193,7 @@ const CreateReturnsModal = ({ showCreateModal, setShowCreateModal, onSave }) => 
         remarks: formData.remarks,
         added_by: userData?.employee_id || '',
         status: action, 
+        record_count: items.length,
         items: items.map(item => ({
           inventory_id: item.inventory_id,
           batch_id: item.batch_id,

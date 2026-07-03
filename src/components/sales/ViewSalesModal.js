@@ -93,7 +93,7 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onUpdate
         if (result && result.success) {
           setError(null);
         } else {
-          setError(result.error.error);
+          setError(result.error.errors.items);
         }
       } catch (error) {
         if (error !== undefined) {

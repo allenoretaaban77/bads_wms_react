@@ -15,6 +15,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
     reference_no: '',
     date_received: new Date().toISOString().split('T')[0],
     remarks: '',
+    record_count: 0,
     added_by: userData?.employee_id || ''
   });
 
@@ -218,6 +219,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
       reference_no: '',
       date_received: new Date().toISOString().split('T')[0],
       remarks: '',
+      record_count: 0,
       added_by: userData?.employee_id || '',
     });
     setItems([]);
@@ -258,6 +260,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
         date_received: formatPostingDate(formData.date_received),
         amount: getItemsTotal(),
         remarks: formData.remarks,
+        record_count: items.length,
         added_by: userData?.employee_id || '',
         items: items.map(item => ({
           inventory_id: item.inventory_id,
@@ -276,6 +279,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
           reference_no: '',
           date_received: new Date().toISOString().split('T')[0],
           remarks: '',
+          record_count: 0,
           added_by: userData?.employee_id || '',
         });
         setItems([]);
