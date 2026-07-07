@@ -32,7 +32,8 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
     status: 'In Stock',
     remarks: '',
     added_by: userData?.employee_id || '',
-    tracking_method: ''
+    tracking_method: '',
+    monitored: 0
   });
 
   const [errors, setErrors] = useState({});
@@ -87,7 +88,8 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
           status: 'In Stock',
           remarks: '',
           added_by: userData?.employee_id || '',
-          tracking_method: ''
+          tracking_method: '',
+          monitored: 0
         };
         setFormData(refData);
 
@@ -254,27 +256,54 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                 )}
               </div>
 
-              <div className="flex flex-col space-y-1">
-                <label className="text-xs font-semibold text-gray-700">Tracking Method *</label>
-                <select
-                  name="tracking_method"
-                  value={formData.tracking_method}
-                  onChange={handleChange}
-                  className={`w-full px-3 py-1.5 text-xs border bg-white rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
-                    errors.tracking_method ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
-                  }`}
-                  required
-                >
-                  <option value="">Select Tracking Method</option>
-                  {Object.entries(APP_CONFIG.TRACKING_METHOD).map(([key, value]) => (
-                    <option key={key} value={value}>
-                      {key.charAt(0) + key.slice(1).toLowerCase()}
-                    </option>
-                  ))}
-                </select>
-                {errors.tracking_method && (
-                  <p className="text-xs text-red-600 mt-0.5">{errors.tracking_method}</p>
-                )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+
+                <div className="flex flex-col space-y-1">
+                  <label className="text-xs font-semibold text-gray-700">Tracking Method *</label>
+                  <select
+                    name="tracking_method"
+                    value={formData.tracking_method}
+                    onChange={handleChange}
+                    className={`w-full px-3 py-1.5 text-xs border bg-white rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                      errors.tracking_method ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
+                    }`}
+                    required
+                  >
+                    <option value="">Select...</option>
+                    {Object.entries(APP_CONFIG.TRACKING_METHOD).map(([key, value]) => (
+                      <option key={key} value={value}>
+                        {key.charAt(0) + key.slice(1).toLowerCase()}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.tracking_method && (
+                    <p className="text-xs text-red-600 mt-0.5">{errors.tracking_method}</p>
+                  )}
+                </div>
+
+                <div className="flex flex-col space-y-1">
+                  <label className="text-xs font-semibold text-gray-700">Monitored *</label>
+                  <select
+                    name="monitored"
+                    value={formData.monitored}
+                    onChange={handleChange}
+                    className={`w-full px-3 py-1.5 text-xs border bg-white rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                      errors.monitored ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
+                    }`}
+                    required
+                  >
+                    <option value="">Select...</option>
+                    {Object.entries(APP_CONFIG.MONITORED).map(([key, value]) => (
+                      <option key={key} value={value}>
+                        {key.charAt(0) + key.slice(1).toLowerCase()}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.monitored && (
+                    <p className="text-xs text-red-600 mt-0.5">{errors.monitored}</p>
+                  )}
+                </div>
+
               </div>
 
             </div>
@@ -289,7 +318,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   onChange={handleChange}
                   className="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-white focus:outline-none focus:ring-1 focus:ring-button"
                 >
-                  <option value="">Select</option>
+                  <option value="">Select...</option>
                   {[...Array(10)].map((_, i) => (
                     <option key={i + 1} value={i + 1}>Rack {i + 1}</option>
                   ))}
@@ -303,7 +332,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   onChange={handleChange}
                   className="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-white focus:outline-none focus:ring-1 focus:ring-button"
                 >
-                  <option value="">Select</option>
+                  <option value="">Select...</option>
                   {[...Array(10)].map((_, i) => (
                     <option key={i + 1} value={i + 1}>Shelf {i + 1}</option>
                   ))}
@@ -317,7 +346,7 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   onChange={handleChange}
                   className="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-white focus:outline-none focus:ring-1 focus:ring-button"
                 >
-                  <option value="">Select</option>
+                  <option value="">Select...</option>
                   {[...Array(10)].map((_, i) => (
                     <option key={i + 1} value={i + 1}>Box {i + 1}</option>
                   ))}

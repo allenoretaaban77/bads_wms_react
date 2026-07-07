@@ -41,7 +41,8 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
     status: 'In Stock',
     remarks: '',
     updated_by: userData?.employee_id || '',
-    tracking_method: ''
+    tracking_method: '',
+    monitored: 0
   });
 
   // Populate form with selected item data when modal opens
@@ -61,7 +62,8 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
         status: selectedItem.status || 'In Stock',
         remarks: selectedItem.remarks || '',
         updated_by: userData?.employee_id || '',
-        tracking_method: selectedItem.tracking_method || ''
+        tracking_method: selectedItem.tracking_method || '',
+        monitored: selectedItem.monitored || 0
       });
     }
   }, [selectedItem, showEditModal, userData?.employee_id]);
@@ -319,27 +321,54 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
                 )}
               </div>
 
-              <div className="flex flex-col space-y-1">
-                <label className="text-xs font-semibold text-gray-700">Tracking Method *</label>
-                <select
-                  name="tracking_method"
-                  value={formData.tracking_method}
-                  onChange={handleChange}
-                  className={`w-full px-3 py-1.5 text-xs border bg-white rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
-                    errors.tracking_method ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
-                  }`}
-                  required
-                >
-                  <option value="">Select Tracking Method</option>
-                  {Object.entries(APP_CONFIG.TRACKING_METHOD).map(([key, value]) => (
-                    <option key={key} value={value}>
-                      {key.charAt(0) + key.slice(1).toLowerCase()}
-                    </option>
-                  ))}
-                </select>
-                {errors.tracking_method && (
-                  <p className="text-xs text-red-600 mt-0.5">{errors.tracking_method}</p>
-                )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+
+                <div className="flex flex-col space-y-1">
+                  <label className="text-xs font-semibold text-gray-700">Tracking Method *</label>
+                  <select
+                    name="tracking_method"
+                    value={formData.tracking_method}
+                    onChange={handleChange}
+                    className={`w-full px-3 py-1.5 text-xs border bg-white rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                      errors.tracking_method ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
+                    }`}
+                    required
+                  >
+                    <option value="">Select...</option>
+                    {Object.entries(APP_CONFIG.TRACKING_METHOD).map(([key, value]) => (
+                      <option key={key} value={value}>
+                        {key.charAt(0) + key.slice(1).toLowerCase()}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.tracking_method && (
+                    <p className="text-xs text-red-600 mt-0.5">{errors.tracking_method}</p>
+                  )}
+                </div>
+
+                <div className="flex flex-col space-y-1">
+                  <label className="text-xs font-semibold text-gray-700">Monitored *</label>
+                  <select
+                    name="monitored"
+                    value={formData.monitored}
+                    onChange={handleChange}
+                    className={`w-full px-3 py-1.5 text-xs border bg-white rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                      errors.monitored ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
+                    }`}
+                    required
+                  >
+                    <option value="">Select...</option>
+                    {Object.entries(APP_CONFIG.MONITORED).map(([key, value]) => (
+                      <option key={key} value={value}>
+                        {key.charAt(0) + key.slice(1).toLowerCase()}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.monitored && (
+                    <p className="text-xs text-red-600 mt-0.5">{errors.monitored}</p>
+                  )}
+                </div>
+
               </div>
 
             </div>

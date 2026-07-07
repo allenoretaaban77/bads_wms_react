@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getInventoryReplenishmentListsearch } from '../../api/inventoryService';
-import { formatCurrency, formatReplinishmentDate, tocapitalize, formatPostingDate, getStatusColor } from '../../utils/formatters';
+import { formatCurrency, formatReplinishmentDate, formatPostingDate } from '../../utils/formatters';
 import { getReplenishmentView } from '../../api/replenishmentService';
 import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 import ViewStockInHistoryModal from './ViewStockInHistoryModal';
@@ -12,10 +12,10 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
   const [formData, setFormData] = useState({
     supplier: '',
     reference_no: '',
-    date_received: new Date().toISOString().split('T')[0],
+    date_received: new Date().toLocaleDateString('sv-SE'),
     remarks: '',
     record_count: 0,
-    added_by: userData?.employee_id || ''
+    updated_by: userData?.employee_id || ''
   });
   
   const [items, setItems] = useState([]);
@@ -72,7 +72,7 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
             });
             setItems(formattedItems);
 
-            const data = result.suppliers;
+            // const data = result.suppliers;
             setSuppliersData(result.suppliers);
           } else {
             setErrors(result?.error || {});
@@ -228,10 +228,10 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
     setFormData({
       supplier: '',
       reference_no: '',
-      date_received: new Date().toISOString().split('T')[0],
+      date_received: new Date().toLocaleDateString('sv-SE'),
       remarks: '',
       record_count: 0,
-      added_by: userData?.employee_id || '',
+      updated_by: userData?.employee_id || '',
     });
     setItems([]);
     setItemSearchTerm('');
@@ -274,6 +274,7 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
         record_count: items.length,
         updated_by: userData?.employee_id || '',
         items: items.map(item => ({
+          saved_id: item.id,
           inventory_id: item.inventory_id,
           item_name: item.item_name,
           quantity: Number(item.quantity) || 0,
@@ -288,7 +289,7 @@ const UpdateReplenishmentModal = ({ selectedItem, showEditModal, setShowEditModa
         setFormData({
           supplier: '',
           reference_no: '',
-          date_received: new Date().toISOString().split('T')[0],
+          date_received: new Date().toLocaleDateString('sv-SE'),
           remarks: '',
           record_count: 0,
           added_by: userData?.employee_id || '',

@@ -10,19 +10,36 @@ const UpdateLedgerValueModal = ({ selectedItem, showLedgerValueModal, setShowLed
   });
 
   useEffect(() => {
+    console.log(selectedItem, showLedgerValueModal);
+
     if (selectedItem && showLedgerValueModal) {
       let value = 0;
       let details = "";
+      let header = ""
       switch(selectedItem?.ledgerValueToUpdate) {
-        case "hardware": value = selectedItem.hardware; details = selectedItem.hardware_details; break;
-        case "bahay": value = selectedItem.bahay; details = selectedItem.bahay_details; break;
+        case "hardware": 
+          value = selectedItem.hardware; 
+          details = selectedItem.hardware_details; 
+          header = "Modify Hardware Details";
+          break;
+        case "bahay": 
+          value = selectedItem.bahay; 
+          details = selectedItem.bahay_details;
+          header = "Modify Bahay Details";
+          break;
+        default: 
+          value = selectedItem[`ex_${selectedItem.ledgerValueToUpdate}`]; 
+          details = selectedItem[`ex_${selectedItem.ledgerValueToUpdate}_details`];
+          header = `Modify ` + selectedItem[`pn_${selectedItem.ledgerValueToUpdate}`] + ` Details`; 
+          break;
       }
 
       setFormData({
         id: selectedItem.id || '',
         amount: value || '',
         details: details || '',
-        save_type: selectedItem?.ledgerValueToUpdate
+        save_type: selectedItem?.ledgerValueToUpdate,
+        header: header
       });
     }
   }, [selectedItem, showLedgerValueModal]);
@@ -72,40 +89,23 @@ const UpdateLedgerValueModal = ({ selectedItem, showLedgerValueModal, setShowLed
     
     try {
       let updateData = {};
-      // switch(formData?.save_type) {
-      //   case "hardware": 
-      //     updateData = {
-      //       id: formData.id || '',
-      //       hardware: formData.amount || '',
-      //       hardware_details: formData.details || '',
-      //       save_type: formData.save_type
-      //     }; 
-      //     break;
-      //   case "bahay":  
-      //     updateData = {
-      //       id: formData.id || '',
-      //       bahay: formData.amount || '',
-      //       bahay_details: formData.details || '',
-      //       save_type: formData.save_type
-      //     }; 
-      //     break;
-      // }
 
+      console.log('UpdateLedgerValueModal formData', formData);
       const result = await onUpdate(formData);
-      console.log('UpdateLedgerValueModal handleSubmit result', result);
+      // console.log('UpdateLedgerValueModal handleSubmit result', result);
       
-      if (result.success) {
-        const refData = {
-          amount: '',
-          details: '',
-        };
-        setFormData(refData);
+      // if (result.success) {
+      //   const refData = {
+      //     amount: '',
+      //     details: '',
+      //   };
+      //   setFormData(refData);
 
-        setErrors({});
-        setShowLedgerValueModal(false);
-      } else {
-        validateForm(result);
-      }
+      //   setErrors({});
+      //   setShowLedgerValueModal(false);
+      // } else {
+      //   validateForm(result);
+      // }
     } catch (error) {
       console.error(error);
     } finally {
@@ -117,10 +117,10 @@ const UpdateLedgerValueModal = ({ selectedItem, showLedgerValueModal, setShowLed
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3">
-      <div className="bg-white rounded-custom shadow-xl border border-gray-200 w-full max-w-sm flex flex-col">
+      <div className="bg-white rounded-custom shadow-xl border border-gray-200 w-full max-w-md flex flex-col">
         
         {/* Header Section */}
-        <FormHeader headerTitle={`Modify ${formData.save_type} Details`} onClick={() => handleCancel()} />
+        <FormHeader headerTitle={`${formData.header}`} onClick={() => handleCancel()} />
 
         <div className="p-4 overflow-y-auto flex-1">
           <form id="update-ledger-values-form" onSubmit={handleSubmit} className="space-y-4">
@@ -153,7 +153,7 @@ const UpdateLedgerValueModal = ({ selectedItem, showLedgerValueModal, setShowLed
                 value={formData.details}
                 onChange={handleChange}
                 placeholder="Enter details here..."
-                rows="7"
+                rows={10}
                 className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
               />
             </div>

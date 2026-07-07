@@ -120,7 +120,37 @@ function DailyBusinessLedger({ page_type }) {
     }
   }
 
+  const handleExpensesValue = (item, valueType) => {
+    // console.log(valueType, item);
+
+    if(item[`ex_${valueType}`] == null) {
+      alertStore.setAlert({
+        show: true,
+        message: 'No reference amount.',
+        type: 'error'
+      });
+      return;
+    }
+
+    setSelectedItem({
+      ...item,
+      ledgerValueToUpdate: valueType
+    });
+    setShowLedgerValueModal(true);
+  }
+
   const handleUpdateValue = (item, valueType) => {
+    console.log(valueType, item);
+
+    if(item.id == null) {
+      alertStore.setAlert({
+        show: true,
+        message: 'Record not found. Update to generate records.',
+        type: 'error'
+      });
+      return;
+    }
+
     setSelectedItem({
       ...item,
       ledgerValueToUpdate: valueType
@@ -214,35 +244,53 @@ function DailyBusinessLedger({ page_type }) {
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.tubo)}</td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.total_sales)}</td>
                   
-                  {monitoredIds.map((value) => {
+                  {monitoredIds.map((value, vid) => {
                     return (
                       <>
                         <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item[`p_${value.id}`] || 0)}</td>
                         <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item[`t_${value.id}`] || 0)}</td>
                         <td 
-                          title={`Expenses for ${value.product_name} (${value.date_created.slice(0, 10)})`}
-                          onClick={() => handleUpdateValue(value.id, value.product_name)}
-                          className="px-3 py-2 border-r text-sm text-right font-bold cursor-pointer hover:text-orange-100 hover:bg-green-500"
+                          // title={`${value.date_created.slice(0, 10)} Expenses:\r\n \r\nAmount: ${formatCurrency(item[`ex_${value.id}`] || 0)}\r\nDetails: ${item[`ex_${value.id}_details`] || ''}`}
+                          onClick={() => handleUpdateValue(item, value.id)}
+                          className="px-3 py-2 border-r text-sm text-right font-bold cursor-pointer hover:text-orange-100 hover:bg-green-500 relative overflow-visible group"
                         >
                           {formatCurrency(item[`ex_${value.id}`] || 0)}
+                          <span className="invisible group-hover:visible absolute top-0 left-full ml-1.5 mt-1.5 w-max max-w-[350px] z-50 bg-green-900 text-white text-xs p-2 rounded shadow-lg pointer-events-none whitespace-pre-line text-left">   
+                            {`Date: ${item.date.slice(0, 10)}
+                            Amount: ${formatCurrency(item[`ex_${value.id}`] || 0)}
+                            
+                            ${item[`ex_${value.id}_details`] || ''}`}
+                          </span>
                         </td>
                       </>
                     )
                   })}
 
                   <td 
-                    title={item.hardware_details}
+                    // title={`${item.date.slice(0, 10)}:\r\n \r\nAmount: ${formatCurrency(item.hardware || 0)}\r\nDetails: ${item.hardware_details || ''}`}
                     onClick={() => handleUpdateValue(item, "hardware")}
-                    className="px-3 py-2 border-r text-sm text-right font-bold cursor-pointer hover:text-orange-100 hover:bg-green-500"
+                    className="px-3 py-2 border-r text-sm text-right font-bold cursor-pointer hover:text-orange-100 hover:bg-green-500 relative overflow-visible group"
                   >
                     {formatCurrency(item.hardware || 0)}
+                    <span className="invisible group-hover:visible absolute top-0 left-full ml-1.5 mt-1.5 w-max max-w-[350px] z-50 bg-green-900 text-white text-xs p-2 rounded shadow-lg pointer-events-none whitespace-pre-line text-left">   
+                      {`Date: ${item.date.slice(0, 10)}
+                      Amount: ${formatCurrency(item.hardware || 0)}
+                      
+                      ${item.hardware_details || ''}`}
+                    </span>
                   </td>
                   <td 
-                    title={item.bahay_details}
+                    // title={`${item.date.slice(0, 10)}:\r\n \r\nAmount: ${formatCurrency(item.bahay || 0)}\r\nDetails: ${item.bahay_details || ''}`}
                     onClick={() => handleUpdateValue(item, "bahay")}
-                    className="px-3 py-2 border-r text-sm text-right font-bold cursor-pointer hover:text-orange-100 hover:bg-green-500"
+                    className="px-3 py-2 border-r text-sm text-right font-bold cursor-pointer hover:text-orange-100 hover:bg-green-500 relative overflow-visible group"
                   >
                     {formatCurrency(item.bahay || 0)}
+                    <span className="invisible group-hover:visible absolute top-0 left-full ml-1.5 mt-1.5 w-max max-w-[350px] z-50 bg-green-900 text-white text-xs p-2 rounded shadow-lg pointer-events-none whitespace-pre-line text-left">   
+                      {`Date: ${item.date.slice(0, 10)}
+                      Amount: ${formatCurrency(item.bahay || 0)}
+                      
+                      ${item.bahay_details || ''}`}
+                    </span>
                   </td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.total_amount || 0)}</td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.money_on_hand || 0)}</td>
@@ -263,7 +311,7 @@ function DailyBusinessLedger({ page_type }) {
                       <button
                         onClick={() => hanldeUpdate(item.date)}
                         className="text-orange-600 hover:text-orange-800 px-0 py-1 rounded hover:bg-orange-50 transition-colors"
-                        title="View"
+                        title="Update Ledger Records"
                       >
                         <svg className="h-3.5 w-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />

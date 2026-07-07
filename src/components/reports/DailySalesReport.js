@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { formatCurrency, formatLongDate, getTablePaidStatus, getTableStatus, getTablePaymentStatus } from '../../utils/formatters';
+import { formatCurrency, formatLongDate, getTableStatus, getTablePaymentStatus } from '../../utils/formatters';
 import { APP_CONFIG } from '../../config/constants';
 import Alert from '../../utils/alert';
 import { FormButton, FormThead } from '../../utils/themes.js';
@@ -36,6 +36,7 @@ function DailySalesReport({ page_type }) {
           search: searchTerm,
           sort: sortField,
           order: sortOrder,
+          pageType: page_type,
         };
 
         const result = await getDailyReports(params);
@@ -47,9 +48,14 @@ function DailySalesReport({ page_type }) {
           const total = result.data.total || data.length;
           const totalPages = result.data.totalPages || Math.ceil(total / pageSize);
           const header = JSON.parse(result.data?.headers);
-          
-          satSalesData(data);
-          setFilteredData(data);
+
+          const processedData = data.map(item => ({ 
+            ...item, 
+            pageType: page_type || "" // Fixed from pageType to page_type
+          }));
+
+          satSalesData(processedData);
+          setFilteredData(processedData);
           setTotalItems(total);
           setTotalPages(totalPages);
           setTableHeader(header);
@@ -79,7 +85,7 @@ function DailySalesReport({ page_type }) {
     };
 
     loadsatSalesData();
-  }, [currentPage, pageSize, searchTerm, sortField, sortOrder, alertStore.refreshDailySalesReport]);
+  }, [currentPage, pageSize, searchTerm, sortField, sortOrder, alertStore.refreshDailySalesReport, page_type]);
 
   const hanldeUpdate = async (date) => {
     if (window.confirm('Are you sure you want to UPDATE this report?')) {
@@ -158,9 +164,9 @@ function DailySalesReport({ page_type }) {
                 >
                   <td className="px-3 py-2 border-r text-sm font-semibold text-green-900 text-right">{index + 1}</td>
                   <td className="px-3 py-2 border-r text-sm">{formatLongDate(item.date)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.total_sales)}</td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.puhunan) }</td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.tubo)}</td>
-                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.total_sales)}</td>
                   {/* <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.cogs)}</td> */}
                   {/* <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.net_profit)}</td> */}
                   <td className="px-0 py-2 border-0">
@@ -175,7 +181,7 @@ function DailySalesReport({ page_type }) {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
                       </button>
-                      <button
+                      {/* <button
                         onClick={() => hanldeUpdate(item.date)}
                         className="text-orange-600 hover:text-orange-800 px-0 py-1 rounded hover:bg-orange-50 transition-colors"
                         title="View"
@@ -183,7 +189,7 @@ function DailySalesReport({ page_type }) {
                         <svg className="h-3.5 w-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                         </svg>
-                      </button>
+                      </button> */}
                     </div>
                   </td>
                 </tr>

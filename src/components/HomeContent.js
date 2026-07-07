@@ -33,7 +33,6 @@ function HomeContent() {
   switch(menuParent) {
     case 'employees':
       return <EmployeesTable />;
-      break;
     case 'stocks':
     case 'replenishment':
     case 'replenishment_management':

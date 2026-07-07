@@ -12,7 +12,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
   const [formData, setFormData] = useState({
     customer_name: '',
     invoice_no: '',
-    date_sold: new Date().toISOString().split('T')[0],
+    date_sold: new Date().toLocaleDateString('sv-SE'),
     payment_status: '',
     remarks: '',
     added_by: userData?.employee_id || ''
@@ -54,6 +54,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
   }, [showCreateModal]);
 
   const showAvailableStocks = (item) => {
+    console.log('showAvailableStocks', item);
     setSelectedStockItem(item);
     setShowStockBatchesModal(true);
   };
@@ -64,7 +65,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
       const trnxNumber = await generateTransactionNumber();
       setFormData(prev => ({
         ...prev,
-        invoice_no: trnxNumber,
+        invoice_no: trnxNumber
       }));
     } catch (error) {
       console.error("Error fetching transaction number:", error);
@@ -74,7 +75,10 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
   const handleBlur = () => {
     setTimeout(() => {
       setShowSuggestions(false);
-      inputRefs.current[6].focus();
+      
+      if (inputRefs.current[6]) {
+        inputRefs.current[6].focus();
+      }
     }, 200);
   };
 
@@ -199,12 +203,19 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
   };
 
   const handleCancel = () => {
+    if (items.length > 0) {
+      const confirmClose = window.confirm(
+        "You have unsaved progress on this transaction. Are you sure you want to close?"
+      );
+      if (!confirmClose) return; // Halt closure if cancel is clicked
+    }
+
     setErrors({});
     setShowCreateModal(false);
     setFormData({
       customer_name: '',
       invoice_no: '',
-      date_sold: new Date().toISOString().split('T')[0],
+      date_sold: new Date().toLocaleDateString('sv-SE'),
       remarks: '',
       payment_status: '',
       added_by: userData?.employee_id || '',
@@ -250,6 +261,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
         remarks: formData.remarks,
         added_by: userData?.employee_id || '',
         items: items.map(item => ({
+          saved_id: item.id,
           batch_id: item.batch_id,
           inventory_id: item.inventory_id,
           item_name: item.item_name,
@@ -269,7 +281,7 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
         setFormData({
           customer_name: '',
           invoice_no: '',
-          date_sold: new Date().toISOString().split('T')[0],
+          date_sold: new Date().toLocaleDateString('sv-SE'),
           remarks: '',
           payment_status: '',
           added_by: userData?.employee_id || '',
@@ -288,8 +300,9 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
   };
 
   const handleApplyStockAllocation = (allocationData) => {
+    console.log('handleApplyStockAllocation', allocationData);
     setItems(prev => prev.map(item => {
-      if (item.inventory_id !== allocationData.inventory_id) return item;
+      if (item.id !== allocationData.id) return item;
 
       const updatedQty = allocationData.total_allocated;
       const price = Number(item.price) || 0;
@@ -596,8 +609,8 @@ const handleKeyDown = (e, index) => {
                             value={item.price}
                             onChange={(e) => updateItemField(item.id, 'price', e.target.value)}
                             onFocus={(e) => e.target.select()}
-                            ref={(el) => (inputRefs.current[(index + 3) * 2 + 1] = el)}
-                            onKeyDown={(e) => handleKeyDown(e, (index + 3) * 2 + 1)}
+                            // ref={(el) => (inputRefs.current[(index + 3) * 2 + 1] = el)}
+                            // onKeyDown={(e) => handleKeyDown(e, (index + 3) * 2 + 1)}
                             placeholder="0.00"
                             className="w-full focus:outline-none text-right bg-transparent font-semibold text-gray-800"
                           />
@@ -613,7 +626,7 @@ const handleKeyDown = (e, index) => {
                   ))}
                   {items.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="py-8 text-center text-gray-400 italic bg-gray-50/30">
+                      <td colSpan={5} className="py-8 text-center text-gray-400 italic bg-gray-50/30">
                         No product lines staging. Search above to append items.
                       </td>
                     </tr>
@@ -653,7 +666,8 @@ const handleKeyDown = (e, index) => {
         <ViewStockBatchesModal
           show={showStockBatchesModal}
           onClose={() => setShowStockBatchesModal(false)}
-          id={selectedStockItem?.inventory_id}
+          id={selectedStockItem?.id}
+          inventory_id={selectedStockItem?.inventory_id} 
           allocatedBatches={selectedStockItem?.allocated_batches || []}
           onApply={handleApplyStockAllocation}
         />

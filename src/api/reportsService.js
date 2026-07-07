@@ -29,6 +29,9 @@ export const getDailyReports = async (params = {}) => {
     if (params.is_paid && params.is_paid.trim() && params.is_paid !== 'all') {
       queryParams.append('is_paid', params.is_paid.trim());
     }
+    if (params.pageType && params.pageType.trim() && params.is_paid !== 'all') {
+      queryParams.append('pageType', params.pageType.trim());
+    }
     
     const headers = getApiHeaders();
 
@@ -74,7 +77,7 @@ export const getDailyReports = async (params = {}) => {
   }
 };
 
-export const getDailyReportItems = async (date, params = {}) => {
+export const getDailyReportItems = async (item, params = {}) => {
   try {
 
     const queryParams = new URLSearchParams();
@@ -105,7 +108,8 @@ export const getDailyReportItems = async (date, params = {}) => {
     }
 
     const formData = new URLSearchParams();
-    formData.append('date', date);
+    formData.append('date', item.date);
+    formData.append('page_type', item.pageType.trim());
 
     const response = await fetch(`${API_BASE_URL}/reports/listitems?${queryParams.toString()}`, {
       method: 'POST',

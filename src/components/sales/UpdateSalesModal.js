@@ -13,7 +13,7 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
     id: '',
     customer_name: '',
     invoice_no: '',
-    date_sold: new Date().toISOString().split('T')[0],
+    date_sold: new Date().toLocaleDateString('sv-SE'),
     payment_status: '',
     amount: '',
     remarks: '',
@@ -111,7 +111,7 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
     // allocationData structure: { inventory_id, total_allocated, batches }
     setItems(prev => prev.map(item => {
       // Identify the item matching the active modal stock item look-up
-      if (item.inventory_id !== allocationData.inventory_id) return item;
+      if (item.id !== allocationData.id) return item;
 
       const updatedQty = allocationData.total_allocated;
       const price = Number(item.price) || 0;
@@ -153,7 +153,10 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
   const handleBlur = () => {
     setTimeout(() => {
       setShowSuggestions(false);
-      inputRefs.current[6].focus();
+      
+      if (inputRefs.current[6]) {
+        inputRefs.current[6].focus();
+      }
     }, 200);
   };
 
@@ -237,10 +240,12 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
           reorder_level: suggestion.reorder_level,
           quantity: '',
           sku: suggestion.sku,
+          tracking_method: suggestion.tracking_method,
           current_price: priceValue !== undefined ? priceValue.toString() : '',
           price: priceValue !== undefined ? priceValue.toString() : '',
           cost: costValue !== undefined ? costValue.toString() : '',
           total: 0,
+          allocated_batches: suggestion.batches || []
         },
       ];
     });
@@ -276,13 +281,20 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
   };
 
   const handleCancel = () => {
+    if (items.length > 0) {
+      const confirmClose = window.confirm(
+        "You have unsaved progress on this transaction. Are you sure you want to close?"
+      );
+      if (!confirmClose) return; // Halt closure if cancel is clicked
+    }
+
     setErrors({});
     setShowEditModal(false);
     setFormData({
       id: '',
       customer_name: '',
       invoice_no: '',
-      date_sold: new Date().toISOString().split('T')[0],
+      date_sold: new Date().toLocaleDateString('sv-SE'),
       remarks: '',
       payment_status: '',
       updated_by: userData?.employee_id || '',
@@ -330,6 +342,7 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
         remarks: formData.remarks,
         updated_by: formData.updated_by,
         items: items.map(item => ({
+          saved_id: item.id,
           batch_id: item.batch_id,
           inventory_id: item.inventory_id,
           item_name: item.item_name,
@@ -350,7 +363,7 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
           id: '',
           customer_name: '',
           invoice_no: '',
-          date_sold: new Date().toISOString().split('T')[0],
+          date_sold: new Date().toLocaleDateString('sv-SE'),
           remarks: '',
           payment_status: '',
           updated_by: userData?.employee_id || '',
@@ -653,7 +666,7 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
                   ))}
                   {items.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="py-8 text-center text-gray-400 italic bg-gray-50/30">
+                      <td colSpan={5} className="py-8 text-center text-gray-400 italic bg-gray-50/30">
                         No product lines staging. Search above to append items.
                       </td>
                     </tr>
@@ -690,7 +703,8 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
           <ViewStockBatchesModal
             show={showStockBatchesModal}
             onClose={() => setShowStockBatchesModal(false)}
-            id={selectedStockItem?.inventory_id}
+            id={selectedStockItem?.id}
+            inventory_id={selectedStockItem?.inventory_id}
             allocatedBatches={selectedStockItem?.allocated_batches || []}
             onApply={handleApplyStockAllocation}
           />  

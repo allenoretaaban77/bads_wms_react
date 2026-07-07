@@ -98,3 +98,10 @@ export const getTablePaymentStatus = (status) => {
   if (status === 'draft') return { text: 'Draft', color: 'text-gray-600 capitalize font-semibold' };
   return { text: 'Cash', color: 'text-yellow-500 font-semibold capitalize' };
 };
+
+export const getSystemLocalDatetime = () => {
+  // return new Date().toLocaleDateString('sv-SE');
+  // return new Intl.DateTimeFormat('en-CA', {
+  //   timeZone: 'Asia/Manila'
+  // }).format(new Date());
+};

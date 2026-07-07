@@ -3,14 +3,14 @@ import { getStockBatches } from '../../api/salesService';
 import { formatCurrency, formatLongDate } from '../../utils/formatters';
 import { FormButton, FormHeader, FormModalThead, FormModalTheadDefault } from '../../utils/themes.js';
 
-function ViewStockBatchesModal({ show, onClose, id, allocatedBatches, onApply }) {
+function ViewStockBatchesModal({ show, onClose, id, inventory_id, allocatedBatches, onApply }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [errors, setErrors] = useState({});
   
   useEffect(() => {
-    if (show && id) {
+    if (show && inventory_id) {
       setData(null);
       setErrors({});
 
@@ -18,7 +18,7 @@ function ViewStockBatchesModal({ show, onClose, id, allocatedBatches, onApply })
         setLoading(true);
         setError(null);
         try {
-          const result = await getStockBatches(id);
+          const result = await getStockBatches(inventory_id);
           if (result.success) {
             // Guarantee target_quantity defaults to an empty string or 0 if not present
             const normalizedItems = (result.data.items || []).map(item => ({
@@ -45,7 +45,7 @@ function ViewStockBatchesModal({ show, onClose, id, allocatedBatches, onApply })
               ...item,
               quantity_out: allocatedBatches.find(b => b.inventory_id === item.inventory_id && +b.cost_per_unit === +item.cost_per_unit)?.quantity_out ?? item.quantity_out
             }));
-            console.log('updatedNormalizedItems', updatedNormalizedItems);
+            // console.log('updatedNormalizedItems', updatedNormalizedItems);
 
             const totalTargetQuantity = updatedNormalizedItems.reduce(
               (sum, item) => sum + (Number(item.quantity_out) || 0),
@@ -69,7 +69,7 @@ function ViewStockBatchesModal({ show, onClose, id, allocatedBatches, onApply })
       };
       fetchData();
     }
-  }, [show, id]);
+  }, [show, inventory_id]);
 
   const handleClose = () => {
     setData(null);
@@ -130,7 +130,8 @@ function ViewStockBatchesModal({ show, onClose, id, allocatedBatches, onApply })
     // Bubble up data arrays to parent
     if (onApply) {
       onApply({
-        inventory_id: id,
+        id: id,
+        inventory_id: inventory_id,
         total_allocated: data.total_target_quantity, // Set as row quantity string
         batches: allocatedBatches                    // Detailed batch breakdown list
       });

@@ -12,7 +12,7 @@ const UpdateReturnsModal = ({ selectedItem, showEditModal, setShowEditModal, onS
   const [formData, setFormData] = useState({
     supplier: '',
     reference_no: '',
-    date_received: new Date().toISOString().split('T')[0],
+    date_received: new Date().toLocaleDateString('sv-SE'),
     remarks: '',
     added_by: userData?.employee_id || ''
   });
@@ -222,7 +222,7 @@ const UpdateReturnsModal = ({ selectedItem, showEditModal, setShowEditModal, onS
     setFormData({
       supplier: '',
       reference_no: '',
-      date_received: new Date().toISOString().split('T')[0],
+      date_received: new Date().toLocaleDateString('sv-SE'),
       remarks: '',
       added_by: userData?.employee_id || '',
     });
@@ -280,7 +280,7 @@ const UpdateReturnsModal = ({ selectedItem, showEditModal, setShowEditModal, onS
         setFormData({
           supplier: '',
           reference_no: '',
-          date_received: new Date().toISOString().split('T')[0],
+          date_received: new Date().toLocaleDateString('sv-SE'),
           remarks: '',
           added_by: userData?.employee_id || '',
         });

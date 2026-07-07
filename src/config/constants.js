@@ -102,6 +102,11 @@ export const APP_CONFIG = {
     STANDARD: 'standard',
   },
 
+  MONITORED: {
+    YES: 1,
+    NO: 0,
+  },
+
   EMPLOYEE_POSITIONS: {
     ADMIN: 1,
     EMPLOYEE: 2

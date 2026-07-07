@@ -13,7 +13,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
   const [formData, setFormData] = useState({
     supplier: '',
     reference_no: '',
-    date_received: new Date().toISOString().split('T')[0],
+    date_received: new Date().toLocaleDateString('sv-SE'),
     remarks: '',
     record_count: 0,
     added_by: userData?.employee_id || ''
@@ -217,7 +217,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
     setFormData({
       supplier: '',
       reference_no: '',
-      date_received: new Date().toISOString().split('T')[0],
+      date_received: new Date().toLocaleDateString('sv-SE'),
       remarks: '',
       record_count: 0,
       added_by: userData?.employee_id || '',
@@ -277,7 +277,7 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
         setFormData({
           supplier: '',
           reference_no: '',
-          date_received: new Date().toISOString().split('T')[0],
+          date_received: new Date().toLocaleDateString('sv-SE'),
           remarks: '',
           record_count: 0,
           added_by: userData?.employee_id || '',
