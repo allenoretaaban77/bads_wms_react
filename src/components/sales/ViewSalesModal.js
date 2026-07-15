@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getSalesViewSales, setPaidUnpaid } from '../../api/salesService';
+import { getSalesViewSales, setPaidUnpaid, updateSorting } from '../../api/salesService';
 import { formatCurrency, formatLongDate } from '../../utils/formatters';
 import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 import { generatePrintReceipt } from '../../utils/printUtils';
@@ -11,6 +11,9 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onUpdate
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // DRAG & DROP STATE
+  const [draggedIndex, setDraggedIndex] = useState(null);
 
   useEffect(() => {
     if (show && id) {
@@ -31,7 +34,67 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onUpdate
     }
   }, [show, id]);
 
+  // NATIVE DRAG AND DROP HANDLERS
+  const handleDragStart = (e, index) => {
+    // console.log('handleDragStart')
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e) => {
+    // console.log('handleDragOver')
+    e.preventDefault(); 
+  };
+
+  const handleDrop = (e, targetIndex) => {
+    // console.log('handleDrop')
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === targetIndex) return;
+
+    const newItems = [...data.items];
+    const draggedItem = newItems[draggedIndex];
+
+    newItems.splice(draggedIndex, 1);
+    newItems.splice(targetIndex, 0, draggedItem);
+
+    // Loop through and update the order/position property for each item locally
+    // const updatedItems = newItems.map((item, idx) => ({
+    //   ...item,
+    //   // Change 'sort_order' to whatever field name your database expects (e.g., position, queue, etc.)
+    //   sort_order: idx + 1 
+    // }));
+    setData({ ...data, items: newItems });
+    // setData({ ...data, items: updatedItems });
+  };
+
+  const handleDragEnd = () => {
+    handleUpdateSorting();
+    setDraggedIndex(null);
+  };
+
+  const handleUpdateSorting = async () => {
+    try {
+      const new_data = {
+        sales_id: id,
+        items: data.items.map((item, idx) => ({
+          old_saved_id: item.old_saved_id,
+          saved_id: idx + 1
+        })
+      )};
+      const result = await updateSorting(new_data);
+
+      // console.log('handleUpdateSorting items', result.data.items);
+      setData(prevData => ({
+        ...prevData, // Copies id: 123
+        items: result.data.items
+      }));
+    } catch (err) {
+      console.log('handleUpdateSorting Error', err);
+    }
+  };
+
   const handleUpdate = (item) => {
+    console.log('handleUpdate')
     onUpdate(item);
   };
 
@@ -135,31 +198,31 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onUpdate
             <div className="flex-1 flex flex-col min-h-0 space-y-4">
               {/* Reference Meta Information Data Grid */}
               <div className="grid grid-cols-1 md:grid-cols-5 gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded flex-shrink-0">
-                <div>
+                <div className="text-center">
                   <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block mb-0.5">Transaction No</span>
                   <span className="font-bold text-gray-800 text-sm font-mono">{data.invoice_no}</span>
                 </div>
-                <div>
+                <div className="text-center">
                   <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block mb-0.5">Date Sold</span>
                   <span className="font-semibold text-gray-700 text-sm">{formatLongDate(data.date_sold)}</span>
                 </div>
-                <div>
+                <div className="text-center">
                   <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block mb-0.5">Customer Name</span>
                   <span className="font-bold text-gray-800 text-sm">{data.customer_name}</span>
                 </div>
-                <div>
+                <div className="text-center">
                   <span className="font-semibold text-gray-500 capitalize tracking-wider text-[10px] block mb-0.5">Remarks / Note</span>
                   <span className="font-medium text-gray-600 text-xs block truncate" title={data.remarks || '-'}>
                     {data.remarks || '-'}
                   </span>
                 </div>
-                <div>
+                <div className="text-center">
                   <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block mb-0.5">Item Count</span>
                   <span className="font-bold text-gray-800 text-sm">{data.items.length}</span>
                 </div>
               </div>
 
-              <div className="border border-gray-200 rounded flex-1 overflow-y-auto min-h-0 bg-white shadow-inner">
+              <div className="border border-gray-200 rounded flex-1 overflow-y-auto min-h-0 bg-white shadow-inner scrollbar-thin">
                   <table className="w-full text-left table-auto border-collapse">
                     <FormModalTheadDefault data={[
                       {"title":"#", "class":"py-2 text-left w-10"},
@@ -168,10 +231,22 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onUpdate
                       {"title":"Quantity", "class":"py-2 text-right w-20"},
                       {"title":"Unit Price", "class":"py-2 text-right w-40"},
                       {"title":"Total", "class":"py-2 pl-5 text-right w-40"},
+                      {"title":"Position", "class":"py-2 text-center w-24"}, 
                     ]} />
+                    {/* {!loading && ( */}
                     <tbody className="divide-y divide-gray-100">
                       {data.items && data.items.map((item, index) => (
-                        <tr key={item.id} className="hover:bg-gray-50/80 transition-colors">
+                        <tr 
+                          key={index} 
+                          draggable={true}
+                          onDragStart={(e) => handleDragStart(e, index)}
+                          onDragOver={handleDragOver}
+                          onDrop={(e) => handleDrop(e, index)}
+                          onDragEnd={handleDragEnd}
+                          className={`transition-colors select-none cursor-grab active:cursor-grabbing hover:bg-gray-50/80 ${
+                            draggedIndex === index ? 'opacity-40 bg-gray-100' : ''
+                          }`}
+                        >
                           <td className="px-3 py-2 font-mono text-gray-700 font-semibold align-middle">
                             {index + 1}
                           </td>
@@ -182,7 +257,7 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onUpdate
                             {item.product_name}
                           </td>
                           <td className="px-3 py-2 text-right font-bold text-gray-700 align-middle">
-                            {item.qty_sold}
+                            {Number(item.qty_sold)}
                           </td>
                           <td className="px-3 py-2 text-right font-bold text-gray-700 align-middle">
                             {formatCurrency(item.price_per_unit)}
@@ -190,25 +265,45 @@ function ViewSalesModal({ show, onClose, onUpdate, onDelete, onApprove, onUpdate
                           <td className="px-3 py-2 text-right font-bold text-gray-700 align-middle">
                             {formatCurrency(item.total)}
                           </td>
+                          {/* Updated Action Cell with Grip/Drag Lines Icon */}
+                          <td className="px-3 py-2 text-center align-middle whitespace-nowrap">
+                            <div 
+                              className="inline-flex items-center justify-center p-1.5 text-gray-400 hover:text-gray-600 rounded transition-colors"
+                              title="Drag row to reorder"
+                            >
+                              <svg 
+                                className="w-4 h-4" 
+                                fill="none" 
+                                stroke="currentColor" 
+                                strokeWidth="2.5" 
+                                viewBox="0 0 24 24" 
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16" />
+                              </svg>
+                            </div>
+                          </td>
                         </tr>
                       ))}
-                      </tbody>
-                      <tfoot className="sticky bottom-0 z-10 bg-gray-50 border-t-2 border-gray-200 font-bold text-gray-800">
-                        <tr>
-                          <td colSpan="3" className="px-3 py-2.5 text-left uppercase tracking-wider text-[10px] text-gray-500 align-middle">
-                            Grand Total
-                          </td>
-                          <td className="px-3 py-2.5 text-right pr-3 text-base font-extrabold text-gray-900 align-middle bg-gray-100/60">
-                            {Number(data.total_quantity).toFixed(2)}
-                          </td>
-                          <td className="px-3 py-2.5 text-right pr-4 text-base font-extrabold text-gray-900 align-middle bg-gray-100/60">
-                          </td>
-                          <td className="px-3 py-2.5 text-right pr-3 text-base font-extrabold text-gray-900 align-middle bg-gray-100/60">
-                            {formatCurrency(data.amount)}
-                          </td>
-                        </tr>
-                      </tfoot>
-                    </table>
+                    </tbody>
+                    {/* )} */}
+                    <tfoot className="sticky bottom-0 z-10 bg-gray-50 border-t-2 border-gray-200 font-bold text-gray-800">
+                      <tr>
+                        <td colSpan="3" className="px-3 py-2.5 text-left uppercase tracking-wider text-[10px] text-gray-500 align-middle">
+                          Grand Total
+                        </td>
+                        <td className="px-3 py-2.5 text-right pr-3 text-base font-extrabold text-gray-900 align-middle bg-gray-100/60">
+                          {Number(data.total_quantity).toFixed(2)}
+                        </td>
+                        <td className="px-3 py-2.5 text-right pr-4 text-base font-extrabold text-gray-900 align-middle bg-gray-100/60">
+                        </td>
+                        <td className="px-3 py-2.5 text-right pr-3 text-base font-extrabold text-gray-900 align-middle bg-gray-100/60">
+                          {formatCurrency(data.amount)}
+                        </td>
+                        <td className="bg-gray-100/60"></td> 
+                      </tr>
+                    </tfoot>
+                  </table>
               </div>
             </div>
           )}

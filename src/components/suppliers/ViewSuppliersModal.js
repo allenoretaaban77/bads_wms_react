@@ -2,7 +2,6 @@
 
 
 import React, { useEffect, useState } from 'react';
-import { getStatusTextColor } from '../../utils/statusColors.js';
 import { FormButton, FormHeader } from '../../utils/themes.js';
 import { viewSupplier } from '../../api/suppliersService.js';
 import { formatLongDate } from '../../utils/formatters.js';

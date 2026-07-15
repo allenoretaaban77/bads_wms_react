@@ -351,7 +351,7 @@ function ReplenishmentTable({ page_type }) {
         </div>
       )}
 
-      <div className="bg-white border border-gray-200 rounded-custom shadow-xs overflow-auto flex flex-col h-[calc(100vh-13.5rem)]">
+      <div className="bg-white border border-gray-200 rounded-custom shadow-xs overflow-auto flex flex-col h-[calc(100vh-13.5rem)] scrollbar-thin">
         <table className="w-full text-sm border-collapse">
           <FormThead sortOrder={sortOrder} sortField={sortField} handleSort={handleSort} data={[
             {"title":"#", "name":"id", "align":"right", "class":"w-10"},

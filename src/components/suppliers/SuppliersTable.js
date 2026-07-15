@@ -1,9 +1,8 @@
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect } from 'react';
 import { formatLongDate } from '../../utils/formatters';
-import Alert, { useAlert } from '../../utils/alert';
+import Alert from '../../utils/alert';
 import { FormButton, FormThead } from '../../utils/themes.js';
-import { getSuppliersList, deleteSupplier, createSupplier, updateSupplier } from '../../api/suppliersService.js';
-import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
+import { getSuppliersList, createSupplier, updateSupplier } from '../../api/suppliersService.js';
 import { FormPagination, usePageControl } from '../../utils/pagination.js';
 import { useTableControl } from '../../utils/table.js';
 import { useAlertStore } from '../../utils/alert';
@@ -13,10 +12,9 @@ import UpdateSupplierModal from './UpdateSupplierModal.js';
 import { useHandlerSupplier } from '../../utils/handlers.js';
 
 function SuppliersTable() {
-  const userData = useAppViewModel((state) => state.userData);
   const alertStore = useAlertStore();
-  const { currentPage, setCurrentPage, pageSize, setPageSize, totalItems, setTotalItems, totalPages, setTotalPages, handlePageSizeChange, handlePageChange } = usePageControl();
-  const { sortField, setSortField, sortOrder, setSortOrder, loading, setLoading, error, setError, handleSort } = useTableControl();
+  const { currentPage, setCurrentPage, pageSize, totalItems, setTotalItems, totalPages, setTotalPages, handlePageSizeChange, handlePageChange } = usePageControl();
+  const { sortField, sortOrder, loading, setLoading, error, setError, handleSort } = useTableControl();
   const { selectedItem, setSelectedItem, showViewModal, setShowViewModal, showCreateModal, setShowCreateModal, showEditModal, setShowEditModal, handleRefresh, handleDelete } = useHandlerSupplier();
   
   // Filter states

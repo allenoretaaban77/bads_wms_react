@@ -59,7 +59,7 @@ function SalesTable() {
   // Fetch inventory data from API
   useEffect(() => {
     const loadsatSalesData = async () => {
-      console.log([currentPage, pageSize, searchTerm, sortField, sortOrder, statusFilter, quantityFilter, recordStatusFilter, refreshKey, paymentStatusFilter, isPaidFilter]);
+      // console.log([currentPage, pageSize, searchTerm, sortField, sortOrder, statusFilter, quantityFilter, recordStatusFilter, refreshKey, paymentStatusFilter, isPaidFilter]);
 
       try {
         setLoading(true);
@@ -410,7 +410,7 @@ function SalesTable() {
         </div>
       )}
 
-      <div className="bg-white border border-gray-200 rounded-custom shadow-xs overflow-auto flex flex-col h-[calc(100vh-13.5rem)]">
+      <div className="bg-white border border-gray-200 rounded-custom shadow-xs overflow-auto flex flex-col h-[calc(100vh-13.5rem)] scrollbar-thin">
 
         <table className="w-full text-sm border-collapse">
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { formatCurrency, formatLongDate, getTableStatus, getTablePaymentStatus } from '../../utils/formatters';
+import { formatCurrency, formatLongDate, getTablePaymentStatus } from '../../utils/formatters';
 import { APP_CONFIG } from '../../config/constants';
 import Alert from '../../utils/alert';
 import { FormButton, FormThead } from '../../utils/themes.js';
@@ -11,7 +11,7 @@ import { useTableControl } from '../../utils/table.js';
 import { useHandlerDailySalesReport } from '../../utils/handlers.js';
 import ViewDailySalesItemsModal from './ViewDailySalesItemsModal.js';
 
-function DailySalesReport({ page_type }) {
+function DailySalesReport({ page_type, param }) {
   const alertStore = useAlertStore();
   const { currentPage, setCurrentPage, pageSize, setPageSize, totalItems, setTotalItems, totalPages, setTotalPages, handlePageSizeChange, handlePageChange } = usePageControl();
   const { sortField, setSortField, sortOrder, setSortOrder, loading, setLoading, error, setError, handleSort } = useTableControl();
@@ -25,6 +25,7 @@ function DailySalesReport({ page_type }) {
   useEffect(() => { if (alertStore.alert.show == true) { setTimeout(() => { alertStore.setAlert({ show: false, message: '', type: '' })}, 3000); }}, [alertStore.alert]);
 
   useEffect(() => {
+
     const loadsatSalesData = async () => {
       try {
         setLoading(true);
@@ -37,7 +38,9 @@ function DailySalesReport({ page_type }) {
           sort: sortField,
           order: sortOrder,
           pageType: page_type,
+          inventoryId: param || ""
         };
+        console.log(param, params);
 
         const result = await getDailyReports(params);
         
@@ -85,7 +88,7 @@ function DailySalesReport({ page_type }) {
     };
 
     loadsatSalesData();
-  }, [currentPage, pageSize, searchTerm, sortField, sortOrder, alertStore.refreshDailySalesReport, page_type]);
+  }, [currentPage, pageSize, searchTerm, sortField, sortOrder, alertStore.refreshDailySalesReport, page_type, param]);
 
   const hanldeUpdate = async (date) => {
     if (window.confirm('Are you sure you want to UPDATE this report?')) {
@@ -149,7 +152,7 @@ function DailySalesReport({ page_type }) {
         </div>
       )}
       
-      <div className="bg-white border border-gray-200 rounded-custom shadow-xs overflow-auto flex flex-col h-[calc(100vh-10.7rem)]">
+      <div className="bg-white border border-gray-200 rounded-custom shadow-xs overflow-auto flex flex-col h-[calc(100vh-10.7rem)] scrollbar-thin">
         
         <table className="w-full text-sm border-collapse">
           <FormThead sortOrder={sortOrder} sortField={sortField} handleSort={handleSort} data={tableHeader} />

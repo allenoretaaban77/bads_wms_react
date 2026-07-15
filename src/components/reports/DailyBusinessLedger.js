@@ -23,6 +23,18 @@ function DailyBusinessLedger({ page_type }) {
   const [monitoredItems, setMonitoredItems] = useState([]);
   const [monitoredIds, setMonitoredIds] = useState([]);
   
+  // Summary states
+  const [loadingSummary, setLoadingSummary] = useState(false);
+  const [totalSales, setTotalSales] = useState(0);
+  const [totalPuhunan, setTotalPuhunan] = useState(0);
+  const [totalTubo, setTotalTubo] = useState(0);
+  const [totalPuhunanCement, setTotalPuhunanCement] = useState(0);
+  const [totalTuboCement, setTotalTuboCement] = useState(0);
+  const [totalPuhunanRSB, setTotalPuhunanRSB] = useState(0);
+  const [totalTuboRSB, setTotalTuboRSB] = useState(0);
+  const [totalPuhunanAll, setTotalPuhunanAll] = useState(0);
+  const [totalTuboAll, setTotalTuboAll] = useState(0);
+  
   useEffect(() => { if (alertStore.alert.show == true) { setTimeout(() => { alertStore.setAlert({ show: false, message: '', type: '' })}, 3000); }}, [alertStore.alert]);
 
   useEffect(() => {
@@ -58,6 +70,16 @@ function DailyBusinessLedger({ page_type }) {
           setTotalItems(total);
           setTotalPages(totalPages);
           setTableHeader(header);
+
+          setTotalPuhunan(result.data?.totalPuhunan || 0);
+          setTotalTubo(result.data?.totalTubo || 0);
+          setTotalSales(result.data?.totalSales || 0);
+          setTotalPuhunanCement(result.data?.totalPuhunanCement || 0);
+          setTotalTuboCement(result.data?.totalTuboCement || 0);
+          setTotalPuhunanRSB(result.data?.totalPuhunanRSB || 0);
+          setTotalTuboRSB(result.data?.totalTuboRSB || 0);
+          setTotalPuhunanAll(result.data?.totalPuhunanAll || 0);
+          setTotalTuboAll(result.data?.totalTuboAll || 0);
         } else {
           // Handle API error response
           console.warn('API returned error:', result.error);
@@ -194,8 +216,56 @@ function DailyBusinessLedger({ page_type }) {
   return (
     <div className="flex flex-col h-screen">
 
-
       <div className="flex-shrink-0 space-y-0 mb-2">
+
+        <div className="bg-white p-1 rounded-custom border border-gray-200 mb-2">
+          {loadingSummary && (
+            <div className="flex justify-center items-center py-2">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-button"></div>
+              <span className="ml-2 text-gray-600">Loading summary data...</span>
+            </div>
+          )}
+          {!loadingSummary && (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-9 gap-2 mb-0.5">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-red-400">{formatCurrency(totalPuhunan)}</div>
+              <div className="text-xs text-gray-700">Puhunan</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-orange-400">{formatCurrency(totalTubo)}</div>
+              <div className="text-xs text-gray-700">Tubo</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-yellow-400">{formatCurrency(totalSales)}</div>
+              <div className="text-xs text-gray-700">Total Sales</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-400">{formatCurrency(totalPuhunanCement)}</div>
+              <div className="text-xs text-gray-700">Puhunan Cement</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-400">{formatCurrency(totalTuboCement)}</div>
+              <div className="text-xs text-gray-700">Tubo Cement</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-violet-400">{formatCurrency(totalPuhunanRSB)}</div>
+              <div className="text-xs text-gray-700">Puhunan RSB</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-pink-400">{formatCurrency(totalTuboRSB)}</div>
+              <div className="text-xs text-gray-700">Tubo RSB</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-cyan-400">{formatCurrency(totalPuhunanAll)}</div>
+              <div className="text-xs text-gray-700">Total Puhunan</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-gold-400">{formatCurrency(totalTuboAll)}</div>
+              <div className="text-xs text-gray-700">Total Tubo</div>
+            </div>
+          </div>
+          )}
+        </div>
 
         <div className="bg-white pl-3 pr-3 pb-2 rounded-custom border border-gray-200">
 
@@ -225,7 +295,7 @@ function DailyBusinessLedger({ page_type }) {
         </div>
       )}
 
-      <div className="block bg-white border border-gray-200 rounded-custom shadow-sm h-[calc(100vh-10.7rem)] w-[calc(100vw-13.5rem)] overflow-auto scrollbar-thin flex-shrink-0">
+      <div className="block bg-white border border-gray-200 rounded-custom shadow-sm h-[calc(100vh-15.2rem)] w-[calc(100vw-13.5rem)] overflow-auto scrollbar-thin flex-shrink-0">
 
         <table className="text-sm border-collapse min-w-[3000px] w-full">
           <FormThead sortOrder={sortOrder} sortField={sortField} handleSort={handleSort} data={tableHeader} />

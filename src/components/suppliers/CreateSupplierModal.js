@@ -1,20 +1,14 @@
 
 
 
-import React, { useEffect, useState } from 'react';
-import { getStatusTextColor } from '../../utils/statusColors.js';
+import React, { useState } from 'react';
 import { FormButton, FormHeader } from '../../utils/themes.js';
-import { viewSupplier } from '../../api/suppliersService.js';
-import { formatLongDate } from '../../utils/formatters.js';
 import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
-import APP_CONFIG from '../../config/constants.js';
 
 const CreateSupplierModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
   const userData = useAppViewModel((state) => state.userData);
   const [errors, setErrors] = useState({});
-  const [data, setData] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     created_by: userData?.employee_id || '',

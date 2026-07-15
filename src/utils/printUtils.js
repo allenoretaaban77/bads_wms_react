@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from 'react';
 import { formatLongDate, formatCurrency } from '../utils/formatters';
 
 export const generatePrintReceipt = (data, title = "Hardware Acknowledgement Receipt") => {
@@ -10,77 +9,77 @@ export const generatePrintReceipt = (data, title = "Hardware Acknowledgement Rec
     // return;
   // }
 
-  const receiptHtml = `
-    <html>
-      <head>
-        <title>Badong's Hardware Sales Acknowledgement Receipt</title>
-        <style>
-          body { font-family:arial;font-size:9pt }
-          .header_company { text-align: center;  }
-          .header_title { text-align: center; padding-bottom: 10px; }
-=         table { font-family:arial;font-size:9pt; }
-          @media print {
-            .noprint { display: none; }
-          }
-          @media print {
-            thead { display: table-header-group; }
-            tfoot { display: table-footer-group; }
-          }
-          @media screen {
-            thead { display: block; }
-            tfoot { display: block; }
-          }
-        </style>
-      </head>
-      <body>
-        <input class='noprint' type='button' value='Print' onclick='window.print()' />
-        <div class="content">
-          <div class="header_company">Badong's Hardware</div>
-          <div class="header_title">SALES INVOICE</div>
-          <table>
-            <tr>
-              <td><strong>Sold to:</strong></td><td>${data.customer_name}</td>
-              <td><strong>Sold to:</strong></td><td>${data.date_sold}</td>
-            </tr>
-            <tr><td><strong>Invoice No:</strong></td><td>${data.invoice_no}</td></tr>
-            <tr><td><strong>Date Sold:</strong></td><td>${data.date_sold}</td></tr>
-            <tr><td><strong>Payment Status:</strong></td><td>${data.payment_status}</td></tr>
-            <tr><td><strong>Payment Method:</strong></td><td>${data.payment_method || 'N/A'}</td></tr>
-          </table>
+//   const receiptHtml = `
+//     <html>
+//       <head>
+//         <title>Badong's Hardware Sales Acknowledgement Receipt</title>
+//         <style>
+//           body { font-family:arial;font-size:9pt }
+//           .header_company { text-align: center;  }
+//           .header_title { text-align: center; padding-bottom: 10px; }
+// =         table { font-family:arial;font-size:9pt; }
+//           @media print {
+//             .noprint { display: none; }
+//           }
+//           @media print {
+//             thead { display: table-header-group; }
+//             tfoot { display: table-footer-group; }
+//           }
+//           @media screen {
+//             thead { display: block; }
+//             tfoot { display: block; }
+//           }
+//         </style>
+//       </head>
+//       <body>
+//         <input class='noprint' type='button' value='Print' onclick='window.print()' />
+//         <div class="content">
+//           <div class="header_company">Badong's Hardware</div>
+//           <div class="header_title">SALES INVOICE</div>
+//           <table>
+//             <tr>
+//               <td><strong>Sold to:</strong></td><td>${data.customer_name}</td>
+//               <td><strong>Sold to:</strong></td><td>${data.date_sold}</td>
+//             </tr>
+//             <tr><td><strong>Invoice No:</strong></td><td>${data.invoice_no}</td></tr>
+//             <tr><td><strong>Date Sold:</strong></td><td>${data.date_sold}</td></tr>
+//             <tr><td><strong>Payment Status:</strong></td><td>${data.payment_status}</td></tr>
+//             <tr><td><strong>Payment Method:</strong></td><td>${data.payment_method || 'N/A'}</td></tr>
+//           </table>
 
-          <table class="items-table">
-            <thead>
-              <tr>
-                <th>SKU</th>
-                <th>Product</th>
-                <th>Qty</th>
-                <th>Unit Price</th>
-                <th>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${data.items.map(item => `
-                <tr>
-                  <td>${item.sku}</td>
-                  <td>${item.product_name}</td>
-                  <td>${item.qty_sold}</td>
-                  <td>${item.price_per_unit}</td>
-                  <td>${item.total}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
+//           <table class="items-table">
+//             <thead>
+//               <tr>
+//                 <th>SKU</th>
+//                 <th>Product</th>
+//                 <th>Qty</th>
+//                 <th>Unit Price</th>
+//                 <th>Total</th>
+//               </tr>
+//             </thead>
+//             <tbody>
+//               ${data.items.map(item => `
+//                 <tr>
+//                   <td>${item.sku}</td>
+//                   <td>${item.product_name}</td>
+//                   <td>${item.qty_sold}</td>
+//                   <td>${item.price_per_unit}</td>
+//                   <td>${item.total}</td>
+//                 </tr>
+//               `).join('')}
+//             </tbody>
+//           </table>
 
-          <div class="total">
-            Grand Total: ₱${data.amount}
-          </div>
-        </div>
-        <script>
-          // window.onload = () => { window.print(); };
-        </script>
-      </body>
-    </html>
-  `;
+//           <div class="total">
+//             Grand Total: ₱${data.amount}
+//           </div>
+//         </div>
+//         <script>
+//           // window.onload = () => { window.print(); };
+//         </script>
+//       </body>
+//     </html>
+//   `;
 
   const newReceiptHtml = `
     <html>

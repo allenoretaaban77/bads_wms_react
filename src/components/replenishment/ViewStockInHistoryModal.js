@@ -35,11 +35,6 @@ function ViewStockInHistoryModal({ show, onClose, id, item }) {
     onClose();
   }
 
-  const getStatus = (current) => {
-    if (current == "draft") return { text: 'Draft', color: 'text-yellow-600' };
-    return { text: 'Approved', color: 'text-green-600' };
-  };
-
   if (!show) return null;
 
   return (
@@ -65,15 +60,15 @@ function ViewStockInHistoryModal({ show, onClose, id, item }) {
           )}
 
           {data && (
-            <div className="flex-1 flex flex-col min-h-0 space-y-3">
+            <div className="flex-1 flex flex-col min-h-0 space-y-4">     
               {/* Product Metadata Info Board */}
-              <div className="p-3 pt-1 pb-2 bg-gray-50 border border-gray-200 rounded flex items-center justify-between flex-shrink-0">
-                <div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded flex-shrink-0">
+                <div className="text-center">
                   <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block">Product Name</span>
                   <span className="font-bold text-gray-800 text-sm">{data.product_name}</span>
                 </div>
                 {data.sku && (
-                  <div className="text-right">
+                  <div className="text-center">
                     <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block pb-1">Stock Keeping Unit</span>
                     <span className="font-mono bg-white border border-gray-300 px-2 py-0.5 rounded text-gray-700 font-bold">{data.sku}</span>
                   </div>
@@ -100,7 +95,7 @@ function ViewStockInHistoryModal({ show, onClose, id, item }) {
                           {itemRow.reference_no}
                         </td>
                         <td className="px-3 py-2 text-right font-semibold text-gray-700 align-middle">
-                          {itemRow.quantity}
+                          {Number(itemRow.quantity)}
                         </td>
                         <td className="px-3 py-2 text-right text-gray-600 align-middle">
                           {formatCurrency(itemRow.cost)}

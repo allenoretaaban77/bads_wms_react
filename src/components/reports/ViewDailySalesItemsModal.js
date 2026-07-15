@@ -95,7 +95,7 @@ function ViewDailySalesItemsModal({ show, onClose, onDelete, onUpdateTable, item
                             {item.product_name}
                           </td>
                           <td className="px-3 py-2 text-gray-800 font-medium text-right">
-                            {item.qty_sold}
+                            {Number(item.qty_sold)}
                           </td>
                           {/* <td className="px-3 py-2 text-right font-bold text-gray-700 align-middle">
                             {formatCurrency(item.cost_per_unit)}

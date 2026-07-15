@@ -29,6 +29,7 @@ function HomeContent() {
   const menuParts = activeMenu.split('|'); 
   const menuParent = menuParts[0];
   const menuChild = menuParts[1] ?? null; 
+  const menuParam = menuParts[2] ?? null; 
   
   switch(menuParent) {
     case 'employees':
@@ -46,7 +47,7 @@ function HomeContent() {
     case 'suppliers':
       return <SuppliersTable page_type={menuChild} />;
     case 'reports':
-      return <DailySalesReport page_type={menuChild} />;
+      return <DailySalesReport page_type={menuChild} param={menuParam} />;
     case 'stockin':
       return <StockInPurchasesLog page_type={menuChild} />;
     case 'monthly':

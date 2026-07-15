@@ -624,7 +624,7 @@ const UpdateSalesModal = ({ selectedItem, showEditModal, setShowEditModal, onSav
                           <input
                             type="number"
                             name="quantity"
-                            value={item.quantity}
+                            value={Number(item.quantity)}
                             onChange={(e) => updateItemField(item.id, 'quantity', e.target.value)}
                             onFocus={(e) => e.target.select()}
                             placeholder="0"

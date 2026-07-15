@@ -245,7 +245,7 @@ function InventoryTable({ page_type }) {
       
       <div className="flex-shrink-0 space-y-0 mb-2">
         
-        <div className="bg-white p-2 rounded-custom border border-gray-200 mb-2">
+        <div className="bg-white p-1 rounded-custom border border-gray-200 mb-2">
           {loadingSummary && (
             <div className="flex justify-center items-center py-2">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-button"></div>
@@ -411,7 +411,7 @@ function InventoryTable({ page_type }) {
                     <td className="px-4 py-3 border-r text-sm text-right">{formatCurrency(item.price_per_unit)}</td>
                     <td className="px-4 py-3 border-r text-sm text-right">
                       <span className={`font-medium ${quantityStatus.color}`}>
-                        {item.current_qty}
+                        {Number(item.current_qty)}
                       </span>
                     </td>
                     <td className="px-4 py-3 border-r text-sm text-right">{item.reorder_level}</td>

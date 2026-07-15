@@ -106,8 +106,10 @@ const menuItems = [
   { key: 'reports', label: 'Reports', title: 'Daily Sales Reports',
     children: [
       { key: 'reports', label: 'Daily Sales - All', title: 'Daily Sales - All' },
-      { key: 'reports|cements', label: 'Daily Sales - Cement', title: 'Daily Sales - Cement' },
-      { key: 'reports|steel materials', label: 'Daily Sales - RSB', title: 'Daily Sales - RSB' },
+      { key: 'reports|cements|21', label: 'Daily Sales - Cement', title: 'Daily Sales - Cement' },
+      { key: 'reports|steel materials|1421', label: 'Daily Sales - RSB 10', title: 'Daily Sales - RSB 10' },
+      { key: 'reports|steel materials|1422', label: 'Daily Sales - RSB 12', title: 'Daily Sales - RSB 12' },
+      { key: 'reports|steel materials|1423', label: 'Daily Sales - RSB 16', title: 'Daily Sales - RSB 16' },
       { key: 'reports|unmonitored', label: 'Daily Sales - Unmonitored', title: 'Daily Sales - Unmonitored' },
       { key: 'ledger', label: 'Daily Business Ledger', title: 'Daily Business Ledger' },
       { key: 'stockin', label: 'Stock-In (Purchases) Log', title: 'Stock-In (Purchases) Log' },

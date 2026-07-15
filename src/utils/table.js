@@ -1,5 +1,4 @@
-import { useState, useCallback } from 'react';
-import { APP_CONFIG } from '../config/constants';
+import { useState } from 'react';
 
 export const useTableControl = () => {
   const [sortField, setSortField] = useState('id');

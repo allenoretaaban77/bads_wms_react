@@ -1,11 +1,9 @@
-import { useState, useCallback } from 'react';
-import { usePageControl } from './pagination';
+import { useState } from 'react';
 import { deleteSupplier } from '../api/suppliersService';
 import useAppViewModel from '../viewmodels/useAppViewModel';
 import { useAlertStore } from './alert';
 
 export const useHandlerSupplier = () => {
-  const pagination = usePageControl();
   const userData = useAppViewModel((state) => state.userData);
   const alertStore = useAlertStore();
   
@@ -62,7 +60,6 @@ export const useHandlerSupplier = () => {
 }
 
 export const useHandlerDailySalesReport = () => {
-  const pagination = usePageControl();
   const userData = useAppViewModel((state) => state.userData);
   const alertStore = useAlertStore();
   
@@ -125,7 +122,6 @@ export const useHandlerDailySalesReport = () => {
 }
 
 export const useHandlerDailyBusinessLedger = () => {
-  const pagination = usePageControl();
   const userData = useAppViewModel((state) => state.userData);
   const alertStore = useAlertStore();
   

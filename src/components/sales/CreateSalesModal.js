@@ -327,22 +327,21 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
         [`quantity_${selectedStockItem.id}`]: ''
       }));
     }
-};
+  };  
 
-const inputRefs = useRef([]);
-
-const handleKeyDown = (e, index) => {
-  if (e.key === 'Enter') {
-    e.preventDefault(); // Prevent form submission
-    
-    const nextInput = inputRefs.current[index + 1];
-    if (nextInput) {
-      nextInput.focus();
-    } else {
-      e.target.blur();
+  const inputRefs = useRef([]);
+  const handleKeyDown = (e, index) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // Prevent form submission
+      
+      const nextInput = inputRefs.current[index + 1];
+      if (nextInput) {
+        nextInput.focus();
+      } else {
+        e.target.blur();
+      }
     }
-  }
-};
+  };
 
   if (!showCreateModal) return null;
 
@@ -609,8 +608,8 @@ const handleKeyDown = (e, index) => {
                             value={item.price}
                             onChange={(e) => updateItemField(item.id, 'price', e.target.value)}
                             onFocus={(e) => e.target.select()}
-                            // ref={(el) => (inputRefs.current[(index + 3) * 2 + 1] = el)}
-                            // onKeyDown={(e) => handleKeyDown(e, (index + 3) * 2 + 1)}
+                            ref={(el) => (inputRefs.current[(index + 3) * 2 + 1] = el)}
+                            onKeyDown={(e) => handleKeyDown(e, (index + 3) * 2 + 1)}
                             placeholder="0.00"
                             className="w-full focus:outline-none text-right bg-transparent font-semibold text-gray-800"
                           />

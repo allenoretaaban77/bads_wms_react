@@ -29,8 +29,11 @@ export const getDailyReports = async (params = {}) => {
     if (params.is_paid && params.is_paid.trim() && params.is_paid !== 'all') {
       queryParams.append('is_paid', params.is_paid.trim());
     }
-    if (params.pageType && params.pageType.trim() && params.is_paid !== 'all') {
+    if (params.pageType && params.pageType.trim() && params.pageType !== 'all') {
       queryParams.append('pageType', params.pageType.trim());
+    }
+    if (params.inventoryId && params.inventoryId.trim() && params.inventoryId !== 'all') {
+      queryParams.append('inventoryId', params.inventoryId.trim());
     }
     
     const headers = getApiHeaders();

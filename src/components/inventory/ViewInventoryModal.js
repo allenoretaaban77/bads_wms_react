@@ -49,7 +49,7 @@ const ViewInventoryModal = ({ selectedItem, showViewModal, setShowViewModal }) =
 
             <div className="border-t border-gray-100 pt-2">
               <span className="block font-semibold text-gray-500 mb-0.5">Current Stock Qty</span>
-              <p className="text-gray-900 font-bold text-sm">{selectedItem.current_qty ?? 0}</p>
+              <p className="text-gray-900 font-bold text-sm">{Number(selectedItem.current_qty) ?? 0}</p>
             </div>
 
             <div className="border-t border-gray-100 pt-2">

@@ -148,7 +148,7 @@ function ViewInventoryStockBatchesModal({ show, onClose, id, onApply }) {
                 </div>
                 <div className="text-center">
                   <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block pb-1">Total Stocks</span>
-                  <span className="font-mono bg-white border border-gray-300 px-2 py-0.5 rounded text-gray-700 font-bold">{data.current_qty}</span>
+                  <span className="font-mono bg-white border border-gray-300 px-2 py-0.5 rounded text-gray-700 font-bold">{Number(data.current_qty)}</span>
                 </div>
                 <div className="text-center">
                   <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block pb-1">Reorder Quantity</span>
@@ -169,7 +169,7 @@ function ViewInventoryStockBatchesModal({ show, onClose, id, onApply }) {
                           {formatLongDate(item.date_received)}
                         </td>
                         <td className="px-3 py-2 text-right font-semibold text-gray-700 align-middle">
-                          {item.current_qty}
+                          {Number(item.current_qty)}
                         </td>
                         <td className="px-3 py-2 text-right font-semibold text-gray-700 align-middle">
                           <input

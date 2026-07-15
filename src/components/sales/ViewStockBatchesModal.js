@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getStockBatches } from '../../api/salesService';
-import { formatCurrency, formatLongDate } from '../../utils/formatters';
-import { FormButton, FormHeader, FormModalThead, FormModalTheadDefault } from '../../utils/themes.js';
+import { formatLongDate } from '../../utils/formatters';
+import { FormButton, FormHeader, FormModalTheadDefault } from '../../utils/themes.js';
 
 function ViewStockBatchesModal({ show, onClose, id, inventory_id, allocatedBatches, onApply }) {
   const [data, setData] = useState(null);
@@ -166,7 +166,7 @@ function ViewStockBatchesModal({ show, onClose, id, inventory_id, allocatedBatch
             <div className="flex-1 flex flex-col min-h-0 space-y-3">
               {/* Product Metadata Info Board */}
               <div className="px-3 pt-1 pb-2 bg-gray-50 border border-gray-200 rounded flex items-center justify-between flex-shrink-0">
-                <div>
+                <div className="text-center">
                   <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block">Product Name</span>
                   <span className="font-bold text-gray-800 text-sm">{data.product_name}</span>
                 </div>
@@ -176,7 +176,7 @@ function ViewStockBatchesModal({ show, onClose, id, inventory_id, allocatedBatch
                 </div>
                 <div className="text-center">
                   <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block pb-1">Total Stocks</span>
-                  <span className="font-mono bg-white border border-gray-300 px-2 py-0.5 rounded text-gray-700 font-bold">{data.current_qty}</span>
+                  <span className="font-mono bg-white border border-gray-300 px-2 py-0.5 rounded text-gray-700 font-bold">{Number(data.current_qty)}</span>
                 </div>
                 <div className="text-center">
                   <span className="font-semibold text-gray-500 uppercase tracking-wider text-[10px] block pb-1">Reorder Quantity</span>
@@ -201,7 +201,7 @@ function ViewStockBatchesModal({ show, onClose, id, inventory_id, allocatedBatch
                           {item.cost_per_unit}
                         </td>
                         <td className="px-3 py-2 text-right font-semibold text-gray-700 align-middle">
-                          {item.current_qty}
+                          {Number(item.current_qty)}
                         </td>
                         <td className="p-2 text-right w-40">
                           <input

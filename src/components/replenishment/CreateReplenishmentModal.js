@@ -212,6 +212,13 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
   };
 
   const handleCancel = () => {
+    if (items.length > 0) {
+      const confirmClose = window.confirm(
+        "You have unsaved progress on this transaction. Are you sure you want to close?"
+      );
+      if (!confirmClose) return; // Halt closure if cancel is clicked
+    }
+    
     setErrors({});
     setShowCreateModal(false);
     setFormData({
@@ -295,6 +302,20 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
     }
   };
 
+  const inputRefs = useRef([]);
+  const handleKeyDown = (e, index) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // Prevent form submission
+      
+      const nextInput = inputRefs.current[index + 1];
+      if (nextInput) {
+        nextInput.focus();
+      } else {
+        e.target.blur();
+      }
+    }
+  };
+
   if (!showCreateModal) return null;
 
   return (
@@ -318,6 +339,8 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                   onChange={handleChange}
                   placeholder="Generating reference..."
                   className="flex-1 focus:outline-none bg-transparent font-medium text-gray-800"
+                  ref={(el) => (inputRefs.current[0] = el)}
+                  onKeyDown={(e) => handleKeyDown(e, 0)}
                 />
                 <button 
                   type="button" 
@@ -344,6 +367,8 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                 className={`w-full px-3 py-1.5 border rounded focus:outline-none focus:ring-1 focus:ring-button focus:border-transparent text-gray-800 ${
                   errors.date_received ? 'border-red-400 bg-red-50/30' : 'border-gray-300'
                 }`}
+                ref={(el) => (inputRefs.current[1] = el)}
+                onKeyDown={(e) => handleKeyDown(e, 1)}
               />
               {errors.date_received && <p className="mt-1 text-[11px] text-red-600">{errors.date_received}</p>}
             </div>
@@ -367,6 +392,8 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                 className={`w-full px-3 py-1.5 border rounded focus:outline-none focus:ring-1 focus:ring-button focus:border-transparent text-gray-800 ${
                   errors.supplier ? 'border-red-400 bg-red-50/30' : 'border-gray-300'
                 }`}
+                ref={(el) => (inputRefs.current[2] = el)}
+                onKeyDown={(e) => handleKeyDown(e, 2)}
               >
                 <option value="">Select...</option>
                 {suppliersData.map((item) => (
@@ -387,6 +414,8 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                 rows={1}
                 placeholder="Log transaction details..."
                 className="w-full px-3 py-1.5 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-button focus:border-transparent text-gray-800 resize-none"
+                ref={(el) => (inputRefs.current[3] = el)}
+                onKeyDown={(e) => handleKeyDown(e, 3)}
               />
             </div>
           </div>
@@ -397,7 +426,8 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
             <div className="relative">
               <input
                 type="text"
-                ref={searchInputRef}
+                ref={(el) => (inputRefs.current[4] = el)}
+                onKeyDown={(e) => handleKeyDown(e, 4)}
                 value={itemSearchTerm}
                 onBlur={handleBlur}
                 onChange={(e) => {
@@ -509,6 +539,8 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                             onFocus={(e) => e.target.select()}
                             placeholder="0"
                             className="w-full focus:outline-none text-right bg-transparent font-semibold text-gray-800"
+                            ref={(el) => (inputRefs.current[(index + 2) * 2 + 1] = el)}
+                            onKeyDown={(e) => handleKeyDown(e, (index + 2) * 2 + 1)}
                           />
                         </div>
                         {errors[`quantity_${item.id}`] && (
@@ -538,6 +570,8 @@ const CreateReplenishmentModal = ({ showCreateModal, setShowCreateModal, onSave 
                             onFocus={(e) => e.target.select()}
                             placeholder="0.00"
                             className="w-full focus:outline-none text-right bg-transparent text-gray-800"
+                            ref={(el) => (inputRefs.current[(index + 2) * 2 + 2] = el)}
+                            onKeyDown={(e) => handleKeyDown(e, (index + 2) *2 + 2)}
                           />
                         </div>
                         {errors[`cost_${item.id}`] && (
