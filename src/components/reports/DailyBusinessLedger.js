@@ -11,11 +11,11 @@ import { useHandlerDailyBusinessLedger } from '../../utils/handlers.js';
 import ViewDailySalesItemsModal from './ViewDailySalesItemsModal.js';
 import UpdateLedgerValueModal from './UpdateLedgerValueModal.js';
 
-function DailyBusinessLedger({ page_type }) {
+function DailyBusinessLedger() {
   const alertStore = useAlertStore();
   const { currentPage, setCurrentPage, pageSize, setPageSize, totalItems, setTotalItems, totalPages, setTotalPages, handlePageSizeChange, handlePageChange } = usePageControl();
   const { sortField, setSortField, sortOrder, setSortOrder, loading, setLoading, error, setError, handleSort } = useTableControl();
-  const { selectedItem, setSelectedItem, showViewModal, setShowViewModal, showCreateModal, setShowCreateModal, showEditModal, setShowEditModal, showHardwareModal, setShowHardwareModal, showBahayModal, setShowBahayModal, showLedgerValueModal, setShowLedgerValueModal, handleRefresh, handleDelete, handleView } = useHandlerDailyBusinessLedger();
+  const { selectedItem, setSelectedItem, showViewModal, setShowViewModal, showLedgerValueModal, setShowLedgerValueModal, handleRefresh, handleDelete, handleView } = useHandlerDailyBusinessLedger();
   const [saleDate, satSalesData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -228,39 +228,39 @@ function DailyBusinessLedger({ page_type }) {
           {!loadingSummary && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-9 gap-2 mb-0.5">
             <div className="text-center">
-              <div className="text-2xl font-bold text-red-400">{formatCurrency(totalPuhunan)}</div>
+              <div className="text-xl font-bold text-red-400">{formatCurrency(totalPuhunan)}</div>
               <div className="text-xs text-gray-700">Puhunan</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-orange-400">{formatCurrency(totalTubo)}</div>
+              <div className="text-xl font-bold text-orange-400">{formatCurrency(totalTubo)}</div>
               <div className="text-xs text-gray-700">Tubo</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-400">{formatCurrency(totalSales)}</div>
+              <div className="text-xl font-bold text-yellow-400">{formatCurrency(totalSales)}</div>
               <div className="text-xs text-gray-700">Total Sales</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-400">{formatCurrency(totalPuhunanCement)}</div>
+              <div className="text-xl font-bold text-green-400">{formatCurrency(totalPuhunanCement)}</div>
               <div className="text-xs text-gray-700">Puhunan Cement</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-400">{formatCurrency(totalTuboCement)}</div>
+              <div className="text-xl font-bold text-blue-400">{formatCurrency(totalTuboCement)}</div>
               <div className="text-xs text-gray-700">Tubo Cement</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-violet-400">{formatCurrency(totalPuhunanRSB)}</div>
+              <div className="text-xl font-bold text-violet-400">{formatCurrency(totalPuhunanRSB)}</div>
               <div className="text-xs text-gray-700">Puhunan RSB</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-pink-400">{formatCurrency(totalTuboRSB)}</div>
+              <div className="text-xl font-bold text-pink-400">{formatCurrency(totalTuboRSB)}</div>
               <div className="text-xs text-gray-700">Tubo RSB</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-cyan-400">{formatCurrency(totalPuhunanAll)}</div>
+              <div className="text-xl font-bold text-cyan-400">{formatCurrency(totalPuhunanAll)}</div>
               <div className="text-xs text-gray-700">Total Puhunan</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-gold-400">{formatCurrency(totalTuboAll)}</div>
+              <div className="text-xl font-bold text-gold-400">{formatCurrency(totalTuboAll)}</div>
               <div className="text-xs text-gray-700">Total Tubo</div>
             </div>
           </div>

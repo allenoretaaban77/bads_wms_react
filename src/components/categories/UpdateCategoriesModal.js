@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { FormButton, FormHeader } from '../../utils/themes.js';
 import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 
-const UpdateSupplierModal = ({ selectedItem, showEditModal, setShowEditModal, onSave }) => {
+const UpdateCategoriesModal = ({ selectedItem, showEditModal, setShowEditModal, onSave }) => {
   const userData = useAppViewModel((state) => state.userData);
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -16,6 +16,7 @@ const UpdateSupplierModal = ({ selectedItem, showEditModal, setShowEditModal, on
       setFormData({
         id: selectedItem.id || '',
         name: selectedItem.name || '',
+        tag: selectedItem.tag || '',
         remarks: selectedItem.remarks || '',
         updated_by: userData?.employee_id || '',
         tracking_method: selectedItem.tracking_method || ''
@@ -96,20 +97,19 @@ const UpdateSupplierModal = ({ selectedItem, showEditModal, setShowEditModal, on
       <div className="bg-white rounded-custom shadow-xl border border-gray-200 w-full max-w-sm flex flex-col">
         
         {/* Header Section */}
-        <FormHeader headerTitle="Modify Supplier Record" onClick={() => handleCancel()} />
+        <FormHeader headerTitle="Modify Category Record" onClick={() => handleCancel()} />
 
         <div className="p-4 overflow-y-auto flex-1">
-          <form id="update-supplier-form" onSubmit={handleSubmit} className="space-y-4">
+          <form id="update-category-form" onSubmit={handleSubmit} className="space-y-4">
             
-            {/* Product Name - Full Width with standardized subtle text-xs sizing */}
             <div className="flex flex-col space-y-1">
-              <label className="text-xs font-semibold text-gray-700">Supplier Name *</label>
+              <label className="text-xs font-semibold text-gray-700">Category Name *</label>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="Enter supplier name"
+                placeholder="Enter category name"
                 className={`w-full px-3 py-1.5 text-xs border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                   errors.name ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                 }`}
@@ -119,8 +119,25 @@ const UpdateSupplierModal = ({ selectedItem, showEditModal, setShowEditModal, on
                 <p className="text-xs text-red-600 mt-0.5">{errors.name}</p>
               )}
             </div>
+            
+            <div className="flex flex-col space-y-1">
+              <label className="text-xs font-semibold text-gray-700">Category Tag *</label>
+              <input
+                type="text"
+                name="tag"
+                value={formData.tag}
+                onChange={handleChange}
+                placeholder="Enter category tag"
+                className={`w-full px-3 py-1.5 text-xs border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                  errors.tag ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
+                }`}
+                required
+              />
+              {errors.tag && (
+                <p className="text-xs text-red-600 mt-0.5">{errors.tag}</p>
+              )}
+            </div>
 
-            {/* Remarks Explanatory View Block */}
             <div className="flex flex-col space-y-1">
               <label className="text-xs font-semibold text-gray-700">Remarks / Notes</label>
               <textarea
@@ -150,7 +167,7 @@ const UpdateSupplierModal = ({ selectedItem, showEditModal, setShowEditModal, on
             isProcessing={isLoading}
             type="submit"
             // disabled={isLoading}
-            form="update-supplier-form"
+            form="update-category-form"
           />
         </div>
 
@@ -159,4 +176,4 @@ const UpdateSupplierModal = ({ selectedItem, showEditModal, setShowEditModal, on
   );
 };
 
-export default UpdateSupplierModal;
+export default UpdateCategoriesModal;

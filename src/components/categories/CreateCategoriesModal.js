@@ -1,8 +1,11 @@
-import React, { useEffect, useState } from 'react';
+
+
+
+import React, { useState } from 'react';
 import { FormButton, FormHeader } from '../../utils/themes.js';
 import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
 
-const UpdateSupplierModal = ({ selectedItem, showEditModal, setShowEditModal, onSave }) => {
+const CreateCategoriesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
   const userData = useAppViewModel((state) => state.userData);
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -11,21 +14,9 @@ const UpdateSupplierModal = ({ selectedItem, showEditModal, setShowEditModal, on
     created_by: userData?.employee_id || '',
   });
 
-  useEffect(() => {
-    if (selectedItem && showEditModal) {
-      setFormData({
-        id: selectedItem.id || '',
-        name: selectedItem.name || '',
-        remarks: selectedItem.remarks || '',
-        updated_by: userData?.employee_id || '',
-        tracking_method: selectedItem.tracking_method || ''
-      });
-    }
-  }, [selectedItem, showEditModal, userData?.employee_id]);
-
   const handleCancel = () => {
     setErrors({});
-    setShowEditModal(false);
+    setShowCreateModal(false);
     setFormData({
       name: '',
       created_by: userData?.employee_id || '',
@@ -35,7 +26,6 @@ const UpdateSupplierModal = ({ selectedItem, showEditModal, setShowEditModal, on
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -68,7 +58,6 @@ const UpdateSupplierModal = ({ selectedItem, showEditModal, setShowEditModal, on
     
     try {
       const result = await onSave(formData);
-      console.log(result);
       
       if (result.success) {
         const refData = {
@@ -78,7 +67,7 @@ const UpdateSupplierModal = ({ selectedItem, showEditModal, setShowEditModal, on
         setFormData(refData);
 
         setErrors({});
-        setShowEditModal(false);
+        setShowCreateModal(false);
       } else {
         validateForm(result);
       }
@@ -89,27 +78,26 @@ const UpdateSupplierModal = ({ selectedItem, showEditModal, setShowEditModal, on
     }
   };
 
-  if (!showEditModal) return null;
+  if (!showCreateModal) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3">
       <div className="bg-white rounded-custom shadow-xl border border-gray-200 w-full max-w-sm flex flex-col">
         
         {/* Header Section */}
-        <FormHeader headerTitle="Modify Supplier Record" onClick={() => handleCancel()} />
+        <FormHeader headerTitle="Create Category Record" onClick={() => handleCancel()} />
 
         <div className="p-4 overflow-y-auto flex-1">
-          <form id="update-supplier-form" onSubmit={handleSubmit} className="space-y-4">
+          <form id="create-category-form" onSubmit={handleSubmit} className="space-y-4">
             
-            {/* Product Name - Full Width with standardized subtle text-xs sizing */}
             <div className="flex flex-col space-y-1">
-              <label className="text-xs font-semibold text-gray-700">Supplier Name *</label>
+              <label className="text-xs font-semibold text-gray-700">Category Name *</label>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="Enter supplier name"
+                placeholder="Enter category name"
                 className={`w-full px-3 py-1.5 text-xs border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
                   errors.name ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                 }`}
@@ -119,8 +107,25 @@ const UpdateSupplierModal = ({ selectedItem, showEditModal, setShowEditModal, on
                 <p className="text-xs text-red-600 mt-0.5">{errors.name}</p>
               )}
             </div>
+            
+            <div className="flex flex-col space-y-1">
+              <label className="text-xs font-semibold text-gray-700">Category Tag *</label>
+              <input
+                type="text"
+                name="tag"
+                value={formData.tag}
+                onChange={handleChange}
+                placeholder="Enter category tag"
+                className={`w-full px-3 py-1.5 text-xs border rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                  errors.tag ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
+                }`}
+                required
+              />
+              {errors.tag && (
+                <p className="text-xs text-red-600 mt-0.5">{errors.tag}</p>
+              )}
+            </div>
 
-            {/* Remarks Explanatory View Block */}
             <div className="flex flex-col space-y-1">
               <label className="text-xs font-semibold text-gray-700">Remarks / Notes</label>
               <textarea
@@ -145,12 +150,12 @@ const UpdateSupplierModal = ({ selectedItem, showEditModal, setShowEditModal, on
           />
           <FormButton
             btnType="success"
-            btnLabel="Update"
+            btnLabel="Create"
             btnIcon="check" 
             isProcessing={isLoading}
             type="submit"
-            // disabled={isLoading}
-            form="update-supplier-form"
+            disabled={isLoading}
+            form="create-category-form"
           />
         </div>
 
@@ -159,4 +164,4 @@ const UpdateSupplierModal = ({ selectedItem, showEditModal, setShowEditModal, on
   );
 };
 
-export default UpdateSupplierModal;
+export default CreateCategoriesModal;

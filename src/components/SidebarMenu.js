@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import useAppViewModel from '../viewmodels/useAppViewModel.tsx';
 
 const drawerWidth = 240;
@@ -62,9 +62,14 @@ function SidebarMenu() {
   const selectMenu = useAppViewModel((state) => state.selectMenu);
   const toggleSidebar = useAppViewModel((state) => state.toggleSidebar);
   const [expandedMenus, setExpandedMenus] = useState({});
+  const isLoggedIn = useAppViewModel((state) => state.isLoggedIn);
+  const fetchInventoryCategories = useAppViewModel((state) => state.fetchInventoryCategories);
 
   const toggleExpand = (key) => {
     setExpandedMenus(prev => ({ ...prev, [key]: !prev[key] }));
+    if (isLoggedIn) {
+      fetchInventoryCategories();
+    }
   };
 
   return (

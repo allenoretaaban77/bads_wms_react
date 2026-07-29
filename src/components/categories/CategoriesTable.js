@@ -2,20 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { formatLongDate } from '../../utils/formatters';
 import Alert from '../../utils/alert';
 import { FormButton, FormThead } from '../../utils/themes.js';
-import { getSuppliersList, createSupplier, updateSupplier } from '../../api/suppliersService.js';
+import { getCategoriesList, createCategory, updateCategory } from '../../api/categoriesService.js';
 import { FormPagination, usePageControl } from '../../utils/pagination.js';
 import { useTableControl } from '../../utils/table.js';
 import { useAlertStore } from '../../utils/alert';
-import ViewSuppliersModal from './ViewSuppliersModal.js';
-import CreateSupplierModal from './CreateSupplierModal.js';
-import UpdateSupplierModal from './UpdateSupplierModal.js';
-import { useHandlerSupplier } from '../../utils/handlers.js';
+import ViewCategoriesModal from './ViewCategoriesModal.js';
+import CreateCategoriesModal from './CreateCategoriesModal.js';
+import UpdateCategoriesModal from './UpdateCategoriesModal.js';
+import { useHandlerCategories } from '../../utils/handlers.js';
+import useAppViewModel from '../../viewmodels/useAppViewModel.js';
 
-function SuppliersTable() {
+function CategoriesTable() {
   const alertStore = useAlertStore();
   const { currentPage, setCurrentPage, pageSize, totalItems, setTotalItems, totalPages, setTotalPages, handlePageSizeChange, handlePageChange } = usePageControl();
   const { sortField, sortOrder, error, setError, handleSort } = useTableControl();
-  const { selectedItem, setSelectedItem, showViewModal, setShowViewModal, showCreateModal, setShowCreateModal, showEditModal, setShowEditModal, loading, setLoading, handleRefresh, handleDelete } = useHandlerSupplier();
+  const { selectedItem, setSelectedItem, showViewModal, setShowViewModal, showCreateModal, setShowCreateModal, showEditModal, setShowEditModal, loading, setLoading, handleRefresh, handleDelete } = useHandlerCategories();
   
   // Filter states
   const [filteredData, setFilteredData] = useState([]);
@@ -23,9 +24,8 @@ function SuppliersTable() {
   const [isPaidFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Fetch suppliers data from API
   useEffect(() => {
-    const fetchSuppliers = async () => {
+    const fetchCategories = async () => {
       try {
         if (!sortOrder) setLoading(true);
         setError(null);
@@ -34,13 +34,13 @@ function SuppliersTable() {
           page: currentPage,
           pageSize: pageSize,
           search: searchTerm,
-          sort: sortField,
-          order: sortOrder,
+          sort: 'name',
+          order: 'ASC',
           record_status: recordStatusFilter !== 'all' ? recordStatusFilter : '',
           is_paid: isPaidFilter !== 'all' ? isPaidFilter : '',
         };
 
-        const result = await getSuppliersList(params);
+        const result = await getCategoriesList(params);
         
         if (result.success && result.data) {
           const data = result.data.data || result.data; 
@@ -52,14 +52,14 @@ function SuppliersTable() {
           setTotalPages(totalPages);
         } else {
           console.warn('API returned error:', result.error);
-          setError(result.error || 'Failed to load suppliers data');
+          setError(result.error || 'Failed to load category data');
           setFilteredData([]);
           setTotalItems(0);
           setTotalPages(0);
         }
       } catch (err) {
-        console.error('Error fetching suppliers:', err);
-        setError(`Failed to load suppliers data: ${err.message}`);
+        console.error('Error fetching categories:', err);
+        setError(`Failed to load category data: ${err.message}`);
         setFilteredData([]);
         setTotalItems(0);
         setTotalPages(0);
@@ -68,17 +68,17 @@ function SuppliersTable() {
       }
     };
 
-    fetchSuppliers();
-  }, [currentPage, pageSize, searchTerm, sortField, sortOrder, recordStatusFilter, isPaidFilter, alertStore.refreshSupplier]);
+    fetchCategories();
+  }, [currentPage, pageSize, searchTerm, sortField, sortOrder, recordStatusFilter, isPaidFilter, alertStore.refreshCategories]);
 
   const handleView = (item) => {
     setSelectedItem(item);
     setShowViewModal(true);
   };
 
-  const handleCreateSupplier = async (itemData) => {
+  const handleCreateCategory = async (itemData) => {
     try {
-      const result = await createSupplier(itemData);
+      const result = await createCategory(itemData);
       if (result.success) {
         // Close modal immediately
         setShowCreateModal(false);
@@ -86,7 +86,7 @@ function SuppliersTable() {
         // Show success alert
         alertStore.setAlert({
           show: true,
-          message: 'Supplier record created successfully!',
+          message: 'Category record created successfully!',
           type: 'success'
         });
         
@@ -95,30 +95,30 @@ function SuppliersTable() {
         }, 3000);
         
         setCurrentPage(1);
-        alertStore.setRefreshSupplier(prev => prev + 1);
+        alertStore.setRefreshCategories(prev => prev + 1);
       } 
       
       return result;
     } catch (err) {
-      setError('Failed to create supplier record.');
+      setError('Failed to create category record.');
       // Return error result
       return {
         success: false,
-        error: 'Failed to create supplier record.'
+        error: 'Failed to create category record.'
       };
     }
   };
 
-  const handleUpdateSupplier = async (itemData) => {
+  const handleUpdateCategory = async (itemData) => {
     try {
-      const result = await updateSupplier(itemData);
+      const result = await updateCategory(itemData);
       console.log(result.success);
       if (result.success) {
         setShowEditModal(false);
         
         alertStore.setAlert({
           show: true,
-          message: 'Supplier record updated successfully!',
+          message: 'Category record updated successfully!',
           type: 'success'
         });
 
@@ -127,16 +127,16 @@ function SuppliersTable() {
         }, 3000);
 
         setCurrentPage(1);
-        alertStore.setRefreshSupplier(prev => prev + 1); // Trigger data refresh
+        alertStore.setRefreshCategories(prev => prev + 1); // Trigger data refresh
       } 
       
       return result;
     } catch (err) {
-      setError('Failed to update supplier record error.');
+      setError('Failed to update category record error.');
 
       return {
         success: false,
-        error: 'Failed to update supplier record.'
+        error: 'Failed to update category record.'
       };
     }
   };
@@ -159,7 +159,7 @@ function SuppliersTable() {
               <label className="block font-semibold text-gray-600 mb-0.5">Search</label>
               <input
                 type="text"
-                placeholder="Search supplier..."
+                placeholder="Search category..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
@@ -208,7 +208,8 @@ function SuppliersTable() {
             [
               {"title":"#", "name":"idx", "align":"center", "class": "w-20"},
               {"title":"ID", "name":"id", "align":"center", "class": "w-20"},
-              {"title":"Supplier Name", "name":"name", "align":"left"},
+              {"title":"Category Name", "name":"name", "align":"left"},
+              {"title":"Category Tag", "name":"tag", "align":"left"},
               {"title":"Remarks / Notes", "name":"remarks", "align":"left"},
               {"title":"Date Created", "name":"date_created", "align":"left", "class": "w-40"},
               {"title":"Action", "name":"action", "default":1},
@@ -216,16 +217,6 @@ function SuppliersTable() {
           } />
 
           <tbody>
-            {/* {loading && (
-              <tr><td colSpan={30}>
-              <div className="flex justify-center items-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-button"></div>
-                <span className="ml-2 text-gray-600">Loading suppliers data...</span>
-              </div>
-              </td>
-              </tr>
-            )} */}
-
             {filteredData.map((item, index) => {
               const sequentialRowNumber = ((currentPage - 1) * pageSize) + index + 1;
               
@@ -241,6 +232,7 @@ function SuppliersTable() {
                   </td>
                   <td className="px-3 py-2 border-r text-sm text-center">{item.id}</td>
                   <td className="px-3 py-2 border-r text-sm">{item.name}</td>
+                  <td className="px-3 py-2 border-r text-sm">{item.tag}</td>
                   <td className="px-3 py-2 border-r text-sm">{item.remarks}</td>
                   <td className="px-3 py-2 border-r text-sm">{formatLongDate(item.date_created)}</td>
                   <td className="px-0 py-2 border-0">
@@ -298,23 +290,23 @@ function SuppliersTable() {
         loading={loading}
       />
         
-      <ViewSuppliersModal 
+      <ViewCategoriesModal 
         selectedItem={selectedItem}
         showViewModal={showViewModal}
         setShowViewModal={setShowViewModal}
       />
       
-      <CreateSupplierModal 
+      <CreateCategoriesModal 
         showCreateModal={showCreateModal}
         setShowCreateModal={setShowCreateModal}
-        onSave={handleCreateSupplier}
+        onSave={handleCreateCategory}
       />
       
-      <UpdateSupplierModal 
+      <UpdateCategoriesModal 
         selectedItem={selectedItem}
         showEditModal={showEditModal}
         setShowEditModal={setShowEditModal}
-        onSave={handleUpdateSupplier}
+        onSave={handleUpdateCategory}
       />
 
       <Alert 
@@ -328,4 +320,4 @@ function SuppliersTable() {
   );
 }
 
-export default SuppliersTable;
+export default CategoriesTable;

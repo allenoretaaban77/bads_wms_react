@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { login as loginApi } from '../api/authService';
 import { setAccessToken } from '../api/tokenService';
-import { APP_CONFIG } from '../config/constants';
+import { getCategoriesList } from '../api/categoriesService'; // <-- Replace with your actual API service function
 
 // localStorage keys
 const STORAGE_KEYS = {
@@ -28,6 +28,18 @@ interface UserData {
   date_updated: string;
 }
 
+export interface MenuItem {
+  key: string;
+  label: string;
+  title?: string;
+  children?: MenuItem[];
+}
+
+export interface CategoryOption {
+  value: string | number;
+  label: string;    
+}
+
 // 2. Define the Complete Store State and Actions Interface
 interface AppViewModelState {
   // State variables
@@ -42,16 +54,61 @@ interface AppViewModelState {
   sidebarCollapsed: boolean;
   formError: string;
   isLoading: boolean;
-  menuItems: Array<{ key: string; label: string; children?: Array<{ key: string; label: string }> }>;
+  isCategoriesLoading: boolean;
+  menuItems: MenuItem[];
+  
+  categories: Array<{ id: string | number; name: string }>; 
+  categoryDropdown: CategoryOption[];
 
   // Actions / Methods
   saveAuthState: (isLoggedIn: boolean, accessToken: string, userData: UserData | null, username: string) => void;
   setField: (name: string, value: any) => void;
   toggleSidebar: () => void;
-  selectMenu: (key: string, type: string, label: string) => void;
+  selectMenu: (key: string, title: string, label: string) => void;
+  fetchInventoryCategories: () => Promise<void>;
   login: () => Promise<{ success: boolean; error?: string; data?: any }>;
   logout: () => void;
 }
+
+// Base menu configuration (Inventory will be populated dynamically)
+const BASE_MENU_ITEMS: MenuItem[] = [
+  {
+    key: 'inventory',
+    label: 'Inventory',
+    title: 'Inventory Management',
+    children: [], // Populated dynamically via fetchInventoryCategories
+  },
+  {
+    key: 'replenishment',
+    label: 'Replenishment',
+    title: 'Stock Replenishment',
+    children: [
+      { key: 'replenishment_management', label: 'Stock Management', title: 'Stock Management' },
+      { key: 'suppliers', label: 'Suppliers', title: 'Suppliers' },
+    ],
+  },
+  { key: 'sales', label: 'Sales', title: 'Sales Management' },
+  { key: 'returns', label: 'Returns', title: 'Returns Management' },
+  { key: 'employees', label: 'Employees', title: 'Employees Management' },
+  {
+    key: 'reports',
+    label: 'Reports',
+    title: 'Daily Sales Reports',
+    children: [
+      { key: 'reports', label: 'Daily Sales - All', title: 'Daily Sales - All' },
+      { key: 'reports|cements|21', label: 'Daily Sales - Cement', title: 'Daily Sales - Cement' },
+      { key: 'reports|steel materials|1421', label: 'Daily Sales - RSB 10', title: 'Daily Sales - RSB 10' },
+      { key: 'reports|steel materials|1422', label: 'Daily Sales - RSB 12', title: 'Daily Sales - RSB 12' },
+      { key: 'reports|steel materials|1423', label: 'Daily Sales - RSB 16', title: 'Daily Sales - RSB 16' },
+      { key: 'reports|unmonitored', label: 'Daily Sales - Unmonitored', title: 'Daily Sales - Unmonitored' },
+      { key: 'ledger', label: 'Daily Business Ledger', title: 'Daily Business Ledger' },
+      { key: 'stockin', label: 'Stock-In (Purchases) Log', title: 'Stock-In (Purchases) Log' },
+      { key: 'monthly', label: 'Monthly Sales Report', title: 'Monthly Sales Report' },
+    ],
+  },
+  { key: 'categories', label: 'Categories', title: 'Categories' },
+  { key: 'logout', label: 'Logout' },
+];
 
 // Load initial state from localStorage
 const loadInitialState = (): Pick<AppViewModelState, 'isLoggedIn' | 'accessToken' | 'userData' | 'username'> => {
@@ -63,7 +120,7 @@ const loadInitialState = (): Pick<AppViewModelState, 'isLoggedIn' | 'accessToken
 
     if (accessToken && userData && isLoggedIn) {
       setAccessToken(accessToken);
-      
+
       return {
         isLoggedIn: true,
         accessToken,
@@ -74,7 +131,7 @@ const loadInitialState = (): Pick<AppViewModelState, 'isLoggedIn' | 'accessToken
   } catch (error) {
     console.error('Error loading initial state:', error);
   }
-  
+
   return {
     isLoggedIn: false,
     accessToken: '',
@@ -83,48 +140,8 @@ const loadInitialState = (): Pick<AppViewModelState, 'isLoggedIn' | 'accessToken
   };
 };
 
-const menuItems = [
-  { 
-    key: 'inventory', 
-    label: 'Inventory',
-    children: Object.entries(APP_CONFIG.INVENTORY_MENU).map(([key, value]) => ({
-      key: `inventory|${value.toLowerCase().replace(/[\s&]+/g, '_')}`, // e.g., 'inventory_nuts_bolts'
-      label: value,                                       // e.g., 'Nuts & Bolts'
-      title: `Inventory Management - `                        // e.g., 'Nuts & Bolts Management'
-    })),
-    title: 'Inventory Management'
-  },
-  { key: 'replenishment', label: 'Replenishment', title: 'Stock Replenishment',
-    children: [
-      { key: 'replenishment_management', label: 'Stock Management', title: 'Stock Management' },
-      { key: 'suppliers', label: 'Suppliers', title: 'Suppliers' },
-    ]
-  },
-  { key: 'sales', label: 'Sales', title: 'Sales Management' },
-  { key: 'returns', label: 'Returns', title: 'Returns Management' },
-  { key: 'employees', label: 'Employees', title: 'Employees Management' },
-  { key: 'reports', label: 'Reports', title: 'Daily Sales Reports',
-    children: [
-      { key: 'reports', label: 'Daily Sales - All', title: 'Daily Sales - All' },
-      { key: 'reports|cements|21', label: 'Daily Sales - Cement', title: 'Daily Sales - Cement' },
-      { key: 'reports|steel materials|1421', label: 'Daily Sales - RSB 10', title: 'Daily Sales - RSB 10' },
-      { key: 'reports|steel materials|1422', label: 'Daily Sales - RSB 12', title: 'Daily Sales - RSB 12' },
-      { key: 'reports|steel materials|1423', label: 'Daily Sales - RSB 16', title: 'Daily Sales - RSB 16' },
-      { key: 'reports|unmonitored', label: 'Daily Sales - Unmonitored', title: 'Daily Sales - Unmonitored' },
-      { key: 'ledger', label: 'Daily Business Ledger', title: 'Daily Business Ledger' },
-      { key: 'stockin', label: 'Stock-In (Purchases) Log', title: 'Stock-In (Purchases) Log' },
-      { key: 'monthly', label: 'Monthly Sales Report', title: 'Monthly Sales Report' },
-    ] 
-  },
-  { 
-    key: 'logout', 
-    label: 'Logout',
-  },
-];
-
 const initialState = loadInitialState();
 
-// 3. Pass <AppViewModelState> generic here to permanently clean up all "unknown" errors
 const useAppViewModel = create<AppViewModelState>((set, get) => ({
   ...initialState,
   password: '',
@@ -133,7 +150,10 @@ const useAppViewModel = create<AppViewModelState>((set, get) => ({
   sidebarCollapsed: false,
   formError: '',
   isLoading: false,
-  menuItems,
+  isCategoriesLoading: false,
+  menuItems: BASE_MENU_ITEMS,
+  categories: [],
+  categoryDropdown: [],
 
   saveAuthState: (isLoggedIn, accessToken, userData, username) => {
     try {
@@ -157,29 +177,58 @@ const useAppViewModel = create<AppViewModelState>((set, get) => ({
 
   toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
 
-  // 4. Safely uncommented and typed!
   selectMenu: (key: string, title: string, label: string) => {
     if (key === 'logout') {
-      get().logout(); // Works instantly!
+      get().logout();
       return;
     }
     set({ activeMenu: key, activeTitle: title, activeLabel: label });
   },
 
+  fetchInventoryCategories: async () => {
+    set({ isCategoriesLoading: true });
+    try {
+      const response = await getCategoriesList({order:'ASC', sort:'name'});
+      const rawCategories = response.data.data || response || [];
+      
+      const inventoryChildren = rawCategories.map((cat: { id?: string | number; name: string }) => ({
+        key: `inventory|${cat.name.toLowerCase().replace(/[\s&]+/g, '_')}`,
+        label: cat.name,
+        title: `Inventory Management - ${cat.name}`,
+      }));
+      
+      const dropdownOptions: CategoryOption[] = rawCategories.map((cat: { id: string | number; name: string }) => ({
+        value: cat.id, 
+        label: cat.name,
+      }));
+
+      set((state) => ({
+        isCategoriesLoading: false,
+        categories: rawCategories,
+        categoryDropdown: dropdownOptions, // Saved in store!
+        menuItems: state.menuItems.map((item) =>
+          item.key === 'inventory' ? { ...item, children: inventoryChildren } : item
+        ),
+      }));
+    } catch (error) {
+      console.error('Failed to fetch inventory categories:', error);
+      set({ isCategoriesLoading: false });
+    }
+  },
+
   login: async () => {
-    // Clean code: type assertions like 'as { username: string }' are no longer required
     const { username, password } = get();
-    
+
     if (!username && !password) {
       set({ formError: 'Please enter both username and password' });
       return { success: false, error: 'Please enter both username and password' };
     }
-    
+
     if (!username) {
       set({ formError: 'Username is required' });
       return { success: false, error: 'Username is required' };
     }
-    
+
     if (!password) {
       set({ formError: 'Password is required' });
       return { success: false, error: 'Password is required' };
@@ -192,9 +241,9 @@ const useAppViewModel = create<AppViewModelState>((set, get) => ({
 
       if (result.success) {
         const { data } = result;
-        
+
         setAccessToken(data.access_token || '');
-        
+
         const userData: UserData = {
           id: data.id,
           employee_id: data.employee_id,
@@ -208,21 +257,24 @@ const useAppViewModel = create<AppViewModelState>((set, get) => ({
           status: data.status,
           status_id: data.status_id,
           date_created: data.date_created,
-          date_updated: data.date_updated
+          date_updated: data.date_updated,
         };
-        
+
         get().saveAuthState(true, data.access_token || '', userData, username);
-        
-        set({ 
-          isLoggedIn: true, 
-          activeMenu: 'inventory', 
-          activeTitle: '', 
-          activeLabel: '', 
-          formError: '', 
+
+        set({
+          isLoggedIn: true,
+          activeMenu: 'inventory',
+          activeTitle: '',
+          activeLabel: '',
+          formError: '',
           isLoading: false,
           accessToken: data.access_token || '',
           userData,
         });
+
+        // Trigger category fetch upon successful login
+        get().fetchInventoryCategories();
       } else {
         set({ formError: result.error || 'Login failed', isLoading: false });
       }
@@ -236,11 +288,11 @@ const useAppViewModel = create<AppViewModelState>((set, get) => ({
 
   logout: () => {
     const isConfirmed = window.confirm('Are you sure you want to logout?');
-    
+
     if (isConfirmed) {
       setAccessToken('');
       get().saveAuthState(false, '', null, '');
-      
+
       set({
         isLoggedIn: false,
         username: '',
@@ -253,6 +305,7 @@ const useAppViewModel = create<AppViewModelState>((set, get) => ({
         accessToken: '',
         userData: null,
         isLoading: false,
+        menuItems: BASE_MENU_ITEMS, // Reset menu items back to default on logout
       });
     }
   },

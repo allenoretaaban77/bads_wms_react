@@ -8,7 +8,7 @@ import CreateInventoryModal from './CreateInventoryModal';
 import { formatCurrency } from '../../utils/formatters';
 import Alert from '../../utils/alert';
 import useAppViewModel from '../../viewmodels/useAppViewModel.tsx';
-import { FormButton, FormThSort, FormTh, FormThead } from '../../utils/themes.js';
+import { FormButton, FormThead } from '../../utils/themes.js';
 import { FormPagination, usePaginationStore } from '../../utils/pagination.js';
 
 function InventoryTable({ page_type }) {
@@ -18,7 +18,7 @@ function InventoryTable({ page_type }) {
     sortField, setSortField,
     sortOrder, setSortOrder,
     currentPage, setCurrentPage,
-    pageSize, setPageSize,
+    pageSize,
     totalItems, setTotalItems,
     totalPages, setTotalPages,
     handlePageChange,
@@ -26,7 +26,6 @@ function InventoryTable({ page_type }) {
   } = usePaginationStore();
 
   // Data and loading states
-  const [inventoryData, setInventoryData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingSummary, setLoadingSummary] = useState(true);
@@ -35,8 +34,6 @@ function InventoryTable({ page_type }) {
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [quantityFilter, setQuantityFilter] = useState('all');
-  const [recordStatusFilter, setRecordStatusFilter] = useState('all');
   
   // Modal states
   const [selectedItem, setSelectedItem] = useState(null);
@@ -55,7 +52,7 @@ function InventoryTable({ page_type }) {
   
   // Alert state
   const [alert, setAlert] = useState({ show: false, message: '', type: '' });
-  useEffect(() => { if (alert.show == true) { setTimeout(() => { setAlert({ show: false, message: '', type: '' })}, 3000); }}, [alert]);
+  useEffect(() => { if (alert.show === true) { setTimeout(() => { setAlert({ show: false, message: '', type: '' })}, 3000); }}, [alert]);
 
   // Refresh function to trigger data reload
   const handleRefresh = () => {
@@ -78,7 +75,6 @@ function InventoryTable({ page_type }) {
           sort: sortField,
           order: sortOrder,
           status: statusFilter !== 'all' ? statusFilter : '',
-          record_status: recordStatusFilter !== 'all' ? recordStatusFilter : ''
         };
 
         const result = await getInventoryList(params);
@@ -98,7 +94,6 @@ function InventoryTable({ page_type }) {
           setTotalNoStock(result.data?.totalNoStock || 0);
           setTotalLowStock(result.data?.totalLowStock || 0);
           setTotalInStock(result.data?.totalInStock || 0);
-          setInventoryData(data);
           setFilteredData(data);
           setTotalItems(total);
           setTotalPages(totalPages);
@@ -106,7 +101,6 @@ function InventoryTable({ page_type }) {
           setAlert({ show: true, message: result.error || 'Failed to load inventory data', type: 'error' });
           
           // Set empty data on error
-          setInventoryData([]);
           setFilteredData([]);
           setTotalItems(0);
           setTotalPages(0);
@@ -115,7 +109,6 @@ function InventoryTable({ page_type }) {
         setAlert({ show: true, message: 'Error fetching inventory:', type: 'error' });
         
         // Set empty data on error
-        setInventoryData([]);
         setFilteredData([]);
         setTotalItems(0);
         setTotalPages(0);
@@ -126,7 +119,7 @@ function InventoryTable({ page_type }) {
     };
 
     loadInventoryData();
-  }, [page_type, currentPage, pageSize, searchTerm, sortField, sortOrder, statusFilter, quantityFilter, recordStatusFilter, refreshKey]);
+  }, [page_type, currentPage, pageSize, searchTerm, sortField, sortOrder, statusFilter, refreshKey, setTotalItems, setTotalPages]);
 
   const handleView = (item) => {
     setSelectedItem(item);
@@ -354,13 +347,13 @@ function InventoryTable({ page_type }) {
         </div>
       </div>
       
-      {/* {error && (
+      {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 p-2 mb-1.5 rounded text-center">
           <strong>Error:</strong> {error}
         </div>
-      )} */}
+      )}
 
-      <div className="bg-white border border-gray-200 rounded-custom shadow-xs overflow-auto flex flex-col h-[calc(100vh-18.2rem)] scrollbar-thin">
+      <div className="bg-white border border-gray-200 rounded-custom shadow-xs overflow-auto flex flex-col h-[calc(100vh-17.6rem)] scrollbar-thin">
         
         <table className="w-full table-auto border-collapse">
           <FormThead sortOrder={sortOrder} sortField={sortField} handleSort={handleSort} data={[
@@ -377,7 +370,7 @@ function InventoryTable({ page_type }) {
             {"title":"Status", "name":"status", "align":"center"},
             {"title":"Actions", "name":"status", "default":1},
           ]} />
-          {!loading && !error && (
+          {!loading && (
             <tbody className="divide-y">
               {filteredData.map((item, index) => {
                 const quantityStatus = getQuantityStatus(item.current_qty, item.reorder_level);

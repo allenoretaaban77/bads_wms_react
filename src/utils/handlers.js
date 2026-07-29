@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { deleteSupplier } from '../api/suppliersService';
+import { deleteCategory } from '../api/categoriesService';
 import useAppViewModel from '../viewmodels/useAppViewModel';
 import { useAlertStore } from './alert';
 
@@ -11,6 +12,7 @@ export const useHandlerSupplier = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleDelete = async (id, type) => {
     if (window.confirm('Are you sure you want to DELETE this supplier?')) {
@@ -46,7 +48,8 @@ export const useHandlerSupplier = () => {
   };
 
   const handleRefresh = () => {
-    alertStore.setRefreshSupplier(prev => prev + 1)
+    setLoading(true);
+    alertStore.setRefreshSupplier(prev => prev + 1);
   }
 
   return {
@@ -54,6 +57,7 @@ export const useHandlerSupplier = () => {
     showViewModal, setShowViewModal,
     showCreateModal, setShowCreateModal,
     showEditModal, setShowEditModal,
+    loading, setLoading,
     handleRefresh,
     handleDelete,
   };
@@ -186,5 +190,64 @@ export const useHandlerDailyBusinessLedger = () => {
     handleRefresh,
     handleDelete,
     handleView
+  };
+}
+
+export const useHandlerCategories = () => {
+  const userData = useAppViewModel((state) => state.userData);
+  const alertStore = useAlertStore();
+  
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleDelete = async (id, type) => {
+    if (window.confirm('Are you sure you want to DELETE this category?')) {
+      try {
+        const result = await deleteCategory(id, userData.employee_id);
+        if (result.success) {
+          alertStore.setAlert({
+            show: true,
+            message: 'Category record successfully deleted.',
+            type: 'success'
+          });
+          
+          setTimeout(() => {
+            alertStore.setAlert({ show: false, message: '', type: '' });
+          }, 3000);
+          
+          handleRefresh();
+        } else {
+          alertStore.setAlert({
+            show: true,
+            message: 'Failed to delete category record.',
+            type: 'error'
+          });
+        }
+      } catch (err) {
+        alertStore.setAlert({
+          show: true,
+          message: 'Failed to delete category record.',
+          type: 'error'
+        });
+      }
+    }
+  };
+
+  const handleRefresh = () => {
+    setLoading(true);
+    alertStore.setRefreshCategories(prev => prev + 1)
+  };
+
+  return {
+    selectedItem, setSelectedItem,
+    showViewModal, setShowViewModal,
+    showCreateModal, setShowCreateModal,
+    showEditModal, setShowEditModal,
+    loading, setLoading,
+    handleRefresh,
+    handleDelete,
   };
 }

@@ -570,7 +570,7 @@ export const deleteInventoryItem = async (id, employee_id) => {
     });
 
     if (!response.ok) {
-      let errorMessage = 'Failed to delete inventory item';
+      let errorMessage = response.error || 'Failed to delete inventory item';
       try {
         const errorData = await response.json();
         errorMessage = errorData.message || errorData.error || errorMessage;

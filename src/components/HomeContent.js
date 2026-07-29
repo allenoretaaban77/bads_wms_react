@@ -10,6 +10,7 @@ import SuppliersTable from './suppliers/SuppliersTable.js';
 import StockInPurchasesLog from './reports/StockInPurchasesLog.js';
 import MonthlySalesReport from './reports/MonthlySalesReport.js';
 import DailyBusinessLedger from './reports/DailyBusinessLedger.js';
+import CategoriesTable from './categories/CategoriesTable.js';
 
 const descriptions = {
   profile: 'View your account details, role, and recent activity.',
@@ -54,6 +55,8 @@ function HomeContent() {
       return <MonthlySalesReport page_type={menuChild} />;
     case 'ledger':
       return <DailyBusinessLedger page_type={menuChild} />;
+    case 'categories':
+      return <CategoriesTable page_type={menuChild} />;
     default:
       // return <DailySalesReport page_type={menuChild} />;
   }

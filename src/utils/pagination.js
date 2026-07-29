@@ -38,10 +38,10 @@ export const FormPagination = ({
 }) => {
 
   if (loading) return (
-    <div className="bg-orange-50 text-orange-700 px-2 py-0 mb-1.5 text-left">
-      <div className="flex justify-center items-center py-2">
+    <div className="text-orange-700 px-2 pt-2 text-left">
+      <div className="flex justify-center items-center">
         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-orange-900"></div>
-        <span className="ml-2 ">Loading data...</span>
+        <span className="ml-3 pt-1">Loading data...</span>
       </div>
     </div>
   )
