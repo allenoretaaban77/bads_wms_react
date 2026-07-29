@@ -13,6 +13,7 @@ import { FormPagination, usePaginationStore } from '../../utils/pagination.js';
 
 function InventoryTable({ page_type }) {
   const userData = useAppViewModel((state) => state.userData);
+  const fetchInventoryCategories = useAppViewModel((state) => state.fetchInventoryCategories);
 
   const { 
     sortField, setSortField,
@@ -115,6 +116,8 @@ function InventoryTable({ page_type }) {
       } finally {
         setLoading(false);
         setLoadingSummary(false);
+
+        fetchInventoryCategories();
       }
     };
 

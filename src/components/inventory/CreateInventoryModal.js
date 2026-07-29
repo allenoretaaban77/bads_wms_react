@@ -17,7 +17,10 @@ style.textContent = `
 document.head.appendChild(style);
 
 const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
+  const categoryDropdown = useAppViewModel((state) => state.categoryDropdown);
   const userData = useAppViewModel((state) => state.userData);
+  const fetchInventoryCategories = useAppViewModel((state) => state.fetchInventoryCategories);
+
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     product_name: '',
@@ -189,9 +192,14 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   required
                 >
                   <option value="">Select Type</option>
-                  {Object.entries(APP_CONFIG.INVENTORY_TYPES).map(([key, value]) => (
+                  {/* {Object.entries(APP_CONFIG.INVENTORY_TYPES).map(([key, value]) => (
                     <option key={key} value={value} className="capitalize">
                       {value}
+                    </option>
+                  ))} */}
+                  {categoryDropdown.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
                     </option>
                   ))}
                 </select>

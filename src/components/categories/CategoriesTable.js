@@ -13,6 +13,8 @@ import { useHandlerCategories } from '../../utils/handlers.js';
 import useAppViewModel from '../../viewmodels/useAppViewModel.js';
 
 function CategoriesTable() {
+  const fetchInventoryCategories = useAppViewModel((state) => state.fetchInventoryCategories);
+
   const alertStore = useAlertStore();
   const { currentPage, setCurrentPage, pageSize, totalItems, setTotalItems, totalPages, setTotalPages, handlePageSizeChange, handlePageChange } = usePageControl();
   const { sortField, sortOrder, error, setError, handleSort } = useTableControl();
@@ -65,6 +67,8 @@ function CategoriesTable() {
         setTotalPages(0);
       } finally {
         setLoading(false);
+
+        fetchInventoryCategories();
       }
     };
 
