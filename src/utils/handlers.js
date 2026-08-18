@@ -71,6 +71,7 @@ export const useHandlerDailySalesReport = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleDelete = async (id, type) => {
     if (window.confirm('Are you sure you want to DELETE this supplier?')) {
@@ -119,6 +120,7 @@ export const useHandlerDailySalesReport = () => {
     showViewModal, setShowViewModal,
     showCreateModal, setShowCreateModal,
     showEditModal, setShowEditModal,
+    loading, setLoading,
     handleRefresh,
     handleDelete,
     handleView

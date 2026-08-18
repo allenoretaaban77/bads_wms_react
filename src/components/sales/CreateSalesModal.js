@@ -330,7 +330,28 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
   };  
 
   const inputRefs = useRef([]);
+  const tableContainerRef = useRef(null);
+
+  useEffect(() => {
+    if (items.length > 0 && tableContainerRef.current) {
+      // Small delay to ensure the DOM has rendered the new row
+      setTimeout(() => {
+        tableContainerRef.current.scrollTo({
+          top: tableContainerRef.current.scrollHeight,
+          behavior: 'smooth'
+        });
+        
+        // Focus the quantity input of the newly added item
+        const lastIndex = (items.length - 1 + 3) * 2;
+        if (inputRefs.current[lastIndex]) {
+          inputRefs.current[lastIndex].focus();
+        }
+      }, 300);
+    }
+  }, [items.length]);
+
   const handleKeyDown = (e, index) => {
+
     if (e.key === 'Enter') {
       e.preventDefault(); // Prevent form submission
       
@@ -531,7 +552,10 @@ const CreateSalesModal = ({ showCreateModal, setShowCreateModal, onSave }) => {
               )}
             </div>
             
-            <div className="border border-gray-200 rounded flex-1 overflow-y-auto min-h-0 bg-white shadow-inner">
+            <div 
+              ref={tableContainerRef}
+              className="border border-gray-200 rounded flex-1 overflow-y-auto min-h-0 bg-white shadow-inner"
+            >
               <table className="min-w-full text-left text-xs table-auto border-collapse">
                 <FormModalThead data={[
                   {"title":"#", "class":"pl-2 w-10 text-center"},

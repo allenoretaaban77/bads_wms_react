@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { formatCurrency, formatLongDate, getTablePaymentStatus } from '../../utils/formatters';
+import { formatCurrency, formatLongDate } from '../../utils/formatters';
 import { APP_CONFIG } from '../../config/constants';
 import Alert from '../../utils/alert';
 import { FormButton, FormThead } from '../../utils/themes.js';
@@ -13,9 +13,9 @@ import ViewDailySalesItemsModal from './ViewDailySalesItemsModal.js';
 
 function DailySalesReport({ page_type, param }) {
   const alertStore = useAlertStore();
-  const { currentPage, setCurrentPage, pageSize, setPageSize, totalItems, setTotalItems, totalPages, setTotalPages, handlePageSizeChange, handlePageChange } = usePageControl();
-  const { sortField, setSortField, sortOrder, setSortOrder, loading, setLoading, error, setError, handleSort } = useTableControl();
-  const { selectedItem, setSelectedItem, showViewModal, setShowViewModal, showCreateModal, setShowCreateModal, showEditModal, setShowEditModal, handleRefresh, handleDelete, handleView } = useHandlerDailySalesReport();
+  const { currentPage, pageSize, totalItems, setTotalItems, totalPages, setTotalPages, handlePageSizeChange, handlePageChange } = usePageControl();
+  const { sortField, sortOrder, error, setError, handleSort } = useTableControl();
+  const { selectedItem, setSelectedItem, showViewModal, setShowViewModal, handleRefresh, handleDelete, handleView, loading, setLoading } = useHandlerDailySalesReport();
   const [saleDate, satSalesData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
