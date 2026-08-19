@@ -1,15 +1,10 @@
 import React from 'react';
 import { getStatusTextColor } from '../../utils/statusColors';
 import { FormButton, FormHeader } from '../../utils/themes.js';
+import { formatCurrency } from '../../utils/formatters';
 
 const ViewInventoryModal = ({ selectedItem, showViewModal, setShowViewModal }) => {
   if (!showViewModal || !selectedItem) return null;
-
-  // Safe fallback utility for numeric presentation values
-  const formatCurrency = (value) => {
-    const num = Number(value);
-    return isNaN(num) ? '₱ 0.00' : `₱ ${num.toFixed(2)}`;
-  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3">
@@ -44,7 +39,7 @@ const ViewInventoryModal = ({ selectedItem, showViewModal, setShowViewModal }) =
 
             <div>
               <span className="block font-semibold text-gray-500 mb-0.5">Category</span>
-              <p className="text-gray-900 font-medium">{selectedItem.type || '-'}</p>
+              <p className="text-gray-900 font-medium capitalize">{selectedItem.type || '-'}</p>
             </div>
 
             <div className="border-t border-gray-100 pt-2">
@@ -59,7 +54,7 @@ const ViewInventoryModal = ({ selectedItem, showViewModal, setShowViewModal }) =
 
             <div className="border-t border-gray-100 pt-2">
               <span className="block font-semibold text-gray-500 mb-0.5">Tracking Method</span>
-              <p className="text-gray-900 font-medium">{selectedItem.tracking_method || '-'}</p>
+              <p className="text-gray-900 font-medium capitalize">{selectedItem.tracking_method.replace('_', ' ') || '-'}</p>
             </div>
 
             <div className="border-t border-gray-100 pt-2">

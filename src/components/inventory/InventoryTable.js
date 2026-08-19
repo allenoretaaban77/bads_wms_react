@@ -371,6 +371,7 @@ function InventoryTable({ page_type }) {
             {"title":"Total Inventory Value", "name":"total_inventory_value", "align":"right"},
             {"title":"Total Sold", "name":"total_sold", "align":"right"},
             {"title":"Status", "name":"status", "align":"center"},
+            {"title":"Category", "name":"status", "align":"center"},
             {"title":"Actions", "name":"status", "default":1},
           ]} />
           {!loading && (
@@ -419,6 +420,7 @@ function InventoryTable({ page_type }) {
                         {item.status}
                       </span>
                     </td>
+                    <td className="px-4 py-3 border-r text-xs text-left capitalize">{item.type}</td>
                     <td className="px-0 py-2 border-0">
                       <div className="flex justify-center space-x-1">
                         <button

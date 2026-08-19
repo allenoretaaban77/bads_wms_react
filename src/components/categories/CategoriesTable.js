@@ -236,6 +236,7 @@ function CategoriesTable() {
                   <td className="px-3 py-2 border-r text-sm">{item.remarks}</td>
                   <td className="px-3 py-2 border-r text-sm">{formatLongDate(item.date_created)}</td>
                   <td className="px-0 py-2 border-0">
+                    {item.remarks !== 'System Generated' && (
                     <div className="flex justify-center space-x-1">
                       <button
                         onClick={() => handleView(item)}
@@ -266,6 +267,7 @@ function CategoriesTable() {
                         </svg>
                       </button>
                     </div>
+                    )}
                   </td>
                 </tr>
               );

@@ -189,6 +189,7 @@ const useAppViewModel = create<AppViewModelState>((set, get) => ({
     set({ isCategoriesLoading: true });
     try {
       const response = await getCategoriesList({order:'ASC', sort:'name'});
+      console.log('fetchInventoryCategories', response);
       const rawCategories = response.data.data || response || [];
       
       const inventoryChildren = rawCategories.map((cat: { id?: string | number; name: string }) => ({
