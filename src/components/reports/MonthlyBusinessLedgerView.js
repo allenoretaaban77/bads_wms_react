@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { formatCurrency, formatLongDate } from '../../utils/formatters';
 import Alert from '../../utils/alert';
 import { FormButton, FormThead } from '../../utils/themes.js';
-import { getDailyBusinessLedger, updateReport, updateLedgerValue } from '../../api/reportsService.js';
+import { updateReport, updateLedgerValue } from '../../api/reportsService.js';
 import { FormPagination } from '../../utils/pagination.js';
 import { useAlertStore } from '../../utils/alert';
 import { usePageControl } from '../../utils/pagination.js';
@@ -10,8 +10,12 @@ import { useTableControl } from '../../utils/table.js';
 import { useHandlerDailyBusinessLedger } from '../../utils/handlers.js';
 import ViewDailySalesItemsModal from './ViewDailySalesItemsModal.js';
 import UpdateLedgerValueModal from './UpdateLedgerValueModal.js';
+import MonthlyBusinessLedger from './MonthlyBusinessLedger';
+import DatePicker from 'react-datepicker';
+import { getDailyBusinessLedger, updateReportMonthly } from '../../api/monthlyReportService.js';
+import GenerateMonthlyLedgerModal from './GenerateMonthlyLedgerModal.js';
 
-function DailyBusinessLedger() {
+function MonthlyBusinessLedgerView({ selectedDate }) {
   const alertStore = useAlertStore();
   const { currentPage, setCurrentPage, pageSize, setPageSize, totalItems, setTotalItems, totalPages, setTotalPages, handlePageSizeChange, handlePageChange } = usePageControl();
   const { sortField, setSortField, sortOrder, setSortOrder, error, setError, handleSort } = useTableControl();
@@ -22,6 +26,8 @@ function DailyBusinessLedger() {
   const [tableHeader, setTableHeader] = useState([]);
   const [monitoredItems, setMonitoredItems] = useState([]);
   const [monitoredIds, setMonitoredIds] = useState([]);
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const [generateData, setGenerateData] = useState([]);
   
   // Summary states
   const [loadingSummary, setLoadingSummary] = useState(false);
@@ -34,79 +40,132 @@ function DailyBusinessLedger() {
   const [totalTuboRSB, setTotalTuboRSB] = useState(0);
   const [totalPuhunanAll, setTotalPuhunanAll] = useState(0);
   const [totalTuboAll, setTotalTuboAll] = useState(0);
+  const [initialMoneyOnHand, setInitialMoneyOnHand] = useState(0);
+  const [initialPuhunan, setInitialPuhunan] = useState(0);
+  const [initialTubo, setInitialTubo] = useState(0);
+  const [finalMoneyOnHand, setFinalMoneyOnHand] = useState(0);
+  const [finalPuhunan, setFinalPuhunan] = useState(0);
+  const [finalTubo, setFinalTubo] = useState(0);
+  const [reportId, setReportId] = useState(0);
   
   useEffect(() => { if (alertStore.alert.show == true) { setTimeout(() => { alertStore.setAlert({ show: false, message: '', type: '' })}, 3000); }}, [alertStore.alert]);
 
   useEffect(() => {
-    const loadsatSalesData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const params = {
-          page: currentPage,
-          pageSize: pageSize,
-          search: searchTerm,
-          sort: sortField,
-          order: sortOrder,
-        };
+    refreshSalesData();
+  }, [selectedDate]);
 
-        const result = await getDailyBusinessLedger(params);
-        
-        // Check if API call was successful and returned data
-        if (result.success && result.data) {
-          // Handle different response structures
-          const data = result.data.data || result.data; // Some APIs return {data: [...]}, others return [...]
-          const total = result.data.total || data.length;
-          const totalPages = result.data.totalPages || Math.ceil(total / pageSize);
-          const header = JSON.parse(result.data?.headers);
-          const monitored_items = result.data.monitored_items || [];
-          const mids = result.data.mids || [];
-          
-          satSalesData(data);
-          setMonitoredItems(monitored_items);
-          setMonitoredIds(mids);
-          setFilteredData(data);
-          setTotalItems(total);
-          setTotalPages(totalPages);
-          setTableHeader(header);
+  const refreshSalesData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const params = {
+        page: currentPage,
+        pageSize: pageSize,
+        search: searchTerm,
+        sort: sortField,
+        order: sortOrder,
+        date: selectedDate
+      };
 
-          setTotalPuhunan(result.data?.totalPuhunan || 0);
-          setTotalTubo(result.data?.totalTubo || 0);
-          setTotalSales(result.data?.totalSales || 0);
-          setTotalPuhunanCement(result.data?.totalPuhunanCement || 0);
-          setTotalTuboCement(result.data?.totalTuboCement || 0);
-          setTotalPuhunanRSB(result.data?.totalPuhunanRSB || 0);
-          setTotalTuboRSB(result.data?.totalTuboRSB || 0);
-          setTotalPuhunanAll(result.data?.totalPuhunanAll || 0);
-          setTotalTuboAll(result.data?.totalTuboAll || 0);
-        } else {
-          // Handle API error response
-          console.warn('API returned error:', result.error);
-          setError(result.error || 'Failed to load inventory data');
-          
-          // Set empty data on error
-          satSalesData([]);
-          setFilteredData([]);
-          setTotalItems(0);
-          setTotalPages(0);
-        }
-      } catch (err) {
-        console.error('Error fetching inventory:', err);
-        setError(`Failed to load inventory data: ${err.message}`);
+      const result = await getDailyBusinessLedger(params);
+      
+      // Check if API call was successful and returned data
+      if (result.success && result.data) {
+        // Handle different response structures
+        const data = result.data.data || result.data; // Some APIs return {data: [...]}, others return [...]
+        const total = result.data.total || data.length;
+        const totalPages = result.data.totalPages || Math.ceil(total / pageSize);
+        const header = JSON.parse(result.data?.headers);
+        const monitored_items = result.data.monitored_items || [];
+        const mids = result.data.mids || [];
+        
+        satSalesData(data);
+        setMonitoredItems(monitored_items);
+        setMonitoredIds(mids);
+        setFilteredData(data);
+        setTotalItems(total);
+        setTotalPages(totalPages);
+        setTableHeader(header);
+
+        setTotalPuhunan(result.data?.totalPuhunan || 0);
+        setTotalTubo(result.data?.totalTubo || 0);
+        setTotalSales(result.data?.totalSales || 0);
+        setTotalPuhunanCement(result.data?.totalPuhunanCement || 0);
+        setTotalTuboCement(result.data?.totalTuboCement || 0);
+        setTotalPuhunanRSB(result.data?.totalPuhunanRSB || 0);
+        setTotalTuboRSB(result.data?.totalTuboRSB || 0);
+        setTotalPuhunanAll(result.data?.totalPuhunanAll || 0);
+        setTotalTuboAll(result.data?.totalTuboAll || 0);
+        setInitialMoneyOnHand(result.data?.initialMoneyOnHand || 0);
+        setInitialPuhunan(result.data?.initialPuhunan || 0);
+        setInitialTubo(result.data?.initialTubo || 0);
+        setFinalMoneyOnHand(result.data?.finalMoneyOnHand || 0);
+        setFinalPuhunan(result.data?.finalPuhunan || 0);
+        setFinalTubo(result.data?.finalTubo || 0);
+        setReportId(result.data?.id || 0);
+      } else {
+        // Handle API error response
+        console.warn('API returned error:', result.error);
+        setError(result.error || 'Failed to load inventory data');
         
         // Set empty data on error
         satSalesData([]);
         setFilteredData([]);
         setTotalItems(0);
         setTotalPages(0);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (err) {
+      console.error('Error fetching inventory:', err);
+      setError(`Failed to load inventory data: ${err.message}`);
+      
+      // Set empty data on error
+      satSalesData([]);
+      setFilteredData([]);
+      setTotalItems(0);
+      setTotalPages(0);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    loadsatSalesData();
-  }, [currentPage, pageSize, searchTerm, sortField, sortOrder, alertStore.refreshDailySalesReport]);
+  const handleShowGenerateModal = () => {
+    setGenerateData({
+      ...generateData,
+      date_value: selectedDate,
+      initial_money_on_hand: initialMoneyOnHand,
+      initial_puhunan: initialPuhunan, 
+      initial_tubo: initialTubo
+    });
+    setShowGenerateModal(true);
+  };
+
+  const handleGenerateLedger = async (selectedMonth, selectedYear, runningMoneyOnHand, runningTubo, runningPuhunan) => {
+    try {
+      setShowGenerateModal(false);
+      setLoading(true);
+      
+      // Add your generation API call logic here, e.g.:
+      // await generateMonthlyLedgerApi({ month: selectedMonth, year: selectedYear });
+      const result = await updateReportMonthly(selectedMonth + ', ' + selectedYear, runningMoneyOnHand, runningTubo, runningPuhunan);
+
+      alertStore.setAlert({
+        show: true,
+        message: `Monthly ledger for ${selectedMonth}/${selectedYear} updated successfully.`,
+        type: 'success'
+      });
+
+      refreshSalesData();
+    } catch (err) {
+      alertStore.setAlert({
+        show: true,
+        message: 'Failed to generate monthly ledger.',
+        type: 'error'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const hanldeUpdate = (date) => {
     if (window.confirm('Are you sure you want to UPDATE this report?')) {
@@ -143,8 +202,6 @@ function DailyBusinessLedger() {
   }
 
   const handleExpensesValue = (item, valueType) => {
-    // console.log(valueType, item);
-
     if(item[`ex_${valueType}`] == null) {
       alertStore.setAlert({
         show: true,
@@ -177,11 +234,16 @@ function DailyBusinessLedger() {
       ...item,
       ledgerValueToUpdate: valueType
     });
+
     setShowLedgerValueModal(true);
   }
 
   const handleSaveLedgerValue = async (data) => {
-    console.log("handleSaveLedgerValue", data);
+    data.initialMoneyOnHand = initialMoneyOnHand;
+    data.initialPuhunan = initialPuhunan;
+    data.initialTubo = initialTubo;
+    data.date = selectedDate;
+    
     try {
       const result = await updateLedgerValue(data);
       if (result.success) {
@@ -191,7 +253,7 @@ function DailyBusinessLedger() {
           type: 'success'
         });
         
-        handleRefresh();
+        refreshSalesData();
         setTimeout(() => {handleRefresh()}, 1000);
       } else {
         alertStore.setAlert({
@@ -226,44 +288,33 @@ function DailyBusinessLedger() {
             </div>
           )}
           {!loadingSummary && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-9 gap-2 mb-0.5">
-            <div className="text-center">
-              <div className="text-xl font-bold text-red-400">{formatCurrency(totalPuhunan)}</div>
-              <div className="text-xs text-gray-700">Puhunan</div>
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 mr-3">
+              <div className="text-right">
+                <div className="text-sm text-red-400">Puhunan: <font className="font-bold">{formatCurrency(totalPuhunan)}</font></div>
+                <div className="text-sm text-orange-400">Tubo: <font className="font-bold">{formatCurrency(totalTubo)}</font></div>
+                <div className="text-sm text-yellow-400">Total Sales: <font className="font-bold">{formatCurrency(totalSales)}</font></div>
+              </div>
+              <div className="text-right">
+                <div className="text-sm text-green-400">Puhunan Cement: <font className="font-bold">{formatCurrency(totalPuhunanCement)}</font></div>
+                <div className="text-sm text-blue-400">Tubo Cement: <font className="font-bold">{formatCurrency(totalTuboCement)}</font></div>
+              </div>
+              <div className="text-right">
+                <div className="text-sm text-violet-400">Puhunan RSB: <font className="font-bold">{formatCurrency(totalPuhunanRSB)}</font></div>
+                <div className="text-sm text-pink-400">Tubo RSB: <font className="font-bold">{formatCurrency(totalTuboRSB)}</font></div>
+              </div>
+              <div className="text-right">
+                <div className="text-sm text-gray-400">Starting Money On Hand: <font className="font-bold">{formatCurrency(initialMoneyOnHand)}</font></div>
+                <div className="text-sm text-gray-600">Starting Puhunan: <font className="font-bold">{formatCurrency(initialPuhunan)}</font></div>
+                <div className="text-sm text-gray-800">Starting Tubo: <font className="font-bold">{formatCurrency(initialTubo)}</font></div>
+              </div>
+              <div className="text-right">
+                <div className="text-sm text-emerald-700">Final Money On Hand: <font className="font-bold">{formatCurrency(finalMoneyOnHand)}</font></div>
+                <div className="text-sm text-rose-700">Final Puhunan: <font className="font-bold">{formatCurrency(finalPuhunan)}</font></div>
+                <div className="text-sm text-sky-700">Final Tubo: <font className="font-bold">{formatCurrency(finalTubo)}</font></div>
+              </div>
             </div>
-            <div className="text-center">
-              <div className="text-xl font-bold text-orange-400">{formatCurrency(totalTubo)}</div>
-              <div className="text-xs text-gray-700">Tubo</div>
-            </div>
-            <div className="text-center">
-              <div className="text-xl font-bold text-yellow-400">{formatCurrency(totalSales)}</div>
-              <div className="text-xs text-gray-700">Total Sales</div>
-            </div>
-            <div className="text-center">
-              <div className="text-xl font-bold text-green-400">{formatCurrency(totalPuhunanCement)}</div>
-              <div className="text-xs text-gray-700">Puhunan Cement</div>
-            </div>
-            <div className="text-center">
-              <div className="text-xl font-bold text-blue-400">{formatCurrency(totalTuboCement)}</div>
-              <div className="text-xs text-gray-700">Tubo Cement</div>
-            </div>
-            <div className="text-center">
-              <div className="text-xl font-bold text-violet-400">{formatCurrency(totalPuhunanRSB)}</div>
-              <div className="text-xs text-gray-700">Puhunan RSB</div>
-            </div>
-            <div className="text-center">
-              <div className="text-xl font-bold text-pink-400">{formatCurrency(totalTuboRSB)}</div>
-              <div className="text-xs text-gray-700">Tubo RSB</div>
-            </div>
-            <div className="text-center">
-              <div className="text-xl font-bold text-cyan-400">{formatCurrency(totalPuhunanAll)}</div>
-              <div className="text-xs text-gray-700">Total Puhunan</div>
-            </div>
-            <div className="text-center">
-              <div className="text-xl font-bold text-gold-400">{formatCurrency(totalTuboAll)}</div>
-              <div className="text-xs text-gray-700">Total Tubo</div>
-            </div>
-          </div>
+          </>
           )}
         </div>
 
@@ -271,7 +322,7 @@ function DailyBusinessLedger() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 pt-2">
             
-            <div className="lg:col-span-11 text-xs mt-2">
+            <div className="lg:col-span-10 text-xs mt-2">
               Showing {filteredData.length} of {totalItems} items
             </div>
                         
@@ -280,7 +331,17 @@ function DailyBusinessLedger() {
                 btnType="affirm"
                 btnLabel="Refresh"
                 btnIcon="refresh"
-                onClick={() => handleRefresh()} 
+                onClick={() => refreshSalesData()} 
+                className="w-full"
+              />
+            </div>
+                                    
+            <div className="text-xs lg:col-span-1">
+              <FormButton
+                btnType="primary"
+                btnLabel="Update"
+                btnIcon="refresh"
+                onClick={() => handleShowGenerateModal()} 
                 className="w-full"
               />
             </div>
@@ -295,9 +356,9 @@ function DailyBusinessLedger() {
         </div>
       )}
 
-      <div className="block bg-white border border-gray-200 rounded-custom shadow-sm h-[calc(100vh-15.2rem)] w-[calc(100vw-13.5rem)] overflow-auto scrollbar-thin flex-shrink-0">
+      <div className="block bg-white border border-gray-200 rounded-custom shadow-sm h-[calc(100vh-15.7rem)] w-[calc(100vw-13.5rem)] overflow-auto scrollbar-thin flex-shrink-0">
 
-        <table className="text-sm border-collapse min-w-[3000px] w-full">
+        <table className="text-sm border-collapse min-w-[4000px] w-full">
           <FormThead sortOrder={sortOrder} sortField={sortField} handleSort={handleSort} data={tableHeader} />
           <tbody>
             {filteredData.map((item, index) => {
@@ -309,7 +370,7 @@ function DailyBusinessLedger() {
                   }`}
                 >
                   <td className="px-3 py-2 border-r text-sm font-semibold text-green-900 text-right">{index + 1}</td>
-                  <td className="px-3 py-2 border-r text-sm">{formatLongDate(item.date)}</td>
+                  <td className="px-3 py-2 border-r text-sm">{formatLongDate(item.report_date)}</td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.puhunan) }</td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.tubo)}</td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.total_sales)}</td>
@@ -320,13 +381,12 @@ function DailyBusinessLedger() {
                         <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item[`p_${value.id}`] || 0)}</td>
                         <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item[`t_${value.id}`] || 0)}</td>
                         <td 
-                          // title={`${value.date_created.slice(0, 10)} Expenses:\r\n \r\nAmount: ${formatCurrency(item[`ex_${value.id}`] || 0)}\r\nDetails: ${item[`ex_${value.id}_details`] || ''}`}
                           onClick={() => handleUpdateValue(item, value.id)}
                           className="px-3 py-2 border-r text-sm text-right font-bold cursor-pointer hover:text-orange-100 hover:bg-green-500 relative overflow-visible group"
                         >
                           {formatCurrency(item[`ex_${value.id}`] || 0)}
                           <span className="invisible group-hover:visible absolute top-0 left-full ml-1.5 mt-1.5 w-max max-w-[350px] z-50 bg-green-900 text-white text-xs p-2 rounded shadow-lg pointer-events-none whitespace-pre-line text-left">   
-                            {`Date: ${item.date.slice(0, 10)}
+                            {`Date: ${item.date}
                             Amount: ${formatCurrency(item[`ex_${value.id}`] || 0)}
                             
                             ${item[`ex_${value.id}_details`] || ''}`}
@@ -337,26 +397,24 @@ function DailyBusinessLedger() {
                   })}
 
                   <td 
-                    // title={`${item.date.slice(0, 10)}:\r\n \r\nAmount: ${formatCurrency(item.hardware || 0)}\r\nDetails: ${item.hardware_details || ''}`}
                     onClick={() => handleUpdateValue(item, "hardware")}
                     className="px-3 py-2 border-r text-sm text-right font-bold cursor-pointer hover:text-orange-100 hover:bg-green-500 relative overflow-visible group"
                   >
                     {formatCurrency(item.hardware || 0)}
                     <span className="invisible group-hover:visible absolute top-0 left-full ml-1.5 mt-1.5 w-max max-w-[350px] z-50 bg-green-900 text-white text-xs p-2 rounded shadow-lg pointer-events-none whitespace-pre-line text-left">   
-                      {`Date: ${item.date.slice(0, 10)}
+                      {`Date: ${item.date}
                       Amount: ${formatCurrency(item.hardware || 0)}
                       
                       ${item.hardware_details || ''}`}
                     </span>
                   </td>
                   <td 
-                    // title={`${item.date.slice(0, 10)}:\r\n \r\nAmount: ${formatCurrency(item.bahay || 0)}\r\nDetails: ${item.bahay_details || ''}`}
                     onClick={() => handleUpdateValue(item, "bahay")}
                     className="px-3 py-2 border-r text-sm text-right font-bold cursor-pointer hover:text-orange-100 hover:bg-green-500 relative overflow-visible group"
                   >
                     {formatCurrency(item.bahay || 0)}
                     <span className="invisible group-hover:visible absolute top-0 left-full ml-1.5 mt-1.5 w-max max-w-[350px] z-50 bg-green-900 text-white text-xs p-2 rounded shadow-lg pointer-events-none whitespace-pre-line text-left">   
-                      {`Date: ${item.date.slice(0, 10)}
+                      {`Date: ${item.date}
                       Amount: ${formatCurrency(item.bahay || 0)}
                       
                       ${item.bahay_details || ''}`}
@@ -366,18 +424,8 @@ function DailyBusinessLedger() {
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.money_on_hand || 0)}</td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.total_puhunan || 0)}</td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.total_tubo || 0)}</td>
-                  <td className="px-0 py-2 border-0">
+                  {/* <td className="px-0 py-2 border-0">
                     <div className="flex justify-center space-x-1">
-                      {/* <button
-                        onClick={() => handleView(item)}
-                        className="text-blue-600 hover:text-blue-800 px-0 py-1 rounded hover:bg-blue-50 transition-colors"
-                        title="View"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                      </button> */}
                       <button
                         onClick={() => hanldeUpdate(item.date)}
                         className="text-orange-600 hover:text-orange-800 px-0 py-1 rounded hover:bg-orange-50 transition-colors"
@@ -388,7 +436,7 @@ function DailyBusinessLedger() {
                         </svg>
                       </button>
                     </div>
-                  </td>
+                  </td> */}
                 </tr>
               );
             })}
@@ -428,6 +476,13 @@ function DailyBusinessLedger() {
         onUpdate={handleSaveLedgerValue}
       />
 
+      <GenerateMonthlyLedgerModal
+        show={showGenerateModal}
+        onClose={() => setShowGenerateModal(false)}
+        onGenerate={handleGenerateLedger}
+        selectedItem={generateData}
+      />
+
       <Alert 
         show={alertStore.alert.show}
         message={alertStore.alert.message}
@@ -438,5 +493,5 @@ function DailyBusinessLedger() {
   );
 }
 
-export default DailyBusinessLedger;
+export default MonthlyBusinessLedgerView;
 

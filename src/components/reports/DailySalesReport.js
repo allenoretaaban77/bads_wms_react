@@ -40,7 +40,6 @@ function DailySalesReport({ page_type, param }) {
           pageType: page_type,
           inventoryId: param || ""
         };
-        console.log(param, params);
 
         const result = await getDailyReports(params);
         

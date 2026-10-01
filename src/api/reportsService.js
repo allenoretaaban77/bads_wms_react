@@ -160,6 +160,7 @@ export const getDailyReportItems = async (item, params = {}) => {
 export const updateReport = async (date) => {
   try {
     const formData = new URLSearchParams();
+    console.log('update report', date);
     formData.append('date', date);
 
     const response = await fetch(`${API_BASE_URL}/reports/updatereport`, {

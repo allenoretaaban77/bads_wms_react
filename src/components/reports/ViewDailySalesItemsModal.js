@@ -73,9 +73,9 @@ function ViewDailySalesItemsModal({ show, onClose, onDelete, onUpdateTable, item
                       {"title":"Sales Reference No", "class":"py-2 text-left"},
                       {"title":"Product Name", "class":"py-2 text-left"},
                       {"title":"Quantity", "class":"py-2 text-right w-30"},
-                      // {"title":"Cost", "class":"py-2 text-right w-30"},
                       {"title":"Price", "class":"py-2 text-right w-30"},
                       {"title":"Total Sales", "class":"py-2 pl-5 text-right w-30"},
+                      {"title":"Cost", "class":"py-2 text-right w-30"},
                       {"title":"Puhunan", "class":"py-2 text-right w-30"},
                       {"title":"Tubo", "class":"py-2 text-right w-30"},
                     ]} />
@@ -97,14 +97,14 @@ function ViewDailySalesItemsModal({ show, onClose, onDelete, onUpdateTable, item
                           <td className="px-3 py-2 text-gray-800 font-medium text-right">
                             {Number(item.qty_sold)}
                           </td>
-                          {/* <td className="px-3 py-2 text-right font-bold text-gray-700 align-middle">
-                            {formatCurrency(item.cost_per_unit)}
-                          </td> */}
                           <td className="px-3 py-2 text-right font-bold text-gray-700 align-middle">
                             {formatCurrency(item.price_per_unit)}
                           </td>
                           <td className="px-3 py-2 text-right font-bold text-gray-700 align-middle">
                             {formatCurrency(item.total_sales)}
+                          </td>
+                          <td className="px-3 py-2 text-right font-bold text-gray-700 align-middle">
+                            {formatCurrency(item.cost_per_unit)}
                           </td>
                           <td className="px-3 py-2 text-right font-bold text-gray-700 align-middle">
                             {formatCurrency(item.puhunan)}
@@ -128,6 +128,9 @@ function ViewDailySalesItemsModal({ show, onClose, onDelete, onUpdateTable, item
                           </td>
                           <td className="py-2 text-right pr-3 text-base font-extrabold text-gray-900 align-middle bg-gray-100/60">
                             {formatCurrency(data.total_sales)}
+                          </td>
+                          <td className="py-2 text-right pr-3 text-base font-extrabold text-gray-900 align-middle bg-gray-100/60">
+                            
                           </td>
                           <td className="py-2 text-right pr-3 text-base font-extrabold text-gray-900 align-middle bg-gray-100/60">
                             {formatCurrency(data.total_puhunan)}

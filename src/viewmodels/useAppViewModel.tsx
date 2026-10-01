@@ -102,8 +102,8 @@ const BASE_MENU_ITEMS: MenuItem[] = [
       { key: 'reports|steel materials|1423', label: 'Daily Sales - RSB 16', title: 'Daily Sales - RSB 16' },
       { key: 'reports|unmonitored', label: 'Daily Sales - Unmonitored', title: 'Daily Sales - Unmonitored' },
       { key: 'ledger', label: 'Daily Business Ledger', title: 'Daily Business Ledger' },
+      { key: 'monthly_ledger', label: 'Monthly Business Ledger', title: 'Monthly Business Ledger' },
       { key: 'stockin', label: 'Stock-In (Purchases) Log', title: 'Stock-In (Purchases) Log' },
-      { key: 'monthly', label: 'Monthly Sales Report', title: 'Monthly Sales Report' },
     ],
   },
   { key: 'categories', label: 'Categories', title: 'Categories' },
@@ -140,13 +140,61 @@ const loadInitialState = (): Pick<AppViewModelState, 'isLoggedIn' | 'accessToken
   };
 };
 
+const findMenuItem = (items: MenuItem[], targetKey: string): MenuItem | undefined => {
+  for (const item of items) {
+    if (item.key === targetKey) return item;
+    if (item.children) {
+      const found = findMenuItem(item.children, targetKey);
+      if (found) return found;
+    }
+  }
+  return undefined;
+};
+
+const getInitialActiveMenuState = (): { activeMenu: string; activeTitle: string; activeLabel: string; } => {
+  const defaultMenu = BASE_MENU_ITEMS[0];
+  const fallback = {
+    activeMenu: defaultMenu.key,
+    activeTitle: defaultMenu.title || defaultMenu.label,
+    activeLabel: defaultMenu.label
+  };
+
+  if (typeof window === 'undefined') return fallback;
+
+  const params = new URLSearchParams(window.location.search);
+  const menuParam = params.get('menu');
+
+  if (!menuParam) return fallback;
+
+  const decodedKey = decodeURIComponent(menuParam);
+  const menuParts = decodedKey.split('|'); 
+  const menuParent = menuParts[0];
+
+  if (menuParent === 'monthly_ledger_view') {
+    const date = menuParts[1];
+    const date_value = menuParts[2];
+    return {
+      activeMenu: decodedKey,
+      activeTitle: `Monthly Ledger View - ${date_value}`,
+      activeLabel: `Monthly Ledger View - ${date_value}`,
+    };
+  } else {
+    const matchedItem = findMenuItem(BASE_MENU_ITEMS, decodedKey);
+    return {
+      activeMenu: decodedKey,
+      activeTitle: matchedItem?.title || defaultMenu.label || '',
+      activeLabel: matchedItem?.label || '',
+    };
+  }
+};
+
 const initialState = loadInitialState();
+const initialMenuState = getInitialActiveMenuState();
 
 const useAppViewModel = create<AppViewModelState>((set, get) => ({
   ...initialState,
+  ...initialMenuState,
   password: '',
-  activeMenu: 'inventory',
-  activeTitle: '',
   sidebarCollapsed: false,
   formError: '',
   isLoading: false,
@@ -189,7 +237,7 @@ const useAppViewModel = create<AppViewModelState>((set, get) => ({
     set({ isCategoriesLoading: true });
     try {
       const response = await getCategoriesList({order:'ASC', sort:'name'});
-      console.log('fetchInventoryCategories', response);
+      
       const rawCategories = response.data.data || response || [];
       
       const inventoryChildren = rawCategories.map((cat: { id?: string | number; name: string }) => ({

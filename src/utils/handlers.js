@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { deleteSupplier } from '../api/suppliersService';
 import { deleteCategory } from '../api/categoriesService';
+import { deleteReportMonthtly } from '../api/monthlyReportService';
 import useAppViewModel from '../viewmodels/useAppViewModel';
 import { useAlertStore } from './alert';
 
@@ -138,6 +139,7 @@ export const useHandlerDailyBusinessLedger = () => {
   const [showHardwareModal, setShowHardwareModal] = useState(false);
   const [showBahayModal, setShowBahayModal] = useState(false);
   const [showLedgerValueModal, setShowLedgerValueModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleDelete = async (id, type) => {
     if (window.confirm('Are you sure you want to DELETE this supplier?')) {
@@ -189,6 +191,7 @@ export const useHandlerDailyBusinessLedger = () => {
     showHardwareModal, setShowHardwareModal,
     showBahayModal, setShowBahayModal,
     showLedgerValueModal, setShowLedgerValueModal,
+    loading, setLoading,
     handleRefresh,
     handleDelete,
     handleView
@@ -251,5 +254,75 @@ export const useHandlerCategories = () => {
     loading, setLoading,
     handleRefresh,
     handleDelete,
+  };
+}
+
+export const useHandlerMonthlyBusinessLedger = () => {
+  const userData = useAppViewModel((state) => state.userData);
+  const alertStore = useAlertStore();
+  
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showHardwareModal, setShowHardwareModal] = useState(false);
+  const [showBahayModal, setShowBahayModal] = useState(false);
+  const [showLedgerValueModal, setShowLedgerValueModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleDelete = async (item, type) => {
+    if (window.confirm('Are you sure you want to DELETE this report?')) {
+      try {
+        const result = await deleteReportMonthtly(item, userData.employee_id);
+        if (result.success) {
+          alertStore.setAlert({
+            show: true,
+            message: 'Report successfully deleted.',
+            type: 'success'
+          });
+          
+          setTimeout(() => {
+            alertStore.setAlert({ show: false, message: '', type: '' });
+          }, 3000);
+          
+          handleRefresh();
+        } else {
+          alertStore.setAlert({
+            show: true,
+            message: 'Failed to delete report.',
+            type: 'error'
+          });
+        }
+      } catch (err) {
+        alertStore.setAlert({
+          show: true,
+          message: 'Failed to delete report record.',
+          type: 'error'
+        });
+      }
+    }
+  };
+
+  const handleRefresh = () => {
+    alertStore.setRefreshDailySalesReport(prev => prev + 1)
+  }
+
+  const handleView = (item) => {
+    setSelectedItem(item);
+    setShowViewModal(true);
+  };
+
+  return {
+    selectedItem, setSelectedItem,
+    showViewModal, setShowViewModal,
+    showCreateModal, setShowCreateModal,
+    showEditModal, setShowEditModal,
+    showHardwareModal, setShowHardwareModal,
+    showBahayModal, setShowBahayModal,
+    showLedgerValueModal, setShowLedgerValueModal,
+    loading, setLoading,
+    handleRefresh,
+    handleDelete,
+    handleView
   };
 }

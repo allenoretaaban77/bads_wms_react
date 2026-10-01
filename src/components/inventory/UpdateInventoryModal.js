@@ -20,6 +20,8 @@ style.textContent = `
 document.head.appendChild(style);
 
 const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, onSave }) => {
+  const categoryDropdown = useAppViewModel((state) => state.categoryDropdown);
+  const fetchInventoryCategories = useAppViewModel((state) => state.fetchInventoryCategories);
   const userData = useAppViewModel((state) => state.userData);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -226,9 +228,14 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
                   required
                 >
                   <option value="">Select Type</option>
-                  {Object.entries(APP_CONFIG.INVENTORY_TYPES).map(([key, value]) => (
+                  {/* {Object.entries(APP_CONFIG.INVENTORY_TYPES).map(([key, value]) => (
                     <option key={key} value={value} className="capitalize">
                       {value}
+                    </option>
+                  ))} */}
+                  {categoryDropdown.map((option) => (
+                    <option key={option.value} value={option.label}>
+                      {option.label}
                     </option>
                   ))}
                 </select>

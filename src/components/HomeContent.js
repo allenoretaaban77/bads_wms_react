@@ -11,6 +11,8 @@ import StockInPurchasesLog from './reports/StockInPurchasesLog.js';
 import MonthlySalesReport from './reports/MonthlySalesReport.js';
 import DailyBusinessLedger from './reports/DailyBusinessLedger.js';
 import CategoriesTable from './categories/CategoriesTable.js';
+import MonthlyBusinessLedger from './reports/MonthlyBusinessLedger.js';
+import MonthlyBusinessLedgerView from './reports/MonthlyBusinessLedgerView.js';
 
 const descriptions = {
   profile: 'View your account details, role, and recent activity.',
@@ -55,6 +57,10 @@ function HomeContent() {
       return <MonthlySalesReport page_type={menuChild} />;
     case 'ledger':
       return <DailyBusinessLedger page_type={menuChild} />;
+    case 'monthly_ledger':
+      return <MonthlyBusinessLedger page_type={menuChild} />;
+    case 'monthly_ledger_view':
+      return <MonthlyBusinessLedgerView selectedDate={menuChild} />;
     case 'categories':
       return <CategoriesTable page_type={menuChild} />;
     default:
