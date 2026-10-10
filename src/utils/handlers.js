@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { deleteSupplier } from '../api/suppliersService';
 import { deleteCategory } from '../api/categoriesService';
 import { deleteReportMonthtly } from '../api/monthlyReportService';
+import { deleteGravelReportMonthtly } from '../api/gravelReportService';
+import { deleteMonitoredReportMonthtly } from '../api/monitoredReportService';
+
 import useAppViewModel from '../viewmodels/useAppViewModel';
 import { useAlertStore } from './alert';
 
@@ -303,6 +306,72 @@ export const useHandlerMonthlyBusinessLedger = () => {
     }
   };
 
+  const handleDeleteMonitored = async (item, type) => {
+    if (window.confirm('Are you sure you want to DELETE this report?')) {
+      try {
+        const result = await deleteMonitoredReportMonthtly(item, userData.employee_id);
+        if (result.success) {
+          alertStore.setAlert({
+            show: true,
+            message: 'Report successfully deleted.',
+            type: 'success'
+          });
+          
+          setTimeout(() => {
+            alertStore.setAlert({ show: false, message: '', type: '' });
+          }, 3000);
+          
+          handleRefresh();
+        } else {
+          alertStore.setAlert({
+            show: true,
+            message: 'Failed to delete report.',
+            type: 'error'
+          });
+        }
+      } catch (err) {
+        alertStore.setAlert({
+          show: true,
+          message: 'Failed to delete report record.',
+          type: 'error'
+        });
+      }
+    }
+  };
+
+  const handleDeleteGravel = async (item, type) => {
+    if (window.confirm('Are you sure you want to DELETE this report?')) {
+      try {
+        const result = await deleteGravelReportMonthtly(item, userData.employee_id);
+        if (result.success) {
+          alertStore.setAlert({
+            show: true,
+            message: 'Report successfully deleted.',
+            type: 'success'
+          });
+          
+          setTimeout(() => {
+            alertStore.setAlert({ show: false, message: '', type: '' });
+          }, 3000);
+          
+          handleRefresh();
+        } else {
+          alertStore.setAlert({
+            show: true,
+            message: 'Failed to delete report.',
+            type: 'error'
+          });
+        }
+      } catch (err) {
+        alertStore.setAlert({
+          show: true,
+          message: 'Failed to delete report record.',
+          type: 'error'
+        });
+      }
+    }
+  };
+
   const handleRefresh = () => {
     alertStore.setRefreshDailySalesReport(prev => prev + 1)
   }
@@ -323,6 +392,8 @@ export const useHandlerMonthlyBusinessLedger = () => {
     loading, setLoading,
     handleRefresh,
     handleDelete,
+    handleDeleteGravel,
+    handleDeleteMonitored,
     handleView
   };
 }

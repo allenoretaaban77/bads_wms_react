@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { formatCurrency, formatLongDate } from '../../utils/formatters';
-import { APP_CONFIG } from '../../config/constants';
 import Alert from '../../utils/alert';
 import { FormButton, FormThead } from '../../utils/themes.js';
-import { getDailyReports, updateReport } from '../../api/reportsService.js';
+import { getDailyReports } from '../../api/reportsService.js';
 import { FormPagination } from '../../utils/pagination.js';
 import { useAlertStore } from '../../utils/alert';
 import { usePageControl } from '../../utils/pagination.js';
@@ -15,14 +14,20 @@ function DailySalesReport({ page_type, param }) {
   const alertStore = useAlertStore();
   const { currentPage, pageSize, totalItems, setTotalItems, totalPages, setTotalPages, handlePageSizeChange, handlePageChange } = usePageControl();
   const { sortField, sortOrder, error, setError, handleSort } = useTableControl();
-  const { selectedItem, setSelectedItem, showViewModal, setShowViewModal, handleRefresh, handleDelete, handleView, loading, setLoading } = useHandlerDailySalesReport();
-  const [saleDate, satSalesData] = useState([]);
+  const { selectedItem, showViewModal, setShowViewModal, handleRefresh, handleDelete, handleView, loading, setLoading } = useHandlerDailySalesReport();
   const [filteredData, setFilteredData] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
 
   const [tableHeader, setTableHeader] = useState([]);
+  const { alert, setAlert } = useAlertStore();
   
-  useEffect(() => { if (alertStore.alert.show == true) { setTimeout(() => { alertStore.setAlert({ show: false, message: '', type: '' })}, 3000); }}, [alertStore.alert]);
+  useEffect(() => { 
+    if (alert.show === true) { 
+      const timer = setTimeout(() => { 
+        setAlert({ show: false, message: '', type: '' });
+      }, 3000); 
+      return () => clearTimeout(timer);
+    }
+  }, [alert.show, setAlert]);
 
   useEffect(() => {
 
@@ -30,18 +35,16 @@ function DailySalesReport({ page_type, param }) {
       try {
         setLoading(true);
         setError(null);
-        
-        const params = {
+
+        const result = await getDailyReports({
           page: currentPage,
           pageSize: pageSize,
-          search: searchTerm,
+          search: '',
           sort: sortField,
           order: sortOrder,
           pageType: page_type,
           inventoryId: param || ""
-        };
-
-        const result = await getDailyReports(params);
+        });
         
         // Check if API call was successful and returned data
         if (result.success && result.data) {
@@ -53,10 +56,10 @@ function DailySalesReport({ page_type, param }) {
 
           const processedData = data.map(item => ({ 
             ...item, 
-            pageType: page_type || "" // Fixed from pageType to page_type
+            pageType: page_type || "", // Fixed from pageType to page_type
+            inventoryId: param || "" //
           }));
 
-          satSalesData(processedData);
           setFilteredData(processedData);
           setTotalItems(total);
           setTotalPages(totalPages);
@@ -67,7 +70,6 @@ function DailySalesReport({ page_type, param }) {
           setError(result.error || 'Failed to load inventory data');
           
           // Set empty data on error
-          satSalesData([]);
           setFilteredData([]);
           setTotalItems(0);
           setTotalPages(0);
@@ -77,7 +79,6 @@ function DailySalesReport({ page_type, param }) {
         setError(`Failed to load inventory data: ${err.message}`);
         
         // Set empty data on error
-        satSalesData([]);
         setFilteredData([]);
         setTotalItems(0);
         setTotalPages(0);
@@ -87,36 +88,7 @@ function DailySalesReport({ page_type, param }) {
     };
 
     loadsatSalesData();
-  }, [currentPage, pageSize, searchTerm, sortField, sortOrder, alertStore.refreshDailySalesReport, page_type, param]);
-
-  const hanldeUpdate = async (date) => {
-    if (window.confirm('Are you sure you want to UPDATE this report?')) {
-      try {
-        const result = await updateReport(date);
-        if (result.success) {
-          alertStore.setAlert({
-            show: true,
-            message: formatLongDate(date) + ' report successfully updated.',
-            type: 'success'
-          });
-          
-          handleRefresh();
-        } else {
-          alertStore.setAlert({
-            show: true,
-            message: 'Failed to update report.',
-            type: 'error'
-          });
-        }
-      } catch (err) {
-        alertStore.setAlert({
-          show: true,
-          message: 'Error on updating report.',
-          type: 'error'
-        });
-      }
-    }
-  };
+  }, [currentPage, pageSize, sortField, sortOrder, alertStore, page_type, param, setError, setLoading, setTotalItems, setTotalPages]);
 
   return (
     <div className="flex flex-col h-screen">
@@ -183,15 +155,6 @@ function DailySalesReport({ page_type, param }) {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
                       </button>
-                      {/* <button
-                        onClick={() => hanldeUpdate(item.date)}
-                        className="text-orange-600 hover:text-orange-800 px-0 py-1 rounded hover:bg-orange-50 transition-colors"
-                        title="View"
-                      >
-                        <svg className="h-3.5 w-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                      </button> */}
                     </div>
                   </td>
                 </tr>

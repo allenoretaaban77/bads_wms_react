@@ -1,21 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { formatCurrency, formatLongDate } from '../../utils/formatters';
-import Alert from '../../utils/alert';
+import { formatCurrency, formatLongDate } from '../../utils/formatters.js';
+import Alert from '../../utils/alert.js';
 import { FormButton, FormThead } from '../../utils/themes.js';
-import { updateReport, updateLedgerValue } from '../../api/reportsService.js';
 import { FormPagination } from '../../utils/pagination.js';
-import { useAlertStore } from '../../utils/alert';
+import { useAlertStore } from '../../utils/alert.js';
 import { usePageControl } from '../../utils/pagination.js';
 import { useTableControl } from '../../utils/table.js';
 import { useHandlerDailyBusinessLedger } from '../../utils/handlers.js';
-import ViewDailySalesItemsModal from './ViewDailySalesItemsModal.js';
-import UpdateLedgerValueModal from './UpdateLedgerValueModal.js';
-import MonthlyBusinessLedger from './MonthlyBusinessLedger';
+import ViewDailySalesItemsModal from '../reports/ViewDailySalesItemsModal.js';
+import MonthlyBusinessLedger from './MonthlyBusinessLedger.js';
 import DatePicker from 'react-datepicker';
-import { getDailyBusinessLedger, updateReportMonthly } from '../../api/monthlyReportService.js';
-import GenerateMonthlyLedgerModal from './GenerateMonthlyLedgerModal.js';
+import { getDailyMonitoredLedger, updateMonitoredReportMonthly } from '../../api/monitoredReportService.js';
+import GenerateMonitoredLedgerModal from '../ledgers/GenerateMonitoredLedgerModal.js';
 
-function MonthlyBusinessLedgerView({ selectedDate }) {
+function MonitoredLedgerView({ selectedDate }) {
   const alertStore = useAlertStore();
   const { currentPage, setCurrentPage, pageSize, setPageSize, totalItems, setTotalItems, totalPages, setTotalPages, handlePageSizeChange, handlePageChange } = usePageControl();
   const { sortField, setSortField, sortOrder, setSortOrder, error, setError, handleSort } = useTableControl();
@@ -32,20 +30,14 @@ function MonthlyBusinessLedgerView({ selectedDate }) {
   // Summary states
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [totalSales, setTotalSales] = useState(0);
-  const [totalPuhunan, setTotalPuhunan] = useState(0);
-  const [totalTubo, setTotalTubo] = useState(0);
-  const [totalPuhunanCement, setTotalPuhunanCement] = useState(0);
-  const [totalTuboCement, setTotalTuboCement] = useState(0);
-  const [totalPuhunanRSB, setTotalPuhunanRSB] = useState(0);
-  const [totalTuboRSB, setTotalTuboRSB] = useState(0);
-  const [totalPuhunanAll, setTotalPuhunanAll] = useState(0);
-  const [totalTuboAll, setTotalTuboAll] = useState(0);
-  const [initialMoneyOnHand, setInitialMoneyOnHand] = useState(0);
-  const [initialPuhunan, setInitialPuhunan] = useState(0);
-  const [initialTubo, setInitialTubo] = useState(0);
-  const [finalMoneyOnHand, setFinalMoneyOnHand] = useState(0);
-  const [finalPuhunan, setFinalPuhunan] = useState(0);
-  const [finalTubo, setFinalTubo] = useState(0);
+  const [initialCement, setInitialCement] = useState(0);
+  const [initialRSB10, setInitialRSB10] = useState(0);
+  const [initialRSB12, setInitialRSB12] = useState(0);
+  const [initialRSB16, setInitialRSB16] = useState(0);
+  const [finalCement, setFinalCement] = useState(0);
+  const [finalRSB10, setFinalRSB10] = useState(0);
+  const [finalRSB12, setFinalRSB12] = useState(0);
+  const [finalRSB16, setFinalRSB16] = useState(0);
   const [reportId, setReportId] = useState(0);
   
   useEffect(() => { if (alertStore.alert.show == true) { setTimeout(() => { alertStore.setAlert({ show: false, message: '', type: '' })}, 3000); }}, [alertStore.alert]);
@@ -68,7 +60,7 @@ function MonthlyBusinessLedgerView({ selectedDate }) {
         date: selectedDate
       };
 
-      const result = await getDailyBusinessLedger(params);
+      const result = await getDailyMonitoredLedger(params);
       
       // Check if API call was successful and returned data
       if (result.success && result.data) {
@@ -81,28 +73,21 @@ function MonthlyBusinessLedgerView({ selectedDate }) {
         const mids = result.data.mids || [];
         
         satSalesData(data);
-        setMonitoredItems(monitored_items);
-        setMonitoredIds(mids);
+        // setMonitoredItems(monitored_items);
+        // setMonitoredIds(mids);
         setFilteredData(data);
         setTotalItems(total);
         setTotalPages(totalPages);
         setTableHeader(header);
 
-        setTotalPuhunan(result.data?.totalPuhunan || 0);
-        setTotalTubo(result.data?.totalTubo || 0);
-        setTotalSales(result.data?.totalSales || 0);
-        setTotalPuhunanCement(result.data?.totalPuhunanCement || 0);
-        setTotalTuboCement(result.data?.totalTuboCement || 0);
-        setTotalPuhunanRSB(result.data?.totalPuhunanRSB || 0);
-        setTotalTuboRSB(result.data?.totalTuboRSB || 0);
-        setTotalPuhunanAll(result.data?.totalPuhunanAll || 0);
-        setTotalTuboAll(result.data?.totalTuboAll || 0);
-        setInitialMoneyOnHand(result.data?.initialMoneyOnHand || 0);
-        setInitialPuhunan(result.data?.initialPuhunan || 0);
-        setInitialTubo(result.data?.initialTubo || 0);
-        setFinalMoneyOnHand(result.data?.finalMoneyOnHand || 0);
-        setFinalPuhunan(result.data?.finalPuhunan || 0);
-        setFinalTubo(result.data?.finalTubo || 0);
+        setInitialCement(result.data?.initialCement || 0);
+        setInitialRSB10(result.data?.initialRSB10 || 0);
+        setInitialRSB12(result.data?.initialRSB12 || 0);
+        setInitialRSB16(result.data?.initialRSB16 || 0);
+        setFinalCement(result.data?.finalCement || 0);
+        setFinalRSB10(result.data?.finalRSB10 || 0);
+        setFinalRSB12(result.data?.finalRSB12 || 0);
+        setFinalRSB16(result.data?.finalRSB16 || 0);
         setReportId(result.data?.id || 0);
       } else {
         // Handle API error response
@@ -133,21 +118,22 @@ function MonthlyBusinessLedgerView({ selectedDate }) {
     setGenerateData({
       ...generateData,
       date_value: selectedDate,
-      initial_money_on_hand: initialMoneyOnHand,
-      initial_puhunan: initialPuhunan, 
-      initial_tubo: initialTubo
+      i_21: initialCement,
+      i_1421: initialRSB10, 
+      i_1422: initialRSB12, 
+      i_1423: initialRSB16
     });
     setShowGenerateModal(true);
   };
 
-  const handleGenerateLedger = async (selectedMonth, selectedYear, runningMoneyOnHand, runningTubo, runningPuhunan) => {
+  const handleGenerateLedger = async (selectedMonth, selectedYear, runningCement, runningRSB10, runningRSB12, runningRSB16) => {
     try {
       setShowGenerateModal(false);
       setLoading(true);
       
       // Add your generation API call logic here, e.g.:
       // await generateMonthlyLedgerApi({ month: selectedMonth, year: selectedYear });
-      const result = await updateReportMonthly(selectedMonth + ', ' + selectedYear, runningMoneyOnHand, runningTubo, runningPuhunan);
+      const result = await updateMonitoredReportMonthly(selectedMonth + ', ' + selectedYear, runningCement, runningRSB10, runningRSB12, runningRSB16);
 
       alertStore.setAlert({
         show: true,
@@ -166,40 +152,6 @@ function MonthlyBusinessLedgerView({ selectedDate }) {
       setLoading(false);
     }
   };
-
-  const hanldeUpdate = (date) => {
-    if (window.confirm('Are you sure you want to UPDATE this report?')) {
-      triggerUpdate(date);
-    }
-  };
-
-  const triggerUpdate = async (date) => {
-    try {
-      const result = await updateReport(date);
-      if (result.success) {
-        alertStore.setAlert({
-          show: true,
-          message: formatLongDate(date) + ' report successfully updated.',
-          type: 'success'
-        });
-        
-        handleRefresh();
-        setTimeout(() => {handleRefresh()}, 1000);
-      } else {
-        alertStore.setAlert({
-          show: true,
-          message: 'Failed to update report.',
-          type: 'error'
-        });
-      }
-    } catch (err) {
-      alertStore.setAlert({
-        show: true,
-        message: 'Error on updating report.',
-        type: 'error'
-      });
-    }
-  }
 
   const handleExpensesValue = (item, valueType) => {
     if(item[`ex_${valueType}`] == null) {
@@ -238,43 +190,6 @@ function MonthlyBusinessLedgerView({ selectedDate }) {
     setShowLedgerValueModal(true);
   }
 
-  const handleSaveLedgerValue = async (data) => {
-    data.initialMoneyOnHand = initialMoneyOnHand;
-    data.initialPuhunan = initialPuhunan;
-    data.initialTubo = initialTubo;
-    data.date = selectedDate;
-    
-    try {
-      const result = await updateLedgerValue(data);
-      if (result.success) {
-        alertStore.setAlert({
-          show: true,
-          message: 'Report successfully updated.',
-          type: 'success'
-        });
-        
-        refreshSalesData();
-        setTimeout(() => {handleRefresh()}, 1000);
-      } else {
-        alertStore.setAlert({
-          show: true,
-          message: 'Failed to update report.',
-          type: 'error'
-        });
-      }
-
-      setShowLedgerValueModal(false);
-    } catch (err) {
-      alertStore.setAlert({
-        show: true,
-        message: 'Error on updating report.',
-        type: 'error'
-      });
-
-      setShowLedgerValueModal(false);
-    }
-  }
-
   return (
     <div className="flex flex-col h-screen">
 
@@ -289,13 +204,24 @@ function MonthlyBusinessLedgerView({ selectedDate }) {
           )}
           {!loadingSummary && (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 mr-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 mr-3">
               <div className="text-right">
-                <div className="text-sm text-red-400">Puhunan: <font className="font-bold">{formatCurrency(totalPuhunan)}</font></div>
-                <div className="text-sm text-orange-400">Tubo: <font className="font-bold">{formatCurrency(totalTubo)}</font></div>
-                <div className="text-sm text-yellow-400">Total Sales: <font className="font-bold">{formatCurrency(totalSales)}</font></div>
+                <div className="text-sm text-pink-400">Initial Cement: <font className="font-bold">{formatCurrency(initialCement)}</font></div>
+                <div className="text-sm text-green-400">Final Cement: <font className="font-bold">{formatCurrency(finalCement)}</font></div>
               </div>
               <div className="text-right">
+                <div className="text-sm text-pink-600">Initial RSB 10: <font className="font-bold">{formatCurrency(initialRSB10)}</font></div>
+                <div className="text-sm text-green-600">Final RSB 10: <font className="font-bold">{formatCurrency(finalRSB10)}</font></div>
+              </div>
+              <div className="text-right">
+                <div className="text-sm text-pink-800">Initial RSB 12: <font className="font-bold">{formatCurrency(initialRSB12)}</font></div>
+                <div className="text-sm text-green-800">Final RSB 12: <font className="font-bold">{formatCurrency(finalRSB12)}</font></div>
+              </div>
+              <div className="text-right">
+                <div className="text-sm text-pink-900">Initial RSB 16: <font className="font-bold">{formatCurrency(initialRSB16)}</font></div>
+                <div className="text-sm text-green-900">Final RSB 16: <font className="font-bold">{formatCurrency(finalRSB16)}</font></div>
+              </div>
+              {/* div className="text-right">
                 <div className="text-sm text-green-400">Puhunan Cement: <font className="font-bold">{formatCurrency(totalPuhunanCement)}</font></div>
                 <div className="text-sm text-blue-400">Tubo Cement: <font className="font-bold">{formatCurrency(totalTuboCement)}</font></div>
               </div>
@@ -312,7 +238,7 @@ function MonthlyBusinessLedgerView({ selectedDate }) {
                 <div className="text-sm text-emerald-700">Final Money On Hand: <font className="font-bold">{formatCurrency(finalMoneyOnHand)}</font></div>
                 <div className="text-sm text-rose-700">Final Puhunan: <font className="font-bold">{formatCurrency(finalPuhunan)}</font></div>
                 <div className="text-sm text-sky-700">Final Tubo: <font className="font-bold">{formatCurrency(finalTubo)}</font></div>
-              </div>
+              </div> */}
             </div>
           </>
           )}
@@ -356,9 +282,9 @@ function MonthlyBusinessLedgerView({ selectedDate }) {
         </div>
       )}
 
-      <div className="block bg-white border border-gray-200 rounded-custom shadow-sm h-[calc(100vh-15.7rem)] w-[calc(100vw-13.5rem)] overflow-auto scrollbar-thin flex-shrink-0">
+      <div className="block bg-white border border-gray-200 rounded-custom shadow-sm h-[calc(100vh-14.2rem)] w-[calc(100vw-13.5rem)] overflow-auto scrollbar-thin flex-shrink-0">
 
-        <table className="text-sm border-collapse min-w-[4000px] w-full">
+        <table className="text-sm border-collapse min-w-[2000px] w-full">
           <FormThead sortOrder={sortOrder} sortField={sortField} handleSort={handleSort} data={tableHeader} />
           <tbody>
             {filteredData.map((item, index) => {
@@ -370,73 +296,24 @@ function MonthlyBusinessLedgerView({ selectedDate }) {
                   }`}
                 >
                   <td className="px-3 py-2 border-r text-sm font-semibold text-green-900 text-right">{index + 1}</td>
-                  <td className="px-3 py-2 border-r text-sm">{formatLongDate(item.report_date)}</td>
-                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.puhunan) }</td>
-                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.tubo)}</td>
-                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.total_sales)}</td>
+                  <td className="px-3 py-2 border-r text-sm">{formatLongDate(item.date)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.t_21) }</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.p_21)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right text-red-500">{formatCurrency(item.e_21)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.r_21)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.t_1421) }</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.p_1421)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right text-red-500">{formatCurrency(item.e_1421)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.r_1421)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.t_1422) }</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.p_1422)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right text-red-500">{formatCurrency(item.e_1422)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.r_1422)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.t_1423) }</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.p_1423)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right text-red-500">{formatCurrency(item.e_1423)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.r_1423)}</td>
                   
-                  {monitoredIds.map((value, vid) => {
-                    return (
-                      <>
-                        <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item[`p_${value.id}`] || 0)}</td>
-                        <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item[`t_${value.id}`] || 0)}</td>
-                        <td 
-                          onClick={() => handleUpdateValue(item, value.id)}
-                          className="px-3 py-2 border-r text-sm text-right font-bold cursor-pointer hover:text-orange-100 hover:bg-green-500 relative overflow-visible group"
-                        >
-                          {formatCurrency(item[`ex_${value.id}`] || 0)}
-                          <span className="invisible group-hover:visible absolute top-0 left-full ml-1.5 mt-1.5 w-max max-w-[350px] z-50 bg-green-900 text-white text-xs p-2 rounded shadow-lg pointer-events-none whitespace-pre-line text-left">   
-                            {`Date: ${item.date}
-                            Amount: ${formatCurrency(item[`ex_${value.id}`] || 0)}
-                            
-                            ${item[`ex_${value.id}_details`] || ''}`}
-                          </span>
-                        </td>
-                      </>
-                    )
-                  })}
-
-                  <td 
-                    onClick={() => handleUpdateValue(item, "hardware")}
-                    className="px-3 py-2 border-r text-sm text-right font-bold cursor-pointer hover:text-orange-100 hover:bg-green-500 relative overflow-visible group"
-                  >
-                    {formatCurrency(item.hardware || 0)}
-                    <span className="invisible group-hover:visible absolute top-0 left-full ml-1.5 mt-1.5 w-max max-w-[350px] z-50 bg-green-900 text-white text-xs p-2 rounded shadow-lg pointer-events-none whitespace-pre-line text-left">   
-                      {`Date: ${item.date}
-                      Amount: ${formatCurrency(item.hardware || 0)}
-                      
-                      ${item.hardware_details || ''}`}
-                    </span>
-                  </td>
-                  <td 
-                    onClick={() => handleUpdateValue(item, "bahay")}
-                    className="px-3 py-2 border-r text-sm text-right font-bold cursor-pointer hover:text-orange-100 hover:bg-green-500 relative overflow-visible group"
-                  >
-                    {formatCurrency(item.bahay || 0)}
-                    <span className="invisible group-hover:visible absolute top-0 left-full ml-1.5 mt-1.5 w-max max-w-[350px] z-50 bg-green-900 text-white text-xs p-2 rounded shadow-lg pointer-events-none whitespace-pre-line text-left">   
-                      {`Date: ${item.date}
-                      Amount: ${formatCurrency(item.bahay || 0)}
-                      
-                      ${item.bahay_details || ''}`}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.total_amount || 0)}</td>
-                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.money_on_hand || 0)}</td>
-                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.total_puhunan || 0)}</td>
-                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.total_tubo || 0)}</td>
-                  {/* <td className="px-0 py-2 border-0">
-                    <div className="flex justify-center space-x-1">
-                      <button
-                        onClick={() => hanldeUpdate(item.date)}
-                        className="text-orange-600 hover:text-orange-800 px-0 py-1 rounded hover:bg-orange-50 transition-colors"
-                        title="Update Ledger Records"
-                      >
-                        <svg className="h-3.5 w-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                      </button>
-                    </div>
-                  </td> */}
                 </tr>
               );
             })}
@@ -468,15 +345,8 @@ function MonthlyBusinessLedgerView({ selectedDate }) {
         onUpdateTable={() => handleRefresh()}
         item={selectedItem}
       />
-      
-      <UpdateLedgerValueModal 
-        selectedItem={selectedItem}
-        showLedgerValueModal={showLedgerValueModal}
-        setShowLedgerValueModal={setShowLedgerValueModal}
-        onUpdate={handleSaveLedgerValue}
-      />
 
-      <GenerateMonthlyLedgerModal
+      <GenerateMonitoredLedgerModal
         show={showGenerateModal}
         onClose={() => setShowGenerateModal(false)}
         onGenerate={handleGenerateLedger}
@@ -493,5 +363,5 @@ function MonthlyBusinessLedgerView({ selectedDate }) {
   );
 }
 
-export default MonthlyBusinessLedgerView;
+export default MonitoredLedgerView;
 

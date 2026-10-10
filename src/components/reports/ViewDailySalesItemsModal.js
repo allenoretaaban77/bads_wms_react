@@ -10,7 +10,6 @@ function ViewDailySalesItemsModal({ show, onClose, onDelete, onUpdateTable, item
 
   useEffect(() => {
     if (show && item) {
-      console.log(item);
 
       setData(null);
 

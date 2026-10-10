@@ -35,6 +35,8 @@ function InventoryTable({ page_type }) {
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [isMonitored, setIsMonitored] = useState('all');
+  const [isSubstrates, setIsSubstrates] = useState('all');
   
   // Modal states
   const [selectedItem, setSelectedItem] = useState(null);
@@ -76,6 +78,8 @@ function InventoryTable({ page_type }) {
           sort: sortField,
           order: sortOrder,
           status: statusFilter !== 'all' ? statusFilter : '',
+          monitored: isMonitored !== 'all' ? isMonitored : '',
+          substrates: isSubstrates !== 'all' ? isSubstrates : '',
         };
 
         const result = await getInventoryList(params);
@@ -122,7 +126,7 @@ function InventoryTable({ page_type }) {
     };
 
     loadInventoryData();
-  }, [page_type, currentPage, pageSize, searchTerm, sortField, sortOrder, statusFilter, refreshKey, setTotalItems, setTotalPages]);
+  }, [page_type, currentPage, pageSize, searchTerm, sortField, sortOrder, statusFilter, refreshKey, setTotalItems, setTotalPages, fetchInventoryCategories, isMonitored, isSubstrates]);
 
   const handleView = (item) => {
     setSelectedItem(item);
@@ -249,29 +253,29 @@ function InventoryTable({ page_type }) {
             </div>
           )}
           {!loadingSummary && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mb-0.5">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mb-1">
             <div className="text-center">
-              <div className="text-2xl font-bold text-gray-800">{totalProductCount.toLocaleString()}</div>
+              <div className="text-xl font-bold text-gray-800">{totalProductCount.toLocaleString()}</div>
               <div className="text-xs text-gray-600">No. of Products</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{formatCurrency(totalInventoryValue)}</div>
+              <div className="text-xl font-bold text-green-600">{formatCurrency(totalInventoryValue)}</div>
               <div className="text-xs text-gray-600">Current Inventory Value</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{formatCurrency(totalInventoryCost)}</div>
+              <div className="text-xl font-bold text-blue-600">{formatCurrency(totalInventoryCost)}</div>
               <div className="text-xs text-gray-600">Current Inventory Cost</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{totalInStock.toLocaleString()}</div>
+              <div className="text-xl font-bold text-green-600">{totalInStock.toLocaleString()}</div>
               <div className="text-xs text-gray-600">In Stock</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-600">{totalLowStock.toLocaleString()}</div>
+              <div className="text-xl font-bold text-yellow-600">{totalLowStock.toLocaleString()}</div>
               <div className="text-xs text-gray-600">Low Stock</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">{totalNoStock.toLocaleString()}</div>
+              <div className="text-xl font-bold text-red-600">{totalNoStock.toLocaleString()}</div>
               <div className="text-xs text-gray-600">No Stock</div>
             </div>
           </div>
@@ -282,7 +286,7 @@ function InventoryTable({ page_type }) {
           
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 pt-2">
 
-            <div className="lg:col-span-9 text-xs">
+            <div className="lg:col-span-7 text-xs">
               <label className="block font-semibold text-gray-600 mb-0.5">Search</label>
               <input
                 type="text"
@@ -304,6 +308,32 @@ function InventoryTable({ page_type }) {
                 <option value="In Stock">In Stock</option>
                 <option value="Low Stock">Low Stock</option>
                 <option value="No Stock">No Stock</option>
+              </select>
+            </div>
+
+            <div className="text-xs">
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">Monitored</label>
+              <select
+                value={isMonitored}
+                onChange={(e) => setIsMonitored(e.target.value)}
+                className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+              >
+                <option value="all">All</option>
+                <option value="1">Yes</option>
+                <option value="0">No</option>
+              </select>
+            </div>
+
+            <div className="text-xs">
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">Substrates</label>
+              <select
+                value={isSubstrates}
+                onChange={(e) => setIsSubstrates(e.target.value)}
+                className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+              >
+                <option value="all">All</option>
+                <option value="1">Yes</option>
+                <option value="0">No</option>
               </select>
             </div>
 

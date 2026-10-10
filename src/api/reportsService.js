@@ -82,6 +82,7 @@ export const getDailyReports = async (params = {}) => {
 
 export const getDailyReportItems = async (item, params = {}) => {
   try {
+    console.log('getDailyReportItems', item);
 
     const queryParams = new URLSearchParams();
     // Add parameters if they exist and are not empty
@@ -113,6 +114,7 @@ export const getDailyReportItems = async (item, params = {}) => {
     const formData = new URLSearchParams();
     formData.append('date', item.date);
     formData.append('page_type', item.pageType.trim());
+    formData.append('inventory_id', item.inventoryId.trim());
 
     const response = await fetch(`${API_BASE_URL}/reports/listitems?${queryParams.toString()}`, {
       method: 'POST',
@@ -511,7 +513,7 @@ export const updateLedgerValue = async (itemData) => {
       formData.append(key, itemData[key]);
     });
 
-    const response = await fetch(`${API_BASE_URL}/reports/updateledgervalue`, {
+    const response = await fetch(`${API_BASE_URL}/ledgers/updateledgervalue`, {
       method: 'PUT',
       headers: getApiHeaders(),
       body: JSON.stringify(itemData),

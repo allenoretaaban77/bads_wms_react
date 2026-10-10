@@ -1,35 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { formatCurrency, formatLongDate } from '../../utils/formatters';
-import Alert from '../../utils/alert';
+import { formatCurrency } from '../../utils/formatters.js';
+import Alert from '../../utils/alert.js';
 import { FormButton, FormThead } from '../../utils/themes.js';
-import { updateReport, updateLedgerValue } from '../../api/reportsService.js';
 import { getMonthlyBusinessLedger, updateReportMonthly } from '../../api/monthlyReportService.js';
 import { FormPagination } from '../../utils/pagination.js';
-import { useAlertStore } from '../../utils/alert';
+import { useAlertStore } from '../../utils/alert.js';
 import { usePageControl } from '../../utils/pagination.js';
 import { useTableControl } from '../../utils/table.js';
 import { useHandlerMonthlyBusinessLedger } from '../../utils/handlers.js';
-import GenerateMonthlyLedgerModal from './GenerateMonthlyLedgerModal.js';
-import { API_BASE_URL } from '../../config/constants.js';
+import GenerateMonthlyLedgerModal from '../reports/GenerateMonthlyLedgerModal.js';
 
 function MonthlyBusinessLedger() {
   const alertStore = useAlertStore();
   const { currentPage, pageSize, totalItems, setTotalItems, totalPages, setTotalPages, handlePageSizeChange, handlePageChange } = usePageControl();
-  const { sortField, setSortField, sortOrder, setSortOrder, error, setError, handleSort } = useTableControl();
-  const { selectedItem, setSelectedItem, handleRefresh, handleDelete, handleView, loading, setLoading } = useHandlerMonthlyBusinessLedger();
+  const { sortField, sortOrder, error, setError, handleSort } = useTableControl();
+  const { selectedItem, setSelectedItem, handleRefresh, handleDelete, loading, setLoading } = useHandlerMonthlyBusinessLedger();
   
   // State for Generate Ledger Modal
   const [showGenerateModal, setShowGenerateModal] = useState(false);
 
   const [filteredData, setFilteredData] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const [tableHeader, setTableHeader] = useState([]);
-  const [monitoredIds, setMonitoredIds] = useState([]);
+  const { alert, setAlert, refreshDailySalesReport } = useAlertStore();
   
-  // Summary states
-  const [totalSales, setTotalSales] = useState(0);
-  
-  useEffect(() => { if (alertStore.alert.show == true) { setTimeout(() => { alertStore.setAlert({ show: false, message: '', type: '' })}, 3000); }}, [alertStore.alert]);
+  useEffect(() => { 
+    if (alert.show === true) { 
+      const timer = setTimeout(() => { 
+        setAlert({ show: false, message: '', type: '' });
+      }, 3000); 
+      return () => clearTimeout(timer);
+    }
+  }, [alert.show, setAlert]);
 
   useEffect(() => {
     const loadsatSalesData = async () => {
@@ -40,7 +41,7 @@ function MonthlyBusinessLedger() {
         const params = {
           page: currentPage,
           pageSize: pageSize,
-          search: searchTerm,
+          search: "",
           sort: sortField,
           order: sortOrder,
         };
@@ -52,15 +53,11 @@ function MonthlyBusinessLedger() {
           const total = result.data.total || data.length;
           const totalPages = result.data.totalPages || Math.ceil(total / pageSize);
           const header = JSON.parse(result.data?.headers);
-          const monitored_items = result.data.monitored_items || [];
-          const mids = result.data.mids || [];
           
           setFilteredData(data);
           setTotalItems(total);
           setTotalPages(totalPages);
           setTableHeader(header);
-
-          setTotalSales(result.data?.totalSales || 0);
         } else {
           console.warn('API returned error:', result.error);
           setError(result.error || 'Failed to load inventory data');
@@ -82,41 +79,7 @@ function MonthlyBusinessLedger() {
     };
 
     loadsatSalesData();
-  }, [currentPage, pageSize, searchTerm, sortField, sortOrder, alertStore.refreshDailySalesReport]);
-
-  const hanldeUpdate = (date) => {
-    if (window.confirm('Are you sure you want to UPDATE this report?')) {
-      triggerUpdate(date);
-    }
-  };
-
-  const triggerUpdate = async (date) => {
-    try {
-      const result = await updateReport(date);
-      if (result.success) {
-        alertStore.setAlert({
-          show: true,
-          message: formatLongDate(date) + ' report successfully updated.',
-          type: 'success'
-        });
-        
-        handleRefresh();
-        setTimeout(() => {handleRefresh()}, 1000);
-      } else {
-        alertStore.setAlert({
-          show: true,
-          message: 'Failed to update report.',
-          type: 'error'
-        });
-      }
-    } catch (err) {
-      alertStore.setAlert({
-        show: true,
-        message: 'Error on updating report.',
-        type: 'error'
-      });
-    }
-  };
+  }, [currentPage, pageSize, sortField, sortOrder, setError, setLoading, setTotalItems, setTotalPages, refreshDailySalesReport]);
   
   const handleRegenerateReport = (item) => {
     if(item.id == null) {
@@ -144,6 +107,7 @@ function MonthlyBusinessLedger() {
       // Add your generation API call logic here, e.g.:
       // await generateMonthlyLedgerApi({ month: selectedMonth, year: selectedYear });
       const result = await updateReportMonthly(selectedMonth + ', ' + selectedYear, runningMoneyOnHand, runningTubo, runningPuhunan);
+      console.log('handleGenerateLedger', result);
 
       alertStore.setAlert({
         show: true,

@@ -100,10 +100,24 @@ const BASE_MENU_ITEMS: MenuItem[] = [
       { key: 'reports|steel materials|1421', label: 'Daily Sales - RSB 10', title: 'Daily Sales - RSB 10' },
       { key: 'reports|steel materials|1422', label: 'Daily Sales - RSB 12', title: 'Daily Sales - RSB 12' },
       { key: 'reports|steel materials|1423', label: 'Daily Sales - RSB 16', title: 'Daily Sales - RSB 16' },
+      { key: 'reports|steel materials|1898', label: 'Daily Sales - Gravel', title: 'Daily Sales - Gravel' },
+      { key: 'reports|steel materials|309', label: 'Daily Sales - CHB #4', title: 'Daily Sales - CHB #4' },
+      { key: 'reports|steel materials|310', label: 'Daily Sales - CHB #5', title: 'Daily Sales - CHB #5' },
       { key: 'reports|unmonitored', label: 'Daily Sales - Unmonitored', title: 'Daily Sales - Unmonitored' },
-      { key: 'ledger', label: 'Daily Business Ledger', title: 'Daily Business Ledger' },
-      { key: 'monthly_ledger', label: 'Monthly Business Ledger', title: 'Monthly Business Ledger' },
       { key: 'stockin', label: 'Stock-In (Purchases) Log', title: 'Stock-In (Purchases) Log' },
+    ],
+  },
+  {
+    key: 'ledgers',
+    label: 'Ledgers',
+    title: 'Monthly Business Ledger',
+    children: [
+      // { key: 'ledger', label: 'Daily Business Ledger', title: 'Daily Business Ledger' },
+      { key: 'monthly_ledger', label: 'Monthly Business Ledger', title: 'Monthly Business Ledger' },
+      { key: 'monitored_ledger', label: 'Monitored Ledger', title: 'Monitored Ledger' },
+      { key: 'gravel_ledger', label: 'Gravel Ledger', title: 'Gravel Ledger' },
+      { key: 'chb_ledger', label: 'CHB Ledger', title: 'CHB Ledger' },
+      { key: 'sand_ledger', label: 'Sand Ledger', title: 'Sand Ledger' },
     ],
   },
   { key: 'categories', label: 'Categories', title: 'Categories' },
@@ -171,12 +185,46 @@ const getInitialActiveMenuState = (): { activeMenu: string; activeTitle: string;
   const menuParent = menuParts[0];
 
   if (menuParent === 'monthly_ledger_view') {
-    const date = menuParts[1];
     const date_value = menuParts[2];
     return {
       activeMenu: decodedKey,
       activeTitle: `Monthly Ledger View - ${date_value}`,
       activeLabel: `Monthly Ledger View - ${date_value}`,
+    };
+  } else if (menuParent === 'monitored_ledger_view') {
+    const date_value = menuParts[2];
+    return {
+      activeMenu: decodedKey,
+      activeTitle: `Monitored Ledger View - ${date_value}`,
+      activeLabel: `Monitored Ledger View - ${date_value}`,
+    };
+  } else if (menuParent === 'substrates_ledger_view') {
+    const date_value = menuParts[2];
+    return {
+      activeMenu: decodedKey,
+      activeTitle: `Substrates Ledger View - ${date_value}`,
+      activeLabel: `Substrates Ledger View - ${date_value}`,
+    };
+  } else if (menuParent === 'gravel_ledger_view') {
+    const date_value = menuParts[2];
+    return {
+      activeMenu: decodedKey,
+      activeTitle: `Gravel Ledger View - ${date_value}`,
+      activeLabel: `Gravel Ledger View - ${date_value}`,
+    };
+  } else if (menuParent === 'chb_ledger_view') {
+    const date_value = menuParts[2];
+    return {
+      activeMenu: decodedKey,
+      activeTitle: `CHB Ledger View - ${date_value}`,
+      activeLabel: `CHB Ledger View - ${date_value}`,
+    };
+  } else if (menuParent === 'sand_ledger_view') {
+    const date_value = menuParts[2];
+    return {
+      activeMenu: decodedKey,
+      activeTitle: `Sand Ledger View - ${date_value}`,
+      activeLabel: `Sand Ledger View - ${date_value}`,
     };
   } else {
     const matchedItem = findMenuItem(BASE_MENU_ITEMS, decodedKey);
@@ -240,15 +288,17 @@ const useAppViewModel = create<AppViewModelState>((set, get) => ({
       
       const rawCategories = response.data.data || response || [];
       
-      const inventoryChildren = rawCategories.map((cat: { id?: string | number; name: string }) => ({
+      const inventoryChildren = rawCategories.map((cat: { id?: string | number; name: string; tag: string}) => ({
         key: `inventory|${cat.name.toLowerCase().replace(/[\s&]+/g, '_')}`,
         label: cat.name,
+        tag: cat.tag,
         title: `Inventory Management - ${cat.name}`,
       }));
       
-      const dropdownOptions: CategoryOption[] = rawCategories.map((cat: { id: string | number; name: string }) => ({
+      const dropdownOptions: CategoryOption[] = rawCategories.map((cat: { id: string | number; name: string;  tag: string}) => ({
         value: cat.id, 
         label: cat.name,
+        tag: cat.tag,
       }));
 
       set((state) => ({

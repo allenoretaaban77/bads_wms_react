@@ -36,7 +36,8 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
     remarks: '',
     added_by: userData?.employee_id || '',
     tracking_method: '',
-    monitored: 0
+    monitored: 0,
+    substrates: 0
   });
 
   const [errors, setErrors] = useState({});
@@ -92,7 +93,8 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
           remarks: '',
           added_by: userData?.employee_id || '',
           tracking_method: '',
-          monitored: 0
+          monitored: 0,
+          substrates: 0
         };
         setFormData(refData);
 
@@ -191,14 +193,9 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   }`}
                   required
                 >
-                  <option value="">Select Type</option>
-                  {/* {Object.entries(APP_CONFIG.INVENTORY_TYPES).map(([key, value]) => (
-                    <option key={key} value={value} className="capitalize">
-                      {value}
-                    </option>
-                  ))} */}
-                  {categoryDropdown.map((option) => (
-                    <option key={option.value} value={option.value}>
+                  <option value="">Select...</option>
+                  {categoryDropdown.filter((option) => option.label !== 'All').map((option) => (
+                    <option key={option.value} value={option.tag}>
                       {option.label}
                     </option>
                   ))}
@@ -264,10 +261,10 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
 
                 <div className="flex flex-col space-y-1">
-                  <label className="text-xs font-semibold text-gray-700">Tracking Method *</label>
+                  <label className="text-xs font-semibold text-gray-700">Method *</label>
                   <select
                     name="tracking_method"
                     value={formData.tracking_method}
@@ -309,6 +306,29 @@ const CreateInventoryModal = ({ showCreateModal, setShowCreateModal, onSave }) =
                   </select>
                   {errors.monitored && (
                     <p className="text-xs text-red-600 mt-0.5">{errors.monitored}</p>
+                  )}
+                </div>
+
+                <div className="flex flex-col space-y-1">
+                  <label className="text-xs font-semibold text-gray-700">Substrates *</label>
+                  <select
+                    name="substrates"
+                    value={formData.substrates}
+                    onChange={handleChange}
+                    className={`w-full px-3 py-1.5 text-xs border bg-white rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent ${
+                      errors.substrates ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
+                    }`}
+                    required
+                  >
+                    <option value="">Select...</option>
+                    {Object.entries(APP_CONFIG.SUBSTRATES).map(([key, value]) => (
+                      <option key={key} value={value}>
+                        {key.charAt(0) + key.slice(1).toLowerCase()}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.substrates && (
+                    <p className="text-xs text-red-600 mt-0.5">{errors.substrates}</p>
                   )}
                 </div>
 

@@ -66,31 +66,6 @@ export const APP_CONFIG = {
     ARCHIVED: 'archived'
   },
 
-  INVENTORY_TYPES: {
-    NUTS_AND_BOLTS: 'nuts and bolts',
-    CEMENTS: 'cements',
-    ELECTRICALS: 'electricals',
-    FAST_MOVING_MATERIALS: 'fast moving materials',
-    PAINTS: 'paints',
-    ROOFINGS: 'roofings',
-    SANITARY_AND_WATERLINES: 'sanitary and waterlines', 
-    STEEL_MATERIAL: 'steel materials',
-    UNCATEGORIZED: 'uncategorized',
-  },
-
-  INVENTORY_MENU: {
-    ALL: 'all',
-    NUTS_AND_BOLTS: 'nuts and bolts',
-    CEMENTS: 'cements',
-    ELECTRICALS: 'electricals',
-    FAST_MOVING_MATERIALS: 'fast moving materials',
-    PAINTS: 'paints',
-    ROOFINGS: 'roofings',
-    SANITARY_AND_WATERLINES: 'sanitary and waterlines', 
-    STEEL_MATERIAL: 'steel materials',
-    UNCATEGORIZED: 'uncategorized',
-  },
-
   PAYMENT_STATUS: {
     CASH: 'cash',
     CREDIT: 'credit',
@@ -103,6 +78,11 @@ export const APP_CONFIG = {
   },
 
   MONITORED: {
+    YES: 1,
+    NO: 0,
+  },
+
+  SUBSTRATES: {
     YES: 1,
     NO: 0,
   },

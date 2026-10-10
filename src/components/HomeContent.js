@@ -11,8 +11,18 @@ import StockInPurchasesLog from './reports/StockInPurchasesLog.js';
 import MonthlySalesReport from './reports/MonthlySalesReport.js';
 import DailyBusinessLedger from './reports/DailyBusinessLedger.js';
 import CategoriesTable from './categories/CategoriesTable.js';
-import MonthlyBusinessLedger from './reports/MonthlyBusinessLedger.js';
-import MonthlyBusinessLedgerView from './reports/MonthlyBusinessLedgerView.js';
+import MonthlyBusinessLedger from './ledgers/MonthlyBusinessLedger.js';
+import MonthlyBusinessLedgerView from './ledgers/MonthlyBusinessLedgerView.js';
+import MonitoredLedger from './ledgers/MonitoredLedger.js';
+import MonitoredLedgerView from './ledgers/MonitoredLedgerView.js';
+import SubstratesLedger from './ledgers/SubstratesLedger.js';
+import SubstratesLedgerView from './ledgers/SubstratesLedgerView.js';
+import GravelLedger from './gravel/GravelLedger.js';
+import GravelLedgerView from './gravel/GravelLedgerView.js';
+import ChbLedger from './chb/ChbLedger.js';
+import ChbLedgerView from './chb/ChbLedgerView.js';
+import SandLedger from './sand/SandLedger.js';
+import SandLedgerView from './sand/SandLedgerView.js';
 
 const descriptions = {
   profile: 'View your account details, role, and recent activity.',
@@ -53,6 +63,10 @@ function HomeContent() {
       return <DailySalesReport page_type={menuChild} param={menuParam} />;
     case 'stockin':
       return <StockInPurchasesLog page_type={menuChild} />;
+    case 'monitored_ledger':
+      return <MonitoredLedger page_type={menuChild} />;
+    case 'monitored_ledger_view':
+      return <MonitoredLedgerView selectedDate={menuChild} />;
     case 'monthly':
       return <MonthlySalesReport page_type={menuChild} />;
     case 'ledger':
@@ -61,6 +75,22 @@ function HomeContent() {
       return <MonthlyBusinessLedger page_type={menuChild} />;
     case 'monthly_ledger_view':
       return <MonthlyBusinessLedgerView selectedDate={menuChild} />;
+    case 'subtrates_ledger':
+      return <SubstratesLedger page_type={menuChild} />;
+    case 'substrates_ledger_view':
+      return <SubstratesLedgerView selectedDate={menuChild} />;
+    case 'gravel_ledger':
+      return <GravelLedger page_type={menuChild} />;
+    case 'gravel_ledger_view':
+      return <GravelLedgerView selectedDate={menuChild} />;
+    case 'chb_ledger':
+      return <ChbLedger page_type={menuChild} />;
+    case 'chb_ledger_view':
+      return <ChbLedgerView selectedDate={menuChild} />;
+    case 'sand_ledger':
+      return <SandLedger page_type={menuChild} />;
+    case 'sand_ledger_view':
+      return <SandLedgerView selectedDate={menuChild} />;
     case 'categories':
       return <CategoriesTable page_type={menuChild} />;
     default:

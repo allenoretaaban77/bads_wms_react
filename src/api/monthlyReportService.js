@@ -32,7 +32,7 @@ export const getMonthlyBusinessLedger = async (params = {}) => {
     
     const headers = getApiHeaders();
 
-    const response = await fetch(`${API_BASE_URL}/reports/getmonthlybusinessledger?${queryParams.toString()}`, {
+    const response = await fetch(`${API_BASE_URL}/ledgers/getmonthlybusinessledger?${queryParams.toString()}`, {
       method: 'GET',
       headers: headers,
     });
@@ -82,7 +82,7 @@ export const updateReportMonthly = async (date, running_money_on_hand = 0, runni
     formData.append('running_tubo', running_tubo);
     formData.append('running_puhunan', running_puhunan);
 
-    const response = await fetch(`${API_BASE_URL}/reports/updatereportmonthly`, {
+    const response = await fetch(`${API_BASE_URL}/ledgers/updatereportmonthly`, {
       method: 'POST',
       headers: getApiHeadersPost(),
       body: formData,
@@ -210,7 +210,7 @@ export const getDailyBusinessLedger = async (params = {}) => {
     
     const headers = getApiHeaders();
 
-    const response = await fetch(`${API_BASE_URL}/reports/getmonthlyviewbusinessledger?${queryParams.toString()}`, {
+    const response = await fetch(`${API_BASE_URL}/ledgers/getmonthlyviewbusinessledger?${queryParams.toString()}`, {
       method: 'GET',
       headers: headers,
     });
@@ -247,6 +247,105 @@ export const getDailyBusinessLedger = async (params = {}) => {
       return {
         success: false,
         error: 'An unexpected error occurred while fetching reports data',
+      };
+    }
+  }
+};
+
+export const updateLedgerValue = async (itemData) => {
+  try {
+    const formData = new URLSearchParams();
+    Object.keys(itemData).forEach(key => {
+      formData.append(key, itemData[key]);
+    });
+
+    const response = await fetch(`${API_BASE_URL}/ledgers/updateledgervalue`, {
+      method: 'PUT',
+      headers: getApiHeaders(),
+      body: JSON.stringify(itemData),
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to update report.';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData; // errorMessage || errorData.message || errorData.error;
+      } catch (e) {
+        errorMessage = response.statusText || errorMessage;
+      }
+      
+      return {
+        success: false,
+        error: errorMessage,
+        status: response.status,
+      };
+    }
+
+    const data = await response.json();
+    
+    return {
+      success: true,
+      data: data,
+    };
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      return {
+        success: false,
+        error: 'Network error. Please check if the server is running.',
+      };
+    } else {
+      return {
+        success: false,
+        error: 'An unexpected error occurred while updating report.',
+      };
+    }
+  }
+};
+
+export const updateReport = async (date) => {
+  try {
+    const formData = new URLSearchParams();
+    console.log('update report', date);
+    formData.append('date', date);
+
+    const response = await fetch(`${API_BASE_URL}/reports/updatereport`, {
+      method: 'POST',
+      headers: getApiHeadersPost(),
+      body: formData,
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to update report.';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData; // errorMessage || errorData.message || errorData.error;
+      } catch (e) {
+        errorMessage = response.statusText || errorMessage;
+      }
+      
+      return {
+        success: false,
+        error: errorMessage,
+        status: response.status,
+      };
+    }
+
+    const data = await response.json();
+    
+    return {
+      success: true,
+      data: data,
+    };
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      return {
+        success: false,
+        error: 'Network error. Please check if the server is running.',
+      };
+    } else {
+      return {
+        success: false,
+        error: 'An unexpected error occurred while updating report.',
       };
     }
   }

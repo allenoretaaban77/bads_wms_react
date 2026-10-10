@@ -40,6 +40,12 @@ export const getInventoryList = async (params = {}) => {
     if (params.record_status && params.record_status.trim() && params.record_status !== 'all') {
       queryParams.append('record_status', params.record_status.trim());
     }
+    if (params.monitored && params.monitored.trim() && params.monitored !== 'all') {
+      queryParams.append('monitored', params.monitored.trim());
+    }
+    if (params.substrates && params.substrates.trim() && params.substrates !== 'all') {
+      queryParams.append('substrates', params.substrates.trim());
+    }
 
     // Prepare headers with authorization
     const headers = getApiHeaders();
