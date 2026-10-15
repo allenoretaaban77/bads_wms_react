@@ -17,7 +17,6 @@ function ViewStockInHistoryModal({ show, onClose, id, item }) {
         setError(null);
         const result = await getStockInTransactions(item.inventory_id, item.cost);
         if (result.success) {
-          console.log('getStockInTransactions', result.data);
           setData(result.data);
         } else {
           setError(result.error);

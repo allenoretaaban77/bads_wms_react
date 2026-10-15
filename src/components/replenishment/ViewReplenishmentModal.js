@@ -20,7 +20,6 @@ function ViewReplenishmentModal({ show, onClose, onUpdate, onDelete, onApprove, 
         setError(null);
         const result = await getReplenishmentView(id);
         if (result.success) {
-          console.log('datax', result.data);
           setData(result.data);
         } else {
           setError(result.error);
@@ -40,7 +39,6 @@ function ViewReplenishmentModal({ show, onClose, onUpdate, onDelete, onApprove, 
   };
 
   const handleSubmit = async (action, data) => {
-    console.log(action, data);
     if (window.confirm('Are you sure you want to APPROVE this transaction?')) {
       setIsSubmitting(true);
 
@@ -55,7 +53,6 @@ function ViewReplenishmentModal({ show, onClose, onUpdate, onDelete, onApprove, 
         if (result && result.success) {
           setError(null);
         } else {
-          console.log(result.error.error);
           setError(result.error.error);
         }
       } catch (error) {

@@ -218,7 +218,6 @@ function MonthlyBusinessLedgerView({ selectedDate }) {
   }
 
   const handleUpdateValue = (item, valueType) => {
-    console.log(valueType, item);
 
     if(item.id == null) {
       alertStore.setAlert({

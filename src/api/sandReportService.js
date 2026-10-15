@@ -74,11 +74,14 @@ export const getSandLedger = async (params = {}) => {
   }
 };
 
-export const updateSandReportMonthly = async (date, initial_sand = 0) => {
+export const updateSandReportMonthly = async (date, initial_gravel = 0, initial_sand = 0, initial_sand_b = 0, initial_sand_h = 0) => {
   try {
     const formData = new URLSearchParams();
     formData.append('date', date);
+    formData.append('initial_gravel', initial_gravel);
     formData.append('initial_sand', initial_sand);
+    formData.append('initial_sand_b', initial_sand_b);
+    formData.append('initial_sand_h', initial_sand_h);
     
     const response = await fetch(`${API_BASE_URL}/sand/updatereportmonthly`, {
       method: 'POST',
@@ -245,6 +248,160 @@ export const deleteSandReportMonthtly = async (item, employee_id) => {
       return {
         success: false,
         error: 'An unexpected error occurred while deleting supplier record',
+      };
+    }
+  }
+};
+
+export const updateReport = async (date) => {
+  try {
+    const formData = new URLSearchParams();
+    console.log('update report', date);
+    formData.append('date', date);
+
+    const response = await fetch(`${API_BASE_URL}/sand/updatereport`, {
+      method: 'POST',
+      headers: getApiHeadersPost(),
+      body: formData,
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to update report.';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData; // errorMessage || errorData.message || errorData.error;
+      } catch (e) {
+        errorMessage = response.statusText || errorMessage;
+      }
+      
+      return {
+        success: false,
+        error: errorMessage,
+        status: response.status,
+      };
+    }
+
+    const data = await response.json();
+    
+    return {
+      success: true,
+      data: data,
+    };
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      return {
+        success: false,
+        error: 'Network error. Please check if the server is running.',
+      };
+    } else {
+      return {
+        success: false,
+        error: 'An unexpected error occurred while updating report.',
+      };
+    }
+  }
+};
+
+export const updateLedgerValue = async (itemData) => {
+  try {
+    const formData = new URLSearchParams();
+    Object.keys(itemData).forEach(key => {
+      formData.append(key, itemData[key]);
+    });
+
+    const response = await fetch(`${API_BASE_URL}/sand/updateledgervalue`, {
+      method: 'PUT',
+      headers: getApiHeaders(),
+      body: JSON.stringify(itemData),
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to update report.';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData; // errorMessage || errorData.message || errorData.error;
+      } catch (e) {
+        errorMessage = response.statusText || errorMessage;
+      }
+      
+      return {
+        success: false,
+        error: errorMessage,
+        status: response.status,
+      };
+    }
+
+    const data = await response.json();
+    
+    return {
+      success: true,
+      data: data,
+    };
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      return {
+        success: false,
+        error: 'Network error. Please check if the server is running.',
+      };
+    } else {
+      return {
+        success: false,
+        error: 'An unexpected error occurred while updating report.',
+      };
+    }
+  }
+};
+
+export const getSendReplenishmentView = async (params = {}) => {
+  try {
+    const queryParams = new URLSearchParams();
+
+    if (params.date && params.date.trim()) {
+      queryParams.append('date', params.date.trim());
+    }
+    if (params.item_id && params.item_id.trim()) {
+      queryParams.append('item_id', params.item_id.trim());
+    }
+    
+    const headers = getApiHeaders();
+
+    const response = await fetch(`${API_BASE_URL}/sand/getsandreplenishmentview?${queryParams.toString()}`, {
+      method: 'GET',
+      headers: headers,
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to fetch reports data';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch (e) {
+        errorMessage = response.statusText || errorMessage;
+      }
+      
+      return {
+        success: false,
+        error: errorMessage,
+        status: response.status,
+      };
+    }
+
+    const data = await response.json();
+    
+    return {
+      success: true,
+      data: data,
+    };
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      return {
+        success: false,
+        error: 'Network error. Please check if the server is running.',
+      };
+    } else {
+      return {
+        success: false,
+        error: 'An unexpected error occurred while fetching reports data',
       };
     }
   }

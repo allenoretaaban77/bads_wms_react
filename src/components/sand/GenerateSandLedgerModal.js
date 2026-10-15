@@ -7,8 +7,10 @@ const GenerateSandLedgerModal = ({ show, onClose, onGenerate, selectedItem }) =>
 
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [selectedYear, setSelectedYear] = useState(currentYear.toString());
-  const [initialMoney, setInitialMoney] = useState('');
+  const [runningGravel, setRunningGravel] = useState('');
   const [runningSand, setRunningSand] = useState('');
+  const [runningSandB, setRunningSandB] = useState('');
+  const [runningSandH, setRunningSandH] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -16,7 +18,10 @@ const GenerateSandLedgerModal = ({ show, onClose, onGenerate, selectedItem }) =>
       const [rawMonth, rawYear] = selectedItem.date_value.split(", ");
       setSelectedMonth(rawMonth);
       setSelectedYear(rawYear);
+      setRunningGravel(selectedItem.i_1898);
       setRunningSand(selectedItem.i_1897);
+      setRunningSandB(selectedItem.i_1906);
+      setRunningSandH(selectedItem.i_1907);
     }
   }, [selectedItem, show]);
 
@@ -45,25 +50,13 @@ const GenerateSandLedgerModal = ({ show, onClose, onGenerate, selectedItem }) =>
     { value: '12', label: 'December' },
   ];
 
-  const monthNameToNumber = {
-    January: '01',
-    February: '02',
-    March: '03',
-    April: '04',
-    May: '05',
-    June: '06',
-    July: '07',
-    August: '08',
-    September: '09',
-    October: '10',
-    November: '11',
-    December: '12',
-  };
-
   const handleCancel = () => {
     setSelectedMonth(currentMonth);
     setSelectedYear(currentYear.toString());
+    setRunningGravel('');
     setRunningSand('');
+    setRunningSandB('');
+    setRunningSandH('');
     setIsLoading(false);
     onClose();
   };
@@ -74,12 +67,15 @@ const GenerateSandLedgerModal = ({ show, onClose, onGenerate, selectedItem }) =>
 
     try {
       if (onGenerate) {
-        await onGenerate(selectedMonth, selectedYear, runningSand);
+        await onGenerate(selectedMonth, selectedYear, runningGravel, runningSand, runningSandB, runningSandH);
       }
     } catch (error) {
       console.error(error);
     } finally {
+      setRunningGravel('');
       setRunningSand('');
+      setRunningSandB('');
+      setRunningSandH('');
       setIsLoading(false);
     }
   };
@@ -129,12 +125,57 @@ const GenerateSandLedgerModal = ({ show, onClose, onGenerate, selectedItem }) =>
             </div>
 
             <div className="flex flex-col space-y-1">
+              <label className="text-xs font-semibold text-gray-700">Initial Gravel *</label>
+              <input
+                type="number"
+                name="runningGravel"
+                value={runningGravel}
+                onChange={(e) => setRunningGravel(e.target.value)}
+                placeholder="0.00"
+                step="0.01"
+                min="0"
+                className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col space-y-1">
               <label className="text-xs font-semibold text-gray-700">Initial Sand *</label>
               <input
                 type="number"
                 name="runningSand"
                 value={runningSand}
                 onChange={(e) => setRunningSand(e.target.value)}
+                placeholder="0.00"
+                step="0.01"
+                min="0"
+                className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col space-y-1">
+              <label className="text-xs font-semibold text-gray-700">Initial Sand Bistay*</label>
+              <input
+                type="number"
+                name="runningSandB"
+                value={runningSandB}
+                onChange={(e) => setRunningSandB(e.target.value)}
+                placeholder="0.00"
+                step="0.01"
+                min="0"
+                className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-custom focus:outline-none focus:ring-2 focus:ring-button focus:border-transparent"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col space-y-1">
+              <label className="text-xs font-semibold text-gray-700">Initial Sand Hindi Bistay *</label>
+              <input
+                type="number"
+                name="runningSandH"
+                value={runningSandH}
+                onChange={(e) => setRunningSandH(e.target.value)}
                 placeholder="0.00"
                 step="0.01"
                 min="0"

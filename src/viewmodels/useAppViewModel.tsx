@@ -115,31 +115,35 @@ const BASE_MENU_ITEMS: MenuItem[] = [
       // { key: 'ledger', label: 'Daily Business Ledger', title: 'Daily Business Ledger' },
       { key: 'monthly_ledger', label: 'Monthly Business Ledger', title: 'Monthly Business Ledger' },
       { key: 'monitored_ledger', label: 'Monitored Ledger', title: 'Monitored Ledger' },
-      { key: 'gravel_ledger', label: 'Gravel Ledger', title: 'Gravel Ledger' },
+      { key: 'sand_ledger', label: 'Gravel and Sand Ledger', title: 'Sand Ledger' },
+      // { key: 'gravel_ledger', label: 'Gravel Ledger', title: 'Gravel Ledger' },
       { key: 'chb_ledger', label: 'CHB Ledger', title: 'CHB Ledger' },
-      { key: 'sand_ledger', label: 'Sand Ledger', title: 'Sand Ledger' },
     ],
   },
   { key: 'categories', label: 'Categories', title: 'Categories' },
   { key: 'logout', label: 'Logout' },
 ];
 
-// Load initial state from localStorage
-const loadInitialState = (): Pick<AppViewModelState, 'isLoggedIn' | 'accessToken' | 'userData' | 'username'> => {
+const loadInitialState = (): Pick<AppViewModelState, 'isLoggedIn' | 'accessToken' | 'userData' | 'username' | 'menuItems'> => {
   try {
     const accessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
-    const userData = localStorage.getItem(STORAGE_KEYS.USER_DATA);
+    const userDataStr = localStorage.getItem(STORAGE_KEYS.USER_DATA);
     const isLoggedIn = localStorage.getItem(STORAGE_KEYS.IS_LOGGED_IN) === 'true';
     const username = localStorage.getItem(STORAGE_KEYS.USERNAME) || '';
 
-    if (accessToken && userData && isLoggedIn) {
+    if (accessToken && userDataStr && isLoggedIn) {
       setAccessToken(accessToken);
+      const userData: UserData = JSON.parse(userDataStr);
+      
+      // Filter menus based on the stored user's position_id right on load!
+      const filteredMenus = getMenusByPosition(userData.position_id);
 
       return {
         isLoggedIn: true,
         accessToken,
-        userData: JSON.parse(userData),
+        userData,
         username,
+        menuItems: filteredMenus, // <-- This ensures it stays filtered on refresh
       };
     }
   } catch (error) {
@@ -151,6 +155,7 @@ const loadInitialState = (): Pick<AppViewModelState, 'isLoggedIn' | 'accessToken
     accessToken: '',
     userData: null,
     username: '',
+    menuItems: BASE_MENU_ITEMS,
   };
 };
 
@@ -163,6 +168,32 @@ const findMenuItem = (items: MenuItem[], targetKey: string): MenuItem | undefine
     }
   }
   return undefined;
+};
+
+// Define menu access rules based on position_id
+const getMenusByPosition = (positionId: any): MenuItem[] => {
+  const posId = Number(positionId);
+
+  // Deep clone BASE_MENU_ITEMS to prevent state sharing/mutations between users
+  const clonedMenuItems: MenuItem[] = JSON.parse(JSON.stringify(BASE_MENU_ITEMS));
+
+  switch (posId) {
+    case 1:
+      return clonedMenuItems;
+
+    case 2:
+      return clonedMenuItems.filter((item) => 
+        ['inventory', 'sales', 'replenishment', 'reports', 'returns', 'logout'].includes(item.key)
+      );
+
+    case 3:
+      return clonedMenuItems.filter((item) => 
+        ['inventory', 'categories', 'logout'].includes(item.key)
+      );
+
+    default:
+      return clonedMenuItems.filter((item) => item.key === 'logout');
+  }
 };
 
 const getInitialActiveMenuState = (): { activeMenu: string; activeTitle: string; activeLabel: string; } => {
@@ -223,8 +254,8 @@ const getInitialActiveMenuState = (): { activeMenu: string; activeTitle: string;
     const date_value = menuParts[2];
     return {
       activeMenu: decodedKey,
-      activeTitle: `Sand Ledger View - ${date_value}`,
-      activeLabel: `Sand Ledger View - ${date_value}`,
+      activeTitle: `Gravel and Sand Ledger View - ${date_value}`,
+      activeLabel: `Gravel Sand Ledger View - ${date_value}`,
     };
   } else {
     const matchedItem = findMenuItem(BASE_MENU_ITEMS, decodedKey);
@@ -247,7 +278,7 @@ const useAppViewModel = create<AppViewModelState>((set, get) => ({
   formError: '',
   isLoading: false,
   isCategoriesLoading: false,
-  menuItems: BASE_MENU_ITEMS,
+  // menuItems: BASE_MENU_ITEMS,
   categories: [],
   categoryDropdown: [],
 
@@ -361,19 +392,22 @@ const useAppViewModel = create<AppViewModelState>((set, get) => ({
 
         get().saveAuthState(true, data.access_token || '', userData, username);
 
+        const allowedMenus = getMenusByPosition(userData.position_id);
+
         set({
           isLoggedIn: true,
-          activeMenu: 'inventory',
           activeTitle: '',
           activeLabel: '',
           formError: '',
           isLoading: false,
           accessToken: data.access_token || '',
           userData,
+          menuItems: allowedMenus,
         });
-
-        // Trigger category fetch upon successful login
-        get().fetchInventoryCategories();
+        
+        if (userData.position_id === 1 || userData.position_id === 2 || userData.position_id === 3) {
+          get().fetchInventoryCategories();
+        }
       } else {
         set({ formError: result.error || 'Login failed', isLoading: false });
       }
@@ -404,7 +438,9 @@ const useAppViewModel = create<AppViewModelState>((set, get) => ({
         accessToken: '',
         userData: null,
         isLoading: false,
-        menuItems: BASE_MENU_ITEMS, // Reset menu items back to default on logout
+        menuItems: JSON.parse(JSON.stringify(BASE_MENU_ITEMS)),
+        categories: [],
+        categoryDropdown: [],
       });
     }
   },

@@ -15,7 +15,6 @@ const GenerateSubstratesLedgerModal = ({ show, onClose, onGenerate, selectedItem
 
   useEffect(() => {
     if (selectedItem && show) {
-      console.log('GenerateSubstratesLedgerModal selected', selectedItem);
       const [rawMonth, rawYear] = selectedItem.date_value.split(", ");
       setSelectedMonth(rawMonth);
       setSelectedYear(rawYear);

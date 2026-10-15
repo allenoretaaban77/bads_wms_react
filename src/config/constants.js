@@ -89,7 +89,8 @@ export const APP_CONFIG = {
 
   EMPLOYEE_POSITIONS: {
     ADMIN: 1,
-    EMPLOYEE: 2
+    FULLFILLMENT: 2,
+    INVENTORY: 3
   }
 };
 

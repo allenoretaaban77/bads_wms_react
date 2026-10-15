@@ -15,10 +15,7 @@ const GenerateMonthlyLedgerModal = ({ show, onClose, onGenerate, selectedItem })
 
   useEffect(() => {
     if (selectedItem && show) {
-      console.log('GenerateMonthlyLedgerModal selected', selectedItem);
       const [rawMonth, rawYear] = selectedItem.date_value.split(", ");
-      console.log('GenerateMonthlyLedgerModal rawMonth', rawMonth);
-      console.log('GenerateMonthlyLedgerModal rawYear', rawYear);
       setSelectedMonth(rawMonth);
       setSelectedYear(rawYear);
       setRunningMoneyOnHand(selectedItem.initial_money_on_hand);

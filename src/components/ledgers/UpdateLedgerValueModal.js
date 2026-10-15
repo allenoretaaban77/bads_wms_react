@@ -10,8 +10,6 @@ const UpdateLedgerValueModal = ({ selectedItem, showLedgerValueModal, setShowLed
   });
 
   useEffect(() => {
-    console.log(selectedItem, showLedgerValueModal);
-
     if (selectedItem && showLedgerValueModal) {
       let value = 0;
       let details = "";
@@ -90,9 +88,7 @@ const UpdateLedgerValueModal = ({ selectedItem, showLedgerValueModal, setShowLed
     try {
       let updateData = {};
 
-      console.log('UpdateLedgerValueModal formData', formData);
       const result = await onUpdate(formData);
-      // console.log('UpdateLedgerValueModal handleSubmit result', result);
       
       // if (result.success) {
       //   const refData = {

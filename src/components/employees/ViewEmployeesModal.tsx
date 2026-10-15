@@ -14,7 +14,6 @@ const ViewEmployeesModal: React.FC<ViewEmployeesModalProps> = ({ selectedItem, s
   const [error, setError] = useState<string | null | undefined>(null);
   
   useEffect(() => {
-    console.log(data);
     if (showViewModal && selectedItem) {
       setData(initialFormState);
 

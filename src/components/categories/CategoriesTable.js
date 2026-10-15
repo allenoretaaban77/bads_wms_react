@@ -112,7 +112,6 @@ function CategoriesTable() {
   const handleUpdateCategory = async (itemData) => {
     try {
       const result = await updateCategory(itemData);
-      console.log(result.success);
       if (result.success) {
         setShowEditModal(false);
         

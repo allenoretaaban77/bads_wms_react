@@ -99,15 +99,12 @@ function SandLedger() {
   };
 
   // Handler for Generating Monthly Ledger from Modal
-  const handleGenerateLedger = async (selectedMonth, selectedYear, runningCh4, runningCh5) => {
+  const handleGenerateLedger = async (selectedMonth, selectedYear, runningGravel, runningSand, runningSandB, runningSandH) => {
     try {
       setShowGenerateModal(false);
       setLoading(true);
       
-      // Add your generation API call logic here, e.g.:
-      // await generateMonthlyLedgerApi({ month: selectedMonth, year: selectedYear });
-      const result = await updateSandReportMonthly(selectedMonth + ', ' + selectedYear, runningCh4, runningCh5);
-      console.log('handleGenerateLedger', result);
+      await updateSandReportMonthly(selectedMonth + ', ' + selectedYear, runningGravel, runningSand, runningSandB, runningSandH);
 
       alertStore.setAlert({
         show: true,
@@ -188,8 +185,14 @@ function SandLedger() {
                 >
                   <td className="px-3 py-2 border-r text-sm font-semibold text-green-900 text-right">{index + 1}</td>
                   <td className="px-3 py-2 border-r text-sm">{item.date}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.i_1898) }</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.r_1898)}</td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.i_1897) }</td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.r_1897)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.i_1906) }</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.r_1906)}</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.i_1907) }</td>
+                  <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.r_1907)}</td>
                   <td className="px-0 py-2 border-0">
                     <div className="flex justify-center space-x-1">
                       <button

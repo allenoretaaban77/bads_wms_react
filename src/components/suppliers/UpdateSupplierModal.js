@@ -68,7 +68,6 @@ const UpdateSupplierModal = ({ selectedItem, showEditModal, setShowEditModal, on
     
     try {
       const result = await onSave(formData);
-      console.log(result);
       
       if (result.success) {
         const refData = {

@@ -107,7 +107,6 @@ function MonthlyBusinessLedger() {
       // Add your generation API call logic here, e.g.:
       // await generateMonthlyLedgerApi({ month: selectedMonth, year: selectedYear });
       const result = await updateReportMonthly(selectedMonth + ', ' + selectedYear, runningMoneyOnHand, runningTubo, runningPuhunan);
-      console.log('handleGenerateLedger', result);
 
       alertStore.setAlert({
         show: true,

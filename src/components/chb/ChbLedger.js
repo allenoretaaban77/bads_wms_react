@@ -104,10 +104,7 @@ function ChbLedger() {
       setShowGenerateModal(false);
       setLoading(true);
       
-      // Add your generation API call logic here, e.g.:
-      // await generateMonthlyLedgerApi({ month: selectedMonth, year: selectedYear });
       const result = await updateChbReportMonthly(selectedMonth + ', ' + selectedYear, runningCh4, runningCh5);
-      console.log('handleGenerateLedger', result);
 
       alertStore.setAlert({
         show: true,

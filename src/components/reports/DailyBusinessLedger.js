@@ -143,8 +143,6 @@ function DailyBusinessLedger() {
   }
 
   const handleExpensesValue = (item, valueType) => {
-    // console.log(valueType, item);
-
     if(item[`ex_${valueType}`] == null) {
       alertStore.setAlert({
         show: true,
@@ -162,8 +160,6 @@ function DailyBusinessLedger() {
   }
 
   const handleUpdateValue = (item, valueType) => {
-    console.log(valueType, item);
-
     if(item.id == null) {
       alertStore.setAlert({
         show: true,
@@ -181,7 +177,6 @@ function DailyBusinessLedger() {
   }
 
   const handleSaveLedgerValue = async (data) => {
-    console.log("handleSaveLedgerValue", data);
     try {
       const result = await updateLedgerValue(data);
       if (result.success) {

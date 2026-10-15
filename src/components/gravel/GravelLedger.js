@@ -104,10 +104,7 @@ function GravelLedger() {
       setShowGenerateModal(false);
       setLoading(true);
       
-      // Add your generation API call logic here, e.g.:
-      // await generateMonthlyLedgerApi({ month: selectedMonth, year: selectedYear });
       const result = await updateGravelReportMonthly(selectedMonth + ', ' + selectedYear, runningGravel);
-      console.log('handleGenerateLedger', result);
 
       alertStore.setAlert({
         show: true,

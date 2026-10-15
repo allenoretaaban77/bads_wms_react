@@ -84,8 +84,6 @@ function InventoryTable({ page_type }) {
 
         const result = await getInventoryList(params);
         
-        // console.log('API Response:', result);
-        
         // Check if API call was successful and returned data
         if (result.success && result.data) {
           // Handle different response structures

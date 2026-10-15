@@ -69,7 +69,6 @@ const UpdateCategoriesModal = ({ selectedItem, showEditModal, setShowEditModal, 
     
     try {
       const result = await onSave(formData);
-      console.log(result);
       
       if (result.success) {
         const refData = {

@@ -299,19 +299,51 @@ function MonitoredLedgerView({ selectedDate }) {
                   <td className="px-3 py-2 border-r text-sm">{formatLongDate(item.date)}</td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.t_21) }</td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.p_21)}</td>
-                  <td className="px-3 py-2 border-r text-sm text-right text-red-500">{formatCurrency(item.e_21)}</td>
+                  {Number(item.e_21) > 0 ? (
+                    <td 
+                      onClick={() => console.log(item)}
+                      className="px-3 py-2 border-r text-sm text-right text-red-500 font-bold hover:text-orange-700 cursor-pointer"
+                    >{formatCurrency(item.e_21)}
+                    </td>
+                  ) : (
+                    <td className="px-3 py-2 border-r text-sm text-right text-red-500">{formatCurrency(item.e_21)}</td>
+                  )}
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.r_21)}</td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.t_1421) }</td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.p_1421)}</td>
-                  <td className="px-3 py-2 border-r text-sm text-right text-red-500">{formatCurrency(item.e_1421)}</td>
+                  {Number(item.e_1421) > 0 ? (
+                    <td 
+                      onClick={() => console.log(item)}
+                      className="px-3 py-2 border-r text-sm text-right text-red-500 font-bold hover:text-orange-700 cursor-pointer"
+                    >{formatCurrency(item.e_1421)}
+                    </td>
+                  ) : (
+                    <td className="px-3 py-2 border-r text-sm text-right text-red-500">{formatCurrency(item.e_1421)}</td>
+                  )}
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.r_1421)}</td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.t_1422) }</td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.p_1422)}</td>
-                  <td className="px-3 py-2 border-r text-sm text-right text-red-500">{formatCurrency(item.e_1422)}</td>
+                  {Number(item.e_1422) > 0 ? (
+                    <td 
+                      onClick={() => console.log(item)}
+                      className="px-3 py-2 border-r text-sm text-right text-red-500 font-bold hover:text-orange-700 cursor-pointer"
+                    >{formatCurrency(item.e_1422)}
+                    </td>
+                  ) : (
+                    <td className="px-3 py-2 border-r text-sm text-right text-red-500">{formatCurrency(item.e_1422)}</td>
+                  )}
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.r_1422)}</td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.t_1423) }</td>
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.p_1423)}</td>
-                  <td className="px-3 py-2 border-r text-sm text-right text-red-500">{formatCurrency(item.e_1423)}</td>
+                  {Number(item.e_1423) > 0 ? (
+                    <td 
+                      onClick={() => console.log(item)}
+                      className="px-3 py-2 border-r text-sm text-right text-red-500 font-bold hover:text-orange-700 cursor-pointer"
+                    >{formatCurrency(item.e_1423)}
+                    </td>
+                  ) : (
+                    <td className="px-3 py-2 border-r text-sm text-right text-red-500">{formatCurrency(item.e_1422)}</td>
+                  )}
                   <td className="px-3 py-2 border-r text-sm text-right">{formatCurrency(item.r_1423)}</td>
                   
                 </tr>

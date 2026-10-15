@@ -112,7 +112,7 @@ function SuppliersTable() {
   const handleUpdateSupplier = async (itemData) => {
     try {
       const result = await updateSupplier(itemData);
-      console.log(result.success);
+      
       if (result.success) {
         setShowEditModal(false);
         

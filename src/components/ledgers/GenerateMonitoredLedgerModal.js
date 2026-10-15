@@ -16,7 +16,6 @@ const GenerateMonitoredLedgerModal = ({ show, onClose, onGenerate, selectedItem 
 
   useEffect(() => {
     if (selectedItem && show) {
-      console.log('GenerateMonitoredLedgerModal selected', selectedItem);
       const [rawMonth, rawYear] = selectedItem.date_value.split(", ");
       setSelectedMonth(rawMonth);
       setSelectedYear(rawYear);

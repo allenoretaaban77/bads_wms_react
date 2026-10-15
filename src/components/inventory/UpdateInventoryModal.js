@@ -129,7 +129,6 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
   const handleUpdateCosts = async (params = {}) => {
     try {
       const result = await updateBatchCosts(params);
-      console.log('handleUpdateCosts result', result);
       if (result.success) {
         setShowStockBatchesModal(false);
         
@@ -149,9 +148,6 @@ const UpdateInventoryModal = ({ selectedItem, showEditModal, setShowEditModal, o
       
       // return result;
     } catch (err) {
-      console.log('handleUpdateCosts error', err);
-      // setError('Failed to update inventory item');
-
       return {
         success: false,
         error: 'Failed to update inventory item'

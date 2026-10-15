@@ -104,10 +104,7 @@ function MonitoredLedger() {
       setShowGenerateModal(false);
       setLoading(true);
       
-      // Add your generation API call logic here, e.g.:
-      // await generateMonthlyLedgerApi({ month: selectedMonth, year: selectedYear });
       const result = await updateMonitoredReportMonthly(selectedMonth + ', ' + selectedYear, runningCement, runningRSB10, runningRSB12, runningRSB16);
-      console.log('handleGenerateLedger', result);
 
       alertStore.setAlert({
         show: true,
